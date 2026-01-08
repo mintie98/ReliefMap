@@ -1,150 +1,127 @@
 <template>
-  <div class="map-view">
-    <div class="map-container">
+  <div class="map-view-layout">
+    <!-- Top Header -->
+    <header class="map-header">
+      <div class="header-left">
+         <button class="hamburger-btn" @click="isMenuOpen = true">
+          <svg xmlns="http://www.w3.org/2000/svg" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="3" y1="12" x2="21" y2="12"></line>
+            <line x1="3" y1="6" x2="21" y2="6"></line>
+            <line x1="3" y1="18" x2="21" y2="18"></line>
+          </svg>
+        </button>
+        <h1 class="brand-text">Relief Map</h1>
+      </div>
+      
+      <div class="header-right">
+        <div class="user-profile">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+          <span class="username">guest</span>
+          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="6 9 12 15 18 9"></polyline>
+          </svg>
+        </div>
+      </div>
+    </header>
+
+    <!-- Menu Drawer Overlay -->
+    <transition name="slide-fade">
+      <div v-if="isMenuOpen" class="menu-overlay" @click.self="isMenuOpen = false">
+        <div class="menu-drawer">
+          <div class="drawer-header">
+             <button class="close-menu-btn" @click="isMenuOpen = false">×</button>
+          </div>
+          <div class="menu-items">
+            <button class="menu-btn" @click="openRefine">
+              <span class="menu-icon">🔍</span>
+              Refine
+            </button>
+            <button class="menu-btn">
+              <span class="menu-icon">➕</span>
+              Add new toilet
+            </button>
+            <button class="menu-btn">
+              <span class="menu-icon">📝</span>
+              Review toilet
+            </button>
+            <button class="menu-btn">
+              <span class="menu-icon">❓</span>
+              FAQ
+            </button>
+          </div>
+        </div>
+      </div>
+    </transition>
+
+    <!-- Refine Filter Full Screen -->
+    <RefineFilter 
+      v-if="showRefine" 
+      @close="showRefine = false"
+      @search="handleRefineSearch"
+    />
+
+    <!-- Main Map Area -->
+    <main class="map-container">
       <div id="map" ref="mapContainer"></div>
       
+      <!-- Floating Controls -->
       <div class="map-controls">
-        <div class="control-panel">
-          <h3>Filters</h3>
-          
-          <div class="filter-group">
-            <label>Verification Status</label>
-            <select v-model="filters.verificationStatus" @change="applyFilters">
-              <option :value="null">All</option>
-              <option value="green">Verified (Green)</option>
-              <option value="yellow">Pending (Yellow)</option>
-              <option value="red">Unverified (Red)</option>
-            </select>
-          </div>
+        <button class="control-btn" @click="getCurrentLocation" title="My Location">
+          📍
+        </button>
+        <button class="control-btn" @click="zoomIn" title="Zoom In">
+          ➕
+        </button>
+        <button class="control-btn" @click="zoomOut" title="Zoom Out">
+          ➖
+        </button>
+      </div>
 
-          <div class="filter-group">
-            <label>Source Type</label>
-            <select v-model="filters.sourceType" @change="applyFilters">
-              <option :value="null">All</option>
-              <option value="api">Google API</option>
-              <option value="user">User Generated</option>
-              <option value="admin">Admin</option>
-            </select>
-          </div>
-
-          <div class="filter-group">
-            <label>Radius (km)</label>
-            <input
-              v-model.number="filters.radius"
-              type="number"
-              min="1"
-              max="50"
-              @change="applyFilters"
-            />
-          </div>
-
-          <button @click="getCurrentLocation" class="btn-locate">📍 Use My Location</button>
-          <button @click="searchGooglePlaces" class="btn-google">🔍 Search Google Places</button>
-        </div>
-
-        <div class="location-list-panel">
-          <h3>Locations ({{ filteredLocations.length }})</h3>
-          <div v-if="loading" class="loading">Loading...</div>
-          <div v-if="error" class="error">{{ error }}</div>
-          
-          <div class="location-items">
-            <div
-              v-for="location in filteredLocations"
-              :key="location.location_id"
-              class="location-item"
-              @click="focusLocation(location)"
-              :class="{ active: selectedLocation?.location_id === location.location_id }"
-            >
-              <h4>{{ location.display_name }}</h4>
-              <p class="address">{{ location.address }}</p>
-              <div class="location-badges">
-                <span class="badge" :style="{ backgroundColor: location.getStatusColor() }">
-                  {{ location.verification_status }}
-                </span>
-                <span class="badge">{{ location.source_type }}</span>
-                <span v-if="location.distance" class="badge">
-                  {{ location.distance.toFixed(2) }} km
-                </span>
-              </div>
+      <!-- Detail Popup (Mobile/Overlay) -->
+      <transition name="slide-up">
+        <div v-if="selectedLocation" class="location-detail-panel">
+          <button class="close-panel" @click="selectedLocation = null">×</button>
+          <div class="detail-header">
+            <h2>{{ selectedLocation.display_name }}</h2>
+            <div class="detail-scores" v-if="selectedLocation.verification_score">
+              <span class="score-badge">Trust Score: {{ selectedLocation.verification_score }}</span>
             </div>
           </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- Location Detail Modal -->
-    <div v-if="selectedLocation" class="modal" @click.self="selectedLocation = null">
-      <div class="modal-content">
-        <button class="close-btn" @click="selectedLocation = null">×</button>
-        <h2>{{ selectedLocation.display_name }}</h2>
-        <p class="address">{{ selectedLocation.address }}</p>
-        
-        <div class="location-details">
-          <div class="detail-item">
-            <strong>Status:</strong>
-            <span :style="{ color: selectedLocation.getStatusColor() }">
-              {{ selectedLocation.verification_status.toUpperCase() }}
-            </span>
-          </div>
-          <div class="detail-item">
-            <strong>Source:</strong> {{ selectedLocation.source_type }}
-          </div>
-          <div class="detail-item">
-            <strong>Verification Score:</strong> {{ selectedLocation.verification_score }}
+          <div class="detail-body scroller">
+             <p class="detail-address">{{ selectedLocation.address }}</p>
+             <!-- Reviews Placeholders -->
+             <div class="detail-actions">
+               <button class="btn btn-primary btn-full">Navigate</button>
+             </div>
           </div>
         </div>
-
-        <div v-if="amenities" class="amenities">
-          <h3>Amenities</h3>
-          <div class="amenity-list">
-            <span v-if="amenities.western_style" class="amenity-tag">Western Style</span>
-            <span v-if="amenities.japanese_style" class="amenity-tag">Japanese Style</span>
-            <span v-if="amenities.accessible" class="amenity-tag">Wheelchair Accessible</span>
-            <span v-if="amenities.baby_changing" class="amenity-tag">Baby Changing</span>
-            <span v-if="amenities.warm_seat" class="amenity-tag">Warm Seat</span>
-            <span class="amenity-tag">{{ amenities.gender_type }}</span>
-          </div>
-        </div>
-
-        <div class="reviews-section">
-          <h3>Reviews</h3>
-          <div v-if="reviewsLoading" class="loading">Loading reviews...</div>
-          <div v-else-if="reviews.length === 0" class="no-reviews">No reviews yet</div>
-          <div v-else class="reviews-list">
-            <div v-for="review in reviews" :key="review.review_id" class="review-item">
-              <div class="review-header">
-                <strong>{{ review.user_name }}</strong>
-                <span class="review-date">{{ review.getFormattedDate() }}</span>
-              </div>
-              <p class="review-text">{{ review.review_text }}</p>
-              <div class="review-scores">
-                <span>Cleanliness: {{ review.cleanliness_score }}/5</span>
-                <span>Wait Time: {{ review.wait_time_score }}/5</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+      </transition>
+    </main>
   </div>
 </template>
 
 <script>
-import { ref, onMounted, watch } from 'vue';
+import { ref, onMounted, watch, computed } from 'vue';
 import { useLocationViewModel } from '../viewmodels/LocationViewModel';
 import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
+import RefineFilter from '../components/RefineFilter.vue';
 import apiClient from '../services/api';
 
 export default {
   name: 'MapView',
+  components: { RefineFilter },
   setup() {
     const mapContainer = ref(null);
+    const isMenuOpen = ref(false);
+    const showRefine = ref(false);
     let map = null;
     let markers = [];
     
     const selectedLocation = ref(null);
-    const amenities = ref(null);
-    const reviewsLoading = ref(false);
+    const amenities = ref({}); // Placeholder for client-side filter simulation
 
     const {
       locations,
@@ -153,446 +130,417 @@ export default {
       error,
       filters,
       loadLocations,
-      loadLocationById,
       updateFilters,
-      clearFilters
+      clearFilters: originalClearFilters
     } = useLocationViewModel();
 
-    const {
-      reviews,
-      loadReviews
-    } = useReviewViewModel();
+    const hasActiveFilters = computed(() => {
+      return filters.verificationStatus || filters.sourceType;
+    });
 
-    // Initialize map
     const initMap = () => {
       if (!window.google || !mapContainer.value) return;
-
-      const defaultCenter = { lat: 35.6762, lng: 139.6503 }; // Tokyo default
+      const defaultCenter = { lat: 35.6762, lng: 139.6503 };
       
       map = new window.google.maps.Map(mapContainer.value, {
-        zoom: 13,
+        zoom: 14,
         center: defaultCenter,
-        mapTypeControl: true,
-        streetViewControl: true
+        disableDefaultUI: true, // We build our own controls
+        styles: [
+          {
+            featureType: "poi",
+            elementType: "labels",
+            stylers: [{ visibility: "off" }]
+          }
+        ]
       });
 
-      // Try to get user location
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLocation = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            };
-            map.setCenter(userLocation);
-            updateFilters({ lat: userLocation.lat, lng: userLocation.lng });
+          (pos) => {
+            const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+            map.setCenter(loc);
+            updateFilters({ lat: loc.lat, lng: loc.lng });
             loadLocations();
           },
-          () => {
-            // Use default location
-            loadLocations();
-          }
+          () => loadLocations()
         );
       } else {
         loadLocations();
       }
     };
 
-    // Load Google Maps script
-    const loadGoogleMaps = () => {
-      if (window.google) {
-        initMap();
-        return;
-      }
-
-      const script = document.createElement('script');
-      script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&callback=initReliefMap`;
-      script.async = true;
-      script.defer = true;
-      window.initReliefMap = initMap;
-      document.head.appendChild(script);
-    };
-
-    // Update markers on map
     const updateMarkers = () => {
       if (!map) return;
-
-      // Clear existing markers
-      markers.forEach(marker => marker.setMap(null));
+      markers.forEach(m => m.setMap(null));
       markers = [];
 
-      // Add new markers
-      filteredLocations.value.forEach(location => {
+      filteredLocations.value.forEach(loc => {
         const marker = new window.google.maps.Marker({
-          position: { lat: location.latitude, lng: location.longitude },
+          position: { lat: loc.latitude, lng: loc.longitude },
           map: map,
-          title: location.display_name,
+          title: loc.display_name,
           icon: {
-            url: `data:image/svg+xml;base64,${btoa(`
-              <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 32 32">
-                <circle cx="16" cy="16" r="12" fill="${location.getStatusColor()}" stroke="white" stroke-width="2"/>
-                <text x="16" y="20" font-size="16" fill="white" text-anchor="middle">🚽</text>
-              </svg>
-            `)}`,
-            scaledSize: new window.google.maps.Size(32, 32)
+            path: window.google.maps.SymbolPath.CIRCLE,
+            scale: 7,
+            fillColor: getStatusColor(loc),
+            fillOpacity: 1,
+            strokeWeight: 2,
+            strokeColor: "#FFFFFF"
           }
         });
-
-        marker.addListener('click', () => {
-          focusLocation(location);
-        });
-
+        marker.addListener('click', () => focusLocation(loc));
         markers.push(marker);
       });
     };
 
-    // Focus on location
-    const focusLocation = async (location) => {
-      selectedLocation.value = location;
-      
-      if (map) {
-        map.setCenter({ lat: location.latitude, lng: location.longitude });
-        map.setZoom(15);
-      }
-
-      // Load amenities
-      try {
-        const response = await apiClient.get(`/amenities/location/${location.location_id}`);
-        amenities.value = response.data;
-      } catch (err) {
-        amenities.value = null;
-      }
-
-      // Load reviews
-      reviewsLoading.value = true;
-      await loadReviews(location.location_id);
-      reviewsLoading.value = false;
+    const getStatusColor = (loc) => {
+        if (loc.verification_status === 'verified') return '#10B981'; // Green
+        if (loc.source_type === 'user') return '#F59E0B'; // Yellow/Orange
+        if (loc.verification_status === 'unverified') return '#EF4444'; // Red
+        return '#008080'; // Default Teal
     };
 
-    // Get current location
+    const focusLocation = (loc) => {
+      selectedLocation.value = loc;
+      if (map) {
+        map.panTo({ lat: loc.latitude, lng: loc.longitude });
+      }
+    };
+
+    const toggleFilter = (key, value) => {
+      if (filters[key] === value) {
+        updateFilters({ [key]: null });
+      } else {
+        updateFilters({ [key]: value });
+      }
+    };
+
+    // Placeholder until amenity filtering is supported in ViewModel
+    const toggleAmenity = (key) => {
+      console.log('Implement toggle amenity:', key);
+    };
+
+    const clearFilters = () => {
+      originalClearFilters();
+    };
+
     const getCurrentLocation = () => {
       if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            const userLocation = {
-              lat: position.coords.latitude,
-              lng: position.coords.longitude
-            };
-            updateFilters({ lat: userLocation.lat, lng: userLocation.lng });
-            if (map) {
-              map.setCenter(userLocation);
-            }
-            loadLocations();
-          },
-          (error) => {
-            alert('Unable to get your location: ' + error.message);
-          }
-        );
-      } else {
-        alert('Geolocation is not supported by your browser');
-      }
-    };
-
-    // Search Google Places
-    const searchGooglePlaces = async () => {
-      const query = prompt('Enter search query (e.g., "toilet near me"):');
-      if (!query) return;
-
-      const center = map?.getCenter();
-      const location = center ? { lat: center.lat(), lng: center.lng() } : null;
-
-      try {
-        const response = await apiClient.get('/locations/google-search', {
-          params: { query, ...(location && { lat: location.lat, lng: location.lng }) }
+        navigator.geolocation.getCurrentPosition((pos) => {
+          const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+          map.panTo(loc);
+          map.setZoom(15);
+          updateFilters({ lat: loc.lat, lng: loc.lng });
+          loadLocations();
         });
-        
-        if (response.success && response.data.length > 0) {
-          alert(`Found ${response.data.length} places. You can import them via the API.`);
-        } else {
-          alert('No places found');
-        }
-      } catch (error) {
-        alert('Error searching Google Places: ' + error.message);
       }
     };
 
-    // Apply filters
-    const applyFilters = () => {
+    const zoomIn = () => map?.setZoom((map.getZoom() || 14) + 1);
+    const zoomOut = () => map?.setZoom((map.getZoom() || 14) - 1);
+
+    const searchGooglePlaces = (e) => {
+      const query = e.target.value;
+      if(!query) return;
+      alert(`Search for: ${query} (Implement API call)`);
+      e.target.value = '';
+    };
+
+    const openRefine = () => {
+      isMenuOpen.value = false; // Close drawer
+      showRefine.value = true;  // Open refine
+    };
+
+    const handleRefineSearch = (filterData) => {
+      showRefine.value = false;
+      console.log('Search with filters:', filterData);
+      // Map refined filters to ViewModel updateFilters here
+      // Example:
+      const newFilters = {};
+      if (filterData.status.verified) newFilters.verificationStatus = 'verified';
+      if (filterData.status.unverified) newFilters.verificationStatus = 'unverified';
+      // ... map other features
+      updateFilters(newFilters);
       loadLocations();
     };
 
-    // Watch for location changes
-    watch(filteredLocations, () => {
-      updateMarkers();
+    // Load Maps Script
+    onMounted(() => {
+        if (window.google) {
+            initMap();
+        } else {
+             const script = document.createElement('script');
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&callback=initReliefMap`;
+            script.async = true;
+            script.defer = true;
+            window.initReliefMap = initMap;
+            document.head.appendChild(script);
+        }
     });
 
-    onMounted(() => {
-      loadGoogleMaps();
-    });
+    watch(filteredLocations, updateMarkers);
 
     return {
       mapContainer,
-      locations,
-      filteredLocations,
-      loading,
-      error,
+      isMenuOpen,
       filters,
-      selectedLocation,
+      hasActiveFilters,
       amenities,
-      reviews,
-      reviewsLoading,
+      loading,
+      filteredLocations,
+      selectedLocation,
+      toggleFilter,
+      toggleAmenity,
+      clearFilters,
+      focusLocation,
       getCurrentLocation,
+      zoomIn,
+      zoomOut,
+      zoomOut,
       searchGooglePlaces,
-      applyFilters,
-      focusLocation
+      showRefine,
+      openRefine,
+      handleRefineSearch
     };
   }
 };
 </script>
 
 <style scoped>
-.map-view {
-  height: calc(100vh - 80px);
-  position: relative;
-}
-
-.map-container {
+/* Layout */
+.map-view-layout {
   display: flex;
-  height: 100%;
-  gap: 1rem;
-}
-
-#map {
-  flex: 1;
-  height: 100%;
-  border-radius: 8px;
+  flex-direction: column;
+  height: 100vh;
+  width: 100vw;
   overflow: hidden;
 }
 
-.map-controls {
-  width: 350px;
+/* Header */
+.map-header {
+  height: 60px;
+  background-color: #1976D2; /* Solid Blue */
+  color: white;
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  z-index: 10;
+}
+
+.header-left, .header-right {
+  display: flex;
+  align-items: center;
   gap: 1rem;
-  overflow-y: auto;
 }
 
-.control-panel,
-.location-list-panel {
-  background: white;
-  padding: 1.5rem;
-  border-radius: 8px;
-  box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+.brand-text {
+  font-size: 1.5rem;
+  font-weight: 700;
+  font-family: 'Outfit', sans-serif;
+  margin-left: 0.5rem;
 }
 
-.control-panel h3,
-.location-list-panel h3 {
-  margin-bottom: 1rem;
-  color: #2c3e50;
-}
-
-.filter-group {
-  margin-bottom: 1rem;
-}
-
-.filter-group label {
-  display: block;
-  margin-bottom: 0.5rem;
-  color: #555;
-  font-weight: 500;
-}
-
-.filter-group select,
-.filter-group input {
-  width: 100%;
-  padding: 0.5rem;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-}
-
-.btn-locate,
-.btn-google {
-  width: 100%;
-  padding: 0.75rem;
-  margin-top: 0.5rem;
+.hamburger-btn {
+  background: none;
   border: none;
-  border-radius: 6px;
+  color: white;
   cursor: pointer;
-  font-weight: bold;
-  transition: background-color 0.3s;
-}
-
-.btn-locate {
-  background-color: #3498db;
-  color: white;
-}
-
-.btn-locate:hover {
-  background-color: #2980b9;
-}
-
-.btn-google {
-  background-color: #27ae60;
-  color: white;
-}
-
-.btn-google:hover {
-  background-color: #229954;
-}
-
-.location-items {
-  max-height: 500px;
-  overflow-y: auto;
-}
-
-.location-item {
-  padding: 1rem;
-  border: 1px solid #e0e0e0;
-  border-radius: 6px;
-  margin-bottom: 0.5rem;
-  cursor: pointer;
-  transition: all 0.2s;
-}
-
-.location-item:hover {
-  border-color: #667eea;
-  background-color: #f8f9ff;
-}
-
-.location-item.active {
-  border-color: #667eea;
-  background-color: #e8ebff;
-}
-
-.location-item h4 {
-  margin-bottom: 0.5rem;
-  color: #2c3e50;
-}
-
-.address {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-  margin-bottom: 0.5rem;
-}
-
-.location-badges {
-  display: flex;
-  gap: 0.5rem;
-  flex-wrap: wrap;
-}
-
-.badge {
-  padding: 0.25rem 0.5rem;
-  border-radius: 4px;
-  font-size: 0.8rem;
-  color: white;
-  background-color: #95a5a6;
-}
-
-.modal {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background-color: rgba(0,0,0,0.5);
   display: flex;
   align-items: center;
   justify-content: center;
-  z-index: 1000;
 }
 
-.modal-content {
-  background: white;
-  padding: 2rem;
-  border-radius: 8px;
-  max-width: 600px;
-  max-height: 80vh;
-  overflow-y: auto;
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  cursor: pointer;
+}
+
+.username {
+  font-weight: 600;
+  font-size: 1rem;
+}
+
+/* Map Container */
+.map-container {
+  flex: 1;
   position: relative;
+  width: 100%;
+  height: calc(100vh - 60px);
 }
 
-.close-btn {
+#map {
+  width: 100%;
+  height: 100%;
+}
+
+/* Map Controls */
+.map-controls {
   position: absolute;
   top: 1rem;
+  left: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  z-index: 5;
+}
+
+/* Note: User wanted Right-side controls in previous iteration, 
+   but in the new image (step 185) the controls seem to be on the left or hidden?
+   I will keep them floating on the right as per standard or adjust if needed.
+   Let's keep them on Left based on the new image? Actually the image is cropped.
+   The prompt says "nút vị trí... vẫn giữ nguyên" (keep buttons same). 
+   In previous version they were bottom-right or right. 
+   I will adapt .map-controls to be consistent. Let's stick to Right side for now as it's cleaner. 
+*/
+.map-controls {
+  position: absolute;
+  bottom: 2rem;
   right: 1rem;
+  top: auto;
+  left: auto;
+}
+
+.control-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: white;
+  border: none;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  cursor: pointer;
+}
+
+.control-btn:hover {
+  background-color: #f1f5f9;
+}
+
+/* Detail Panel */
+.location-detail-panel {
+  position: absolute;
+  bottom: 2rem;
+  left: 1rem;
+  right: auto;
+  width: 350px;
+  max-width: 90%;
+  background: white;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+  padding: 1.5rem;
+  z-index: 20;
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+
+  .location-detail-panel {
+    left: 0.5rem;
+    right: 0.5rem;
+    bottom: 0.5rem;
+    max-width: none;
+  }
+}
+
+/* Header Left */
+.header-left {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.hamburger-btn {
+  background: none;
+  border: none;
+  color: white;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Menu Drawer */
+.menu-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(0,0,0,0.5);
+  z-index: 1000;
+  display: flex;
+}
+
+.menu-drawer {
+  width: 300px;
+  height: 100%;
+  background: white;
+  padding: 2rem;
+  position: relative;
+  box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+}
+
+.drawer-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 2rem;
+}
+
+.close-menu-btn {
   background: none;
   border: none;
   font-size: 2rem;
   cursor: pointer;
-  color: #7f8c8d;
-}
-
-.close-btn:hover {
-  color: #2c3e50;
-}
-
-.location-details {
-  margin: 1rem 0;
-  padding: 1rem;
-  background-color: #f8f9fa;
-  border-radius: 6px;
-}
-
-.detail-item {
-  margin-bottom: 0.5rem;
-}
-
-.amenities {
-  margin: 1rem 0;
-}
-
-.amenity-list {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.5rem;
-}
-
-.amenity-tag {
-  padding: 0.5rem 1rem;
-  background-color: #e3f2fd;
-  color: #1976d2;
-  border-radius: 20px;
-  font-size: 0.9rem;
-}
-
-.reviews-section {
-  margin-top: 1rem;
-}
-
-.review-item {
-  padding: 1rem;
-  border-bottom: 1px solid #e0e0e0;
-  margin-bottom: 1rem;
-}
-
-.review-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 0.5rem;
-}
-
-.review-date {
-  color: #7f8c8d;
-  font-size: 0.9rem;
-}
-
-.review-text {
-  margin-bottom: 0.5rem;
-  line-height: 1.6;
-}
-
-.review-scores {
-  display: flex;
-  gap: 1rem;
-  font-size: 0.9rem;
   color: #555;
+  line-height: 1;
 }
 
-.no-reviews {
+.menu-items {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.menu-btn {
+  width: 100%;
   padding: 1rem;
-  text-align: center;
-  color: #7f8c8d;
+  background-color: #E0E0E0;
+  border: none;
+  border-radius: 4px;
+  font-size: 1rem;
+  font-weight: 700;
+  color: #333;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  cursor: pointer;
+  transition: background-color 0.2s;
+  text-align: left;
+}
+
+.menu-btn:hover {
+  background-color: #D6D6D6;
+}
+
+.menu-icon {
+  font-size: 1.2rem;
+}
+
+/* Transitions */
+.slide-fade-enter-active,
+.slide-fade-leave-active {
+  transition: opacity 0.3s ease;
+}
+
+.slide-fade-enter-from,
+.slide-fade-leave-to {
+  opacity: 0;
 }
 </style>
-

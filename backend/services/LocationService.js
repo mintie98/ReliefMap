@@ -36,8 +36,75 @@ class LocationService {
     }
   }
 
-  // Search locations from Google Places API
+  // Search locations from Google Places API (New)
   async searchFromGoogleAPI(query, location = null) {
+    try {
+      const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+      if (!apiKey) {
+        throw new Error('Google Maps API key not configured');
+      }
+
+      // Use Places API (New) - Text Search endpoint
+      const url = `https://places.googleapis.com/v1/places:searchText`;
+      
+      const requestBody = {
+        textQuery: query,
+        maxResultCount: 20,
+        includedType: 'toilet',
+        languageCode: 'en'
+      };
+
+      // Add location bias if provided
+      if (location) {
+        requestBody.locationBias = {
+          circle: {
+            center: {
+              latitude: location.lat,
+              longitude: location.lng
+            },
+            radius: 5000.0 // meters
+          }
+        };
+      }
+
+      const response = await axios.post(url, requestBody, {
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': apiKey,
+          'X-Goog-FieldMask': 'places.id,places.displayName,places.formattedAddress,places.location,places.types'
+        }
+      });
+
+      if (!response.data || !response.data.places) {
+        throw new Error('Invalid response from Google Places API');
+      }
+
+      // Transform Google Places API (New) data to our format
+      const places = response.data.places.map(place => ({
+        name: place.displayName?.text || 'Unknown',
+        address: place.formattedAddress || '',
+        latitude: place.location?.latitude || 0,
+        longitude: place.location?.longitude || 0,
+        source_name: 'google_places_new',
+        source_id: place.id || '',
+        is_official: true
+      }));
+
+      return {
+        success: true,
+        data: places
+      };
+    } catch (error) {
+      // Fallback to old Places API if new API fails
+      if (error.response?.status === 404 || error.message.includes('Invalid')) {
+        return this.searchFromGoogleAPILegacy(query, location);
+      }
+      throw new Error(`Failed to search Google API: ${error.message}`);
+    }
+  }
+
+  // Fallback: Search using legacy Places API (Text Search)
+  async searchFromGoogleAPILegacy(query, location = null) {
     try {
       const apiKey = process.env.GOOGLE_MAPS_API_KEY;
       if (!apiKey) {
