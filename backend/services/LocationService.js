@@ -3,10 +3,50 @@ const userRepository = require('../repositories/UserRepository');
 const axios = require('axios');
 
 class LocationService {
-  // Search locations with filters
+  // Search locations with filters (Smart Search: DB + Google API)
   async searchLocations(filters) {
     try {
-      const locations = await locationRepository.findAll(filters);
+      // 1. Initial fetch from local DB
+      let locations = await locationRepository.findAll(filters);
+
+      // 2. If searching by Bounding Box, we also want to trigger Google API fetch
+      // We calculate the center point and an approximate radius to keep the "Smart Search" feature working
+      if (filters.swLat && filters.neLat && filters.swLng && filters.neLng) {
+        const centerLat = (filters.swLat + filters.neLat) / 2;
+        const centerLng = (filters.swLng + filters.neLng) / 2;
+
+        // Calculate radius (distance from center to corner) in km
+        // Using simplified euclidean distance for small areas is acceptable
+        // 1 degree lat ~= 111km
+        const latRadius = (filters.neLat - filters.swLat) * 111 / 2;
+        const lngRadius = (filters.neLng - filters.swLng) * 111 * Math.cos(centerLat * Math.PI / 180) / 2;
+        const radiusKm = Math.sqrt(latRadius * latRadius + lngRadius * lngRadius);
+
+        // Only fetch if radius is reasonable (e.g. < 5km) to avoid spamming API when zoomed out too far
+        if (radiusKm < 5) {
+          try {
+            await this.fetchAndSaveGoogleNearby(centerLat, centerLng, radiusKm);
+            // Re-fetch from DB
+            locations = await locationRepository.findAll(filters);
+          } catch (e) {
+            console.error('Bound-based Google Fetch failed', e.message);
+          }
+        }
+      }
+      // Legacy support: radius search
+      else if (filters.lat && filters.lng && filters.radius) {
+        try {
+          // Check if we need to fetch from Google (optimization: could check a cache key or timestamp here)
+          await this.fetchAndSaveGoogleNearby(filters.lat, filters.lng, filters.radius);
+
+          // 3. Re-fetch from DB to include newly added locations
+          locations = await locationRepository.findAll(filters);
+        } catch (googleError) {
+          console.error('Background Google Fetch Failed:', googleError.message);
+          // Don't fail the request, just return what we have in DB
+        }
+      }
+
       return {
         success: true,
         data: locations,
@@ -14,6 +54,39 @@ class LocationService {
       };
     } catch (error) {
       throw new Error(`Failed to search locations: ${error.message}`);
+    }
+  }
+
+  // Helper: Fetch from Google Places Nearby and Save to DB
+  async fetchAndSaveGoogleNearby(lat, lng, radius) {
+    const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+    if (!apiKey) return;
+
+    // Use nearbysearch for better local results than textsearch
+    const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${Math.min(radius * 1000, 5000)}&type=point_of_interest&keyword=toilet&key=${apiKey}`;
+
+    const response = await axios.get(url);
+
+    if (response.data.status === 'OK') {
+      const promises = response.data.results.map(place => {
+        const placeData = {
+          name: place.name,
+          address: place.vicinity || place.formatted_address,
+          latitude: place.geometry.location.lat,
+          longitude: place.geometry.location.lng,
+          source_name: 'google_places',
+          source_id: place.place_id,
+          is_official: true,
+          place_types: place.types,
+          rating: place.rating,
+          user_ratings_total: place.user_ratings_total,
+          opening_hours: place.opening_hours
+        };
+        // Upsert silently
+        return locationRepository.upsertFromBase(placeData).catch(err => console.error('Upsert failed:', err.message));
+      });
+
+      await Promise.all(promises);
     }
   }
 
@@ -46,7 +119,7 @@ class LocationService {
 
       // Use Places API (New) - Text Search endpoint
       const url = `https://places.googleapis.com/v1/places:searchText`;
-      
+
       const requestBody = {
         textQuery: query,
         maxResultCount: 20,
@@ -112,13 +185,13 @@ class LocationService {
       }
 
       let url = `https://maps.googleapis.com/maps/api/place/textsearch/json?query=${encodeURIComponent(query)}&key=${apiKey}&type=establishment`;
-      
+
       if (location) {
         url += `&location=${location.lat},${location.lng}&radius=5000`;
       }
 
       const response = await axios.get(url);
-      
+
       if (response.data.status !== 'OK') {
         throw new Error(`Google API error: ${response.data.status}`);
       }
@@ -131,7 +204,11 @@ class LocationService {
         longitude: place.geometry.location.lng,
         source_name: 'google_places',
         source_id: place.place_id,
-        is_official: true
+        is_official: true,
+        place_types: place.types,
+        rating: place.rating,
+        user_ratings_total: place.user_ratings_total,
+        opening_hours: place.opening_hours // Note: text search might not return full opening hours, might need place details
       }));
 
       return {
@@ -146,7 +223,7 @@ class LocationService {
   // Import location from Google API
   async importFromGoogleAPI(placeData) {
     try {
-      const locationId = await locationRepository.createFromBase(placeData);
+      const locationId = await locationRepository.upsertFromBase(placeData);
       return {
         success: true,
         data: { location_id: locationId },
@@ -157,31 +234,143 @@ class LocationService {
     }
   }
 
-  // Create location from UGC
+  // Create location from UGC (with Deduplication & Merging)
   async createFromUGC(ugcData) {
     try {
-      // Verify user exists
+      // 0. Verify user exists
       const user = await userRepository.findById(ugcData.user_id);
       if (!user) {
+        return { success: false, message: 'User not found' };
+      }
+
+      // 1. Check for Duplicates (Matching Logic)
+      // Strategy: Search in a slightly larger radius (e.g. 50m) to be safe, then filter precisely
+      const nearbyFilter = {
+        lat: ugcData.latitude,
+        lng: ugcData.longitude,
+        radius: 0.05 // 50 meters
+      };
+
+      const nearbyLocations = await locationRepository.findAll(nearbyFilter);
+      let duplicate = null;
+
+      for (const loc of nearbyLocations) {
+        const dist = this.haversineDistance(ugcData.latitude, ugcData.longitude, loc.latitude, loc.longitude);
+
+        // Check 1: Distance <= 20 meters
+        if (dist <= 0.02) {
+          // Check 2: Name Similarity > 70%
+          const nameSimilarity = this.calculateNameSimilarity(ugcData.name, loc.display_name);
+          if (nameSimilarity >= 0.7) {
+            duplicate = loc;
+            break;
+          }
+        }
+      }
+
+      // 2. Merging Strategy
+      if (duplicate) {
+        // Merge Logic: Update amenities and increment trust
+        console.log(`Duplicate found: merging UGC with existing location ID ${duplicate.location_id}`);
+
+        // Update Amenities
+        // Note: ugcData.amenities might be partial, but we assume it's the latest info
+        if (ugcData.amenities) {
+          await locationRepository.updateAmenities(duplicate.location_id, {
+            ...ugcData.amenities,
+            gender_type: ugcData.gender_type
+          });
+        }
+
+        // Increment verification/trust score
+        await locationRepository.incrementVerificationScore(duplicate.location_id, 0.1);
+
+        // Allow logging the contribution without creating new location
+        // (Optional: You might want to log this into specific CONTRIBUTIONS_LOG table)
+
         return {
-          success: false,
-          message: 'User not found'
+          success: true,
+          data: { location_id: duplicate.location_id, is_merged: true },
+          message: 'Location already exists. Your information has been merged to update it!'
         };
       }
 
+      // 3. No Duplicate -> Create New
       const locationId = await locationRepository.createFromUGC(ugcData);
-      
+
+      // Save Amenities for new location
+      if (ugcData.amenities) {
+        await locationRepository.updateAmenities(locationId, {
+          ...ugcData.amenities,
+          gender_type: ugcData.gender_type
+        });
+      }
+
       // Log contribution
       await userRepository.incrementContribution(ugcData.user_id);
 
       return {
         success: true,
-        data: { location_id: locationId },
+        data: { location_id: locationId, is_merged: false },
         message: 'Location created successfully'
       };
     } catch (error) {
       throw new Error(`Failed to create location: ${error.message}`);
     }
+  }
+
+  // Helper: Haversine Distance (in km)
+  haversineDistance(lat1, lon1, lat2, lon2) {
+    const R = 6371; // km
+    const dLat = (lat2 - lat1) * Math.PI / 180;
+    const dLon = (lon2 - lon1) * Math.PI / 180;
+    const a = Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+    return R * c;
+  }
+
+  // Helper: Name Similarity (Levenshtein based)
+  calculateNameSimilarity(s1, s2) {
+    const longer = s1.length > s2.length ? s1 : s2;
+    const shorter = s1.length > s2.length ? s2 : s1;
+    if (longer.length === 0) return 1.0;
+
+    const editDistance = this.levenshtein(longer.toLowerCase(), shorter.toLowerCase());
+    return (longer.length - editDistance) / parseFloat(longer.length);
+  }
+
+  levenshtein(a, b) {
+    const matrix = [];
+    let i, j;
+
+    if (a.length === 0) return b.length;
+    if (b.length === 0) return a.length;
+
+    for (i = 0; i <= b.length; i++) {
+      matrix[i] = [i];
+    }
+    for (j = 0; j <= a.length; j++) {
+      matrix[0][j] = j;
+    }
+
+    for (i = 1; i <= b.length; i++) {
+      for (j = 1; j <= a.length; j++) {
+        if (b.charAt(i - 1) == a.charAt(j - 1)) {
+          matrix[i][j] = matrix[i - 1][j - 1];
+        } else {
+          matrix[i][j] = Math.min(
+            matrix[i - 1][j - 1] + 1, // substitution
+            Math.min(
+              matrix[i][j - 1] + 1, // insertion
+              matrix[i - 1][j] + 1  // deletion
+            )
+          );
+        }
+      }
+    }
+    return matrix[b.length][a.length];
   }
 
   // Update location

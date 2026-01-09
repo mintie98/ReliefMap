@@ -9,8 +9,8 @@ export class Location {
     this.ugc_id = data.ugc_id || null;
     this.display_name = data.display_name || '';
     this.address = data.address || '';
-    this.latitude = data.latitude || 0;
-    this.longitude = data.longitude || 0;
+    this.latitude = parseFloat(data.latitude) || 0;
+    this.longitude = parseFloat(data.longitude) || 0;
     this.source_type = data.source_type || 'user'; // 'api', 'admin', 'user'
     this.verification_status = data.verification_status || 'red'; // 'red', 'yellow', 'green'
     this.verification_score = data.verification_score || 0;
@@ -19,7 +19,7 @@ export class Location {
     this.creator_user_id = data.creator_user_id || null;
     this.creator_trust_score = data.creator_trust_score || null;
     this.created_at = data.created_at || null;
-    
+
     // Amenities
     this.western_style = data.western_style || false;
     this.japanese_style = data.japanese_style || false;
@@ -55,7 +55,7 @@ export class Location {
     const R = 6371; // Earth's radius in km
     const dLat = this.toRad(this.latitude - lat);
     const dLng = this.toRad(this.longitude - lng);
-    const a = 
+    const a =
       Math.sin(dLat / 2) * Math.sin(dLat / 2) +
       Math.cos(this.toRad(lat)) * Math.cos(this.toRad(this.latitude)) *
       Math.sin(dLng / 2) * Math.sin(dLng / 2);

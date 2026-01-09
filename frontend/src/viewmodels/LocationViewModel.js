@@ -17,7 +17,11 @@ export function useLocationViewModel() {
     lng: null,
     radius: 5, // km
     verificationStatus: null,
-    sourceType: null
+    sourceType: null,
+    swLat: null,
+    swLng: null,
+    neLat: null,
+    neLng: null
   });
   const searchTerm = ref('');
 
@@ -55,7 +59,7 @@ export function useLocationViewModel() {
     try {
       const searchFilters = { ...filters, ...newFilters };
       const result = await locationService.searchLocations(searchFilters);
-      
+
       if (result.success) {
         locations.value = result.data;
       } else {
@@ -76,7 +80,7 @@ export function useLocationViewModel() {
 
     try {
       const result = await locationService.getLocationById(locationId);
-      
+
       if (result.success && result.data) {
         currentLocation.value = result.data;
       } else {
@@ -103,7 +107,7 @@ export function useLocationViewModel() {
 
     try {
       const result = await locationService.searchByText(term);
-      
+
       if (result.success) {
         locations.value = result.data;
       } else {
@@ -139,7 +143,7 @@ export function useLocationViewModel() {
 
     try {
       const result = await locationService.createFromUGC(ugcData);
-      
+
       if (result.success) {
         // Reload locations
         await loadLocations();
@@ -166,6 +170,10 @@ export function useLocationViewModel() {
     filters.radius = 5;
     filters.verificationStatus = null;
     filters.sourceType = null;
+    filters.swLat = null;
+    filters.swLng = null;
+    filters.neLat = null;
+    filters.neLng = null;
   };
 
   const clearError = () => {
@@ -180,11 +188,11 @@ export function useLocationViewModel() {
     error,
     filters,
     searchTerm,
-    
+
     // Computed
     filteredLocations,
     verifiedLocations,
-    
+
     // Methods
     loadLocations,
     loadLocationById,

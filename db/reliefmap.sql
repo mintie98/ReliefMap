@@ -64,6 +64,7 @@ CREATE TABLE LOCATIONS_MERGED (
     address VARCHAR(255) NULL COMMENT '住所',
     latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
     longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
+    geolocation POINT NOT NULL, -- Spatial Index
     source_type ENUM('api', 'admin', 'user') NOT NULL COMMENT 'データ種別',
     verification_status ENUM('red', 'yellow', 'green') NOT NULL COMMENT '検証状態',
     verification_score FLOAT NOT NULL COMMENT '検証スコア',
@@ -76,7 +77,8 @@ CREATE TABLE LOCATIONS_MERGED (
     PRIMARY KEY (location_id),
     FOREIGN KEY (base_id) REFERENCES LOCATIONS_BASE(base_id) ON DELETE SET NULL,
     FOREIGN KEY (ugc_id) REFERENCES LOCATIONS_UGC(ugc_id) ON DELETE SET NULL,
-    INDEX idx_lat_lon (latitude, longitude)
+    INDEX idx_lat_lon (latitude, longitude),
+    SPATIAL INDEX(geolocation)
 ) COMMENT='統合位置情報テーブル';
 
 -- -----------------------------------------------------

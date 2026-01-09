@@ -7,6 +7,10 @@ class LocationController {
         lat: parseFloat(req.query.lat),
         lng: parseFloat(req.query.lng),
         radius: parseFloat(req.query.radius), // in km
+        swLat: req.query.swLat ? parseFloat(req.query.swLat) : undefined,
+        swLng: req.query.swLng ? parseFloat(req.query.swLng) : undefined,
+        neLat: req.query.neLat ? parseFloat(req.query.neLat) : undefined,
+        neLng: req.query.neLng ? parseFloat(req.query.neLng) : undefined,
         verificationStatus: req.query.verification_status,
         sourceType: req.query.source_type
       };
@@ -22,11 +26,11 @@ class LocationController {
     try {
       const { id } = req.params;
       const result = await locationService.getLocationById(id);
-      
+
       if (!result.success) {
         return res.status(404).json(result);
       }
-      
+
       res.json(result);
     } catch (error) {
       next(error);
@@ -36,7 +40,7 @@ class LocationController {
   async searchGoogleAPI(req, res, next) {
     try {
       const { query, lat, lng } = req.query;
-      
+
       if (!query) {
         return res.status(400).json({
           success: false,
@@ -55,7 +59,7 @@ class LocationController {
   async importFromGoogle(req, res, next) {
     try {
       const placeData = req.body;
-      
+
       if (!placeData.name || !placeData.latitude || !placeData.longitude) {
         return res.status(400).json({
           success: false,
@@ -97,7 +101,7 @@ class LocationController {
       const updateData = req.body;
 
       const result = await locationService.updateLocation(id, updateData);
-      
+
       if (!result.success) {
         return res.status(404).json(result);
       }
@@ -112,7 +116,7 @@ class LocationController {
     try {
       const { id } = req.params;
       const result = await locationService.deleteLocation(id);
-      
+
       if (!result.success) {
         return res.status(404).json(result);
       }
@@ -126,7 +130,7 @@ class LocationController {
   async searchByText(req, res, next) {
     try {
       const { q } = req.query;
-      
+
       if (!q) {
         return res.status(400).json({
           success: false,

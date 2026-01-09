@@ -8,12 +8,18 @@ class LocationService {
   async searchLocations(filters = {}) {
     try {
       const params = new URLSearchParams();
-      
+
       if (filters.lat) params.append('lat', filters.lat);
       if (filters.lng) params.append('lng', filters.lng);
       if (filters.radius) params.append('radius', filters.radius);
       if (filters.verificationStatus) params.append('verification_status', filters.verificationStatus);
       if (filters.sourceType) params.append('source_type', filters.sourceType);
+
+      // Bounding box params
+      if (filters.swLat) params.append('swLat', filters.swLat);
+      if (filters.swLng) params.append('swLng', filters.swLng);
+      if (filters.neLat) params.append('neLat', filters.neLat);
+      if (filters.neLng) params.append('neLng', filters.neLng);
 
       const response = await apiClient.get(`/locations/search?${params.toString()}`);
       return {

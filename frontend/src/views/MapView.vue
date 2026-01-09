@@ -39,7 +39,7 @@
               <span class="menu-icon">🔍</span>
               Refine
             </button>
-            <button class="menu-btn">
+            <button class="menu-btn" @click="openAddLocation">
               <span class="menu-icon">➕</span>
               Add new toilet
             </button>
@@ -61,6 +61,13 @@
       v-if="showRefine" 
       @close="showRefine = false"
       @search="handleRefineSearch"
+    />
+
+    <!-- Add Location Modal -->
+    <AddLocationModal 
+      v-if="showAddModal" 
+      @close="showAddModal = false"
+      @added="handleLocationAdded"
     />
 
     <!-- Main Map Area -->
@@ -87,7 +94,11 @@
           <div class="detail-header">
             <h2>{{ selectedLocation.display_name }}</h2>
             <div class="detail-scores" v-if="selectedLocation.verification_score">
-              <span class="score-badge">Trust Score: {{ selectedLocation.verification_score }}</span>
+              <span class="score-badge">Trust: {{ selectedLocation.verification_score.toFixed(1) }}</span>
+              <span v-if="selectedLocation.source_type === 'api'" class="source-badge">
+                Source: Google Maps {{ selectedLocation.verification_score > 0.5 ? '| Updated by ReliefMap' : '' }}
+              </span>
+              <span v-else class="source-badge">Source: Community</span>
             </div>
           </div>
           <div class="detail-body scroller">
@@ -108,11 +119,16 @@ import { ref, onMounted, watch, computed } from 'vue';
 import { useLocationViewModel } from '../viewmodels/LocationViewModel';
 import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
 import RefineFilter from '../components/RefineFilter.vue';
+import AddLocationModal from '../components/AddLocationModal.vue';
 import apiClient from '../services/api';
+
+import pinGreen from '../assets/toiletPin/green.png';
+import pinYellow from '../assets/toiletPin/yellow.png';
+import pinRed from '../assets/toiletPin/red.png';
 
 export default {
   name: 'MapView',
-  components: { RefineFilter },
+  components: { RefineFilter, AddLocationModal },
   setup() {
     const mapContainer = ref(null);
     const isMenuOpen = ref(false);
@@ -139,6 +155,7 @@ export default {
     });
 
     const initMap = () => {
+      console.log('initMap called');
       if (!window.google || !mapContainer.value) return;
       const defaultCenter = { lat: 35.6762, lng: 139.6503 };
       
@@ -155,15 +172,37 @@ export default {
         ]
       });
 
+      // Add listener for bounding box search
+      map.addListener('idle', () => {
+        const bounds = map.getBounds();
+        console.log('Map idle, bounds:', bounds);
+        if (bounds) {
+          const ne = bounds.getNorthEast();
+          const sw = bounds.getSouthWest();
+          console.log('Updating filters with bounds:', sw.lat(), ne.lat());
+          updateFilters({
+            swLat: sw.lat(),
+            swLng: sw.lng(),
+            neLat: ne.lat(),
+            neLng: ne.lng()
+          });
+          loadLocations();
+        }
+      });
+
       if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
           (pos) => {
+            console.log('Geolocation success:', pos.coords);
             const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
             map.setCenter(loc);
             updateFilters({ lat: loc.lat, lng: loc.lng });
             loadLocations();
           },
-          () => loadLocations()
+          (err) => {
+            console.error('Geolocation error:', err);
+            loadLocations();
+          }
         );
       } else {
         loadLocations();
@@ -171,7 +210,11 @@ export default {
     };
 
     const updateMarkers = () => {
-      if (!map) return;
+      console.log('updateMarkers called. Locations:', filteredLocations.value.length);
+      if (!map) {
+         console.warn('Map not initialized yet');
+         return;
+      }
       markers.forEach(m => m.setMap(null));
       markers = [];
 
@@ -181,24 +224,29 @@ export default {
           map: map,
           title: loc.display_name,
           icon: {
-            path: window.google.maps.SymbolPath.CIRCLE,
-            scale: 7,
-            fillColor: getStatusColor(loc),
-            fillOpacity: 1,
-            strokeWeight: 2,
-            strokeColor: "#FFFFFF"
+            url: getPinIcon(loc),
+            scaledSize: new window.google.maps.Size(45, 60), 
+            anchor: new window.google.maps.Point(22.5, 60)
           }
         });
         marker.addListener('click', () => focusLocation(loc));
         markers.push(marker);
       });
+      console.log('Markers created:', markers.length);
     };
 
-    const getStatusColor = (loc) => {
-        if (loc.verification_status === 'verified') return '#10B981'; // Green
-        if (loc.source_type === 'user') return '#F59E0B'; // Yellow/Orange
-        if (loc.verification_status === 'unverified') return '#EF4444'; // Red
-        return '#008080'; // Default Teal
+    const getPinIcon = (loc) => {
+        // API locations are verified (Green)
+        if (loc.source_type === 'api') return pinGreen;
+        
+        // Check verification status
+        const status = loc.verification_status;
+        if (status === 'verified' || status === 'green') return pinGreen;
+        if (status === 'yellow' || status === 'in_review') return pinYellow;
+        if (status === 'unverified' || status === 'red') return pinRed;
+        
+        // Fallback
+        return pinYellow; 
     };
 
     const focusLocation = (loc) => {
@@ -247,20 +295,33 @@ export default {
       e.target.value = '';
     };
 
+    const showAddModal = ref(false);
+
     const openRefine = () => {
       isMenuOpen.value = false; // Close drawer
       showRefine.value = true;  // Open refine
     };
 
+    const openAddLocation = () => {
+        isMenuOpen.value = false;
+        showAddModal.value = true;
+    };
+
+    const handleLocationAdded = () => {
+        // Refresh map or focus on new location
+        loadLocations();
+    };
+
     const handleRefineSearch = (filterData) => {
       showRefine.value = false;
       console.log('Search with filters:', filterData);
-      // Map refined filters to ViewModel updateFilters here
-      // Example:
+      
       const newFilters = {};
-      if (filterData.status.verified) newFilters.verificationStatus = 'verified';
-      if (filterData.status.unverified) newFilters.verificationStatus = 'unverified';
-      // ... map other features
+      if (filterData.status.verified) newFilters.verificationStatus = 'green';
+      else if (filterData.status.inReview) newFilters.verificationStatus = 'yellow'; 
+      else if (filterData.status.unverified) newFilters.verificationStatus = 'red';
+      else newFilters.verificationStatus = null; 
+      
       updateFilters(newFilters);
       loadLocations();
     };
@@ -300,8 +361,11 @@ export default {
       zoomOut,
       searchGooglePlaces,
       showRefine,
+      showAddModal,
       openRefine,
-      handleRefineSearch
+      openAddLocation,
+      handleRefineSearch,
+      handleLocationAdded
     };
   }
 };
@@ -534,6 +598,15 @@ export default {
 }
 
 /* Transitions */
+.source-badge {
+  background-color: #f1f5f9;
+  color: #64748b;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  margin-left: 0.5rem;
+}
+
 .slide-fade-enter-active,
 .slide-fade-leave-active {
   transition: opacity 0.3s ease;
