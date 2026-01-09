@@ -1,0 +1,176 @@
+<template>
+  <header class="app-header">
+    <div class="header-content">
+      <div class="brand">
+        <router-link to="/" class="brand-link">
+          <h1>ReliefMap</h1>
+        </router-link>
+      </div>
+
+      <div class="nav-actions">
+        <UserMenu />
+      </div>
+    </div>
+  </header>
+</template>
+
+<script>
+import UserMenu from './UserMenu.vue';
+
+export default {
+  name: 'AppHeader',
+  components: {
+    UserMenu
+  }
+};
+</script>
+
+<style scoped>
+.app-header {
+  background-color: #1976D2; /* Solid Blue matched from original */
+  color: white;
+  padding: 0.8rem 2rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+}
+
+.header-content {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.brand-link {
+  text-decoration: none;
+  color: inherit;
+}
+
+.brand h1 {
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 700;
+  color: inherit;
+}
+
+.nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.login-btn {
+  text-decoration: none;
+  padding: 0.5rem 1.5rem;
+  font-size: 0.95rem;
+}
+
+/* User Menu Styles */
+.user-profile-menu {
+  position: relative;
+  cursor: pointer;
+}
+
+.user-trigger {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.5rem;
+  border-radius: 8px;
+  transition: background 0.2s;
+}
+
+.user-trigger:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.avatar {
+  width: 35px;
+  height: 35px;
+  background-color: var(--primary-color, #008080);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(255,255,255,0.2);
+}
+
+.avatar-icon {
+  font-size: 1.2rem;
+}
+
+.user-name {
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.dropdown-arrow {
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  width: 200px;
+  background: white;
+  color: #333;
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 0.5rem 0;
+  overflow: hidden;
+  transform-origin: top right;
+}
+
+.dropdown-item {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.8rem 1.2rem;
+  text-decoration: none;
+  color: #333;
+  width: 100%;
+  text-align: left;
+  border: none;
+  background: none;
+  cursor: pointer;
+  font-size: 0.95rem;
+  transition: background 0.2s;
+}
+
+.dropdown-item:hover {
+  background-color: #f7f9fc;
+  color: var(--primary-color);
+}
+
+.dropdown-divider {
+  height: 1px;
+  background-color: #eee;
+  margin: 0.5rem 0;
+}
+
+.logout-item:hover {
+  background-color: #fff1f2; /* Light red/pink */
+  color: #e11d48;
+}
+
+.icon {
+  width: 20px;
+  text-align: center;
+}
+
+/* Transitions */
+.fade-enter-active, .fade-leave-active {
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.fade-enter-from, .fade-leave-to {
+  opacity: 0;
+  transform: translateY(-10px);
+}
+</style>

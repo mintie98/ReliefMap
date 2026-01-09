@@ -15,31 +15,7 @@
       
       <div class="header-right">
         <div class="user-profile-container">
-          <div class="user-profile" @click="toggleUserMenu">
-            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-              <circle cx="12" cy="7" r="4"></circle>
-            </svg>
-            <span class="username">{{ isAuthenticated ? 'User' : 'Guest' }}</span>
-            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="6 9 12 15 18 9"></polyline>
-            </svg>
-          </div>
-          
-          <!-- Auth Dropdown -->
-          <transition name="fade">
-            <div v-if="isUserMenuOpen" class="auth-dropdown">
-              <template v-if="!isAuthenticated">
-                <button class="dropdown-item" @click="navigateToLogin">
-                  Login
-                </button>
-              </template>
-              <template v-else>
-                 <button class="dropdown-item">Profile</button>
-                 <button class="dropdown-item" @click="handleLogout">Logout</button>
-              </template>
-            </div>
-          </transition>
+          <UserMenu />
         </div>
       </div>
     </header>
@@ -48,37 +24,55 @@
     <transition name="slide-fade">
       <div v-if="isMenuOpen" class="menu-overlay" @click.self="isMenuOpen = false">
         <div class="menu-drawer">
-          <div class="drawer-header">
-             <button class="close-menu-btn" @click="isMenuOpen = false">×</button>
-          </div>
-          <div class="menu-items">
-            <button class="menu-btn" @click="openRefine">
-              <span class="menu-icon">🔍</span>
-              Refine
-            </button>
-            <button class="menu-btn" @click="openAddLocation">
-              <span class="menu-icon">➕</span>
-              Add new toilet
-            </button>
-            <button class="menu-btn">
-              <span class="menu-icon">📝</span>
-              Review toilet
-            </button>
-            <button class="menu-btn">
-              <span class="menu-icon">❓</span>
-              FAQ
-            </button>
-          </div>
+          <!-- Show Refine Filter or Menu Items -->
+          <template v-if="!showRefine">
+            <div class="drawer-header">
+              <button class="back-home-btn" @click="goHome">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+                  <polyline points="9 22 9 12 15 12 15 22"></polyline>
+                </svg>
+                Back to Home
+              </button>
+               <button class="close-menu-btn" @click="isMenuOpen = false">
+                 <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                   <polyline points="11 17 6 12 11 7"></polyline>
+                   <polyline points="18 17 13 12 18 7"></polyline>
+                 </svg>
+               </button>
+            </div>
+            <div class="menu-items">
+              <button class="menu-btn" @click="openRefine">
+                <span class="menu-icon">🔍</span>
+                Refine
+              </button>
+              <button class="menu-btn" @click="openAddLocation">
+                <span class="menu-icon">➕</span>
+                Add new toilet
+              </button>
+              <button class="menu-btn">
+                <span class="menu-icon">📝</span>
+                Review toilet
+              </button>
+              <button class="menu-btn">
+                <span class="menu-icon">❓</span>
+                FAQ
+              </button>
+            </div>
+          </template>
+          
+          <!-- Refine Filter Inside Sidebar -->
+          <template v-else>
+            <RefineFilter 
+              @close="showRefine = false"
+              @search="handleRefineSearch"
+              :sidebar-mode="true"
+            />
+          </template>
         </div>
       </div>
     </transition>
 
-    <!-- Refine Filter Full Screen -->
-    <RefineFilter 
-      v-if="showRefine" 
-      @close="showRefine = false"
-      @search="handleRefineSearch"
-    />
 
     <!-- Add Location Modal -->
     <AddLocationModal 
@@ -137,6 +131,7 @@ import { useLocationViewModel } from '../viewmodels/LocationViewModel';
 import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
 import RefineFilter from '../components/RefineFilter.vue';
 import AddLocationModal from '../components/AddLocationModal.vue';
+import UserMenu from '../components/UserMenu.vue';
 import apiClient from '../services/api';
 import { useRouter } from 'vue-router'; // Import router
 
@@ -146,14 +141,14 @@ import pinRed from '../assets/toiletPin/red.png';
 
 export default {
   name: 'MapView',
-  components: { RefineFilter, AddLocationModal },
+  components: { RefineFilter, AddLocationModal, UserMenu },
   setup() {
     const mapContainer = ref(null);
     const isMenuOpen = ref(false);
     const showRefine = ref(false);
     // New Auth Refs
-    const isUserMenuOpen = ref(false);
-    const isAuthenticated = ref(false); // Mock auth state
+    // const isUserMenuOpen = ref(false); // Moved to UserMenu
+    // const isAuthenticated = ref(false); // Moved to UserMenu
 
     let map = null;
     let markers = [];
@@ -320,8 +315,8 @@ export default {
     const showAddModal = ref(false);
 
     const openRefine = () => {
-      isMenuOpen.value = false; // Close drawer
-      showRefine.value = true;  // Open refine
+      // Keep drawer open, just show refine view
+      showRefine.value = true;
     };
 
     const openAddLocation = () => {
@@ -348,14 +343,16 @@ export default {
       router.push('/');
     };
 
+    /* Moved to UserMenu 
     const handleLogout = () => {
       isAuthenticated.value = false;
       isUserMenuOpen.value = false;
       // In real app, clear tokens, etc.
-    };
+    }; 
+    */
 
     const handleRefineSearch = (filterData) => {
-      showRefine.value = false;
+      showRefine.value = false; // Close refine view, back to menu
       console.log('Search with filters:', filterData);
       
       const newFilters = {};
@@ -408,11 +405,11 @@ export default {
       openAddLocation,
       handleRefineSearch,
       handleLocationAdded,
-      isUserMenuOpen,
-      isAuthenticated,
-      toggleUserMenu,
+      // isUserMenuOpen,
+      // isAuthenticated,
+      // toggleUserMenu,
       navigateToLogin,
-      handleLogout,
+      // handleLogout,
       goHome
     };
   }
@@ -583,12 +580,12 @@ export default {
 /* Menu Drawer */
 .menu-overlay {
   position: fixed;
-  top: 0;
+  top: 60px; /* Start below header */
   left: 0;
   width: 100vw;
-  height: 100vh;
+  height: calc(100vh - 60px); /* Adjust height */
   background: rgba(0,0,0,0.5);
-  z-index: 1000;
+  z-index: 999; /* Below header (1000) */
   display: flex;
 }
 
@@ -596,30 +593,65 @@ export default {
   width: 300px;
   height: 100%;
   background: white;
-  padding: 2rem;
+  padding: 0;
   position: relative;
   box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+  transform: translateX(0);
 }
 
 .drawer-header {
   display: flex;
-  justify-content: flex-end;
-  margin-bottom: 2rem;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid #E2E8F0;
+  background-color: #f8f9fa;
+}
+
+.back-home-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: none;
+  border: none;
+  font-size: 1rem;
+  font-weight: 600;
+  color: #1976D2;
+  cursor: pointer;
+  padding: 0.5rem;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.back-home-btn:hover {
+  background-color: rgba(25, 118, 210, 0.1);
 }
 
 .close-menu-btn {
   background: none;
   border: none;
-  font-size: 2rem;
   cursor: pointer;
   color: #555;
   line-height: 1;
+  padding: 0.5rem;
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 6px;
+  transition: background 0.2s;
+}
+
+.close-menu-btn:hover {
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .menu-items {
   display: flex;
   flex-direction: column;
-  gap: 1rem;
+  gap: 0.5rem;
+  padding: 1rem;
 }
 
 .menu-btn {
@@ -657,7 +689,11 @@ export default {
   margin-left: 0.5rem;
 }
 
-.slide-fade-enter-active,
+/* Transitions */
+.slide-fade-enter-active {
+  transition: opacity 0.3s ease;
+}
+
 .slide-fade-leave-active {
   transition: opacity 0.3s ease;
 }
@@ -665,6 +701,32 @@ export default {
 .slide-fade-enter-from,
 .slide-fade-leave-to {
   opacity: 0;
+}
+
+.slide-fade-enter-active .menu-drawer {
+  animation: slideIn 0.3s ease;
+}
+
+.slide-fade-leave-active .menu-drawer {
+  animation: slideOut 0.3s ease;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOut {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100%);
+  }
 }
 
 /* User Profile & Dropdown */

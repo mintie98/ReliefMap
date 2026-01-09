@@ -1,17 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <!-- Header -->
-    <header class="dashboard-header">
-      <div class="container header-content">
-        <h1 class="logo-text">Relief Map</h1>
-        <div class="user-icon" @click="navigateToLogin">
-          <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-        </div>
-      </div>
-    </header>
+    <AppHeader />
 
 
 
@@ -91,11 +80,14 @@
 
 <script>
 import { useRouter } from 'vue-router';
-import { ref } from 'vue';
 import japanMapImg from '../assets/japan_map.png';
+import AppHeader from '../components/AppHeader.vue';
 
 export default {
   name: 'HomeView',
+  components: {
+    AppHeader
+  },
   setup() {
     const router = useRouter();
     const navigateToMap = () => {
@@ -107,7 +99,6 @@ export default {
 
     return {
       navigateToMap,
-      navigateToLogin,
       japanMapImg
     };
   }
@@ -122,8 +113,6 @@ export default {
   flex-direction: column;
 }
 
-/* Header */
-/* Header */
 .dashboard-header {
   height: 60px;
   background-color: #1976D2; /* Solid Blue matched from image */
@@ -288,13 +277,7 @@ export default {
   object-fit: contain;
 }
 
-.map-attribution {
-  position: absolute;
-  bottom: 0;
-  left: 0;
-  font-size: 0.75rem;
-  color: #999;
-}
+
 
 /* Right Column: Grid */
 .categories-grid-container {

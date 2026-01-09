@@ -1,5 +1,5 @@
 <template>
-  <div class="refine-filter-overlay">
+  <div class="refine-filter-overlay" :class="{ 'sidebar-mode': sidebarMode }">
     <!-- Header -->
     <div class="filter-header">
       <button class="btn-back" @click="$emit('close')">
@@ -89,6 +89,12 @@ import { reactive } from 'vue';
 
 export default {
   name: 'RefineFilter',
+  props: {
+    sidebarMode: {
+      type: Boolean,
+      default: false
+    }
+  },
   emits: ['close', 'search'],
   setup(props, { emit }) {
     const filters = reactive({
@@ -149,6 +155,14 @@ export default {
   flex-direction: column;
 }
 
+/* Sidebar Mode Styles */
+.refine-filter-overlay.sidebar-mode {
+  position: static;
+  width: 100%;
+  height: 100%;
+  z-index: auto;
+}
+
 /* Header */
 .filter-header {
   display: flex;
@@ -193,17 +207,21 @@ export default {
 /* Content */
 .filter-content {
   flex: 1;
-  padding: 1.5rem;
+  padding: 1rem;
   overflow-y: auto;
+}
+
+.filter-section {
+  margin-bottom: 1rem;
 }
 
 .section-label {
   font-weight: 700;
-  font-size: 1rem;
-  margin-bottom: 1rem;
+  font-size: 0.9rem;
+  margin-bottom: 0.6rem;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.4rem;
 }
 
 .icon {
@@ -213,16 +231,17 @@ export default {
 .divider {
   border: none;
   border-top: 1px solid #eee;
-  margin: 1.5rem 0;
+  margin: 0.8rem 0;
 }
 
 /* Options */
 .btn-option {
   background-color: #E0E0E0;
   border: none;
-  padding: 0.5rem 1.5rem;
+  padding: 0.4rem 1rem;
   border-radius: 6px;
   font-weight: 600;
+  font-size: 0.85rem;
   color: #333;
   cursor: pointer;
 }
@@ -236,21 +255,23 @@ export default {
 .checkbox-group {
   display: flex;
   justify-content: space-between;
-  gap: 1rem;
+  gap: 0.5rem;
+  flex-wrap: wrap;
 }
 
 .checkbox-item {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.3rem;
   font-weight: 600;
+  font-size: 0.85rem;
   cursor: pointer;
   position: relative;
 }
 
 .checkbox-item input {
-  width: 20px;
-  height: 20px;
+  width: 18px;
+  height: 18px;
   cursor: pointer;
   border: 2px solid #333;
 }
@@ -263,15 +284,16 @@ export default {
 .features-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 1rem;
+  gap: 0.6rem;
 }
 
 .btn-feature {
-  background-color: #E0E0E0; /* Default gray */
+  background-color: #E0E0E0;
   border: none;
-  padding: 1rem;
-  border-radius: 8px;
+  padding: 0.6rem 0.4rem;
+  border-radius: 6px;
   font-weight: 600;
+  font-size: 0.8rem;
   color: #333;
   cursor: pointer;
   transition: all 0.2s;
@@ -290,21 +312,22 @@ export default {
 
 /* Footer */
 .filter-footer {
-  padding: 1.5rem;
+  padding: 1rem;
   display: flex;
   justify-content: center;
   border-top: 1px solid #eee;
 }
 
 .btn-search {
-  background-color: #D6D6D6; /* Match image gray footer button */
-  color: #000;
-  width: 200px;
-  padding: 0.75rem;
+  background-color: #1976D2;
+  color: white;
+  width: 100%;
+  max-width: 180px;
+  padding: 0.6rem;
   border: none;
-  font-size: 1.1rem;
+  font-size: 1rem;
   font-weight: 700;
-  border-radius: 4px;
+  border-radius: 6px;
   cursor: pointer;
 }
 
