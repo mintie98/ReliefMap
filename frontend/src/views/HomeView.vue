@@ -4,7 +4,7 @@
     <header class="dashboard-header">
       <div class="container header-content">
         <h1 class="logo-text">Relief Map</h1>
-        <div class="user-icon">
+        <div class="user-icon" @click="navigateToLogin">
           <svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
             <circle cx="12" cy="7" r="4"></circle>
@@ -20,16 +20,8 @@
       <div class="split-layout">
         <!-- Left Column: Map Silhouette -->
         <div class="map-silhouette-container">
-          <svg viewBox="0 0 800 800" class="japan-map-svg" xmlns="http://www.w3.org/2000/svg">
-             <!-- Simplified Japan Silhouette Path Placeholder -->
-             <path d="M600 150 L650 120 L700 200 L650 250 L600 300 L580 350 L550 400 L500 500 L450 550 L350 580 L250 630 L150 700 L100 680 L150 600 L250 550 L350 500 L450 450 L500 400 L550 300 L600 200 Z" fill="black" />
-             <!-- Add pins -->
-             <circle cx="650" cy="180" r="8" fill="#F43F5E" stroke="white" stroke-width="2"/>
-             <circle cx="550" cy="350" r="8" fill="#F43F5E" stroke="white" stroke-width="2"/>
-             <circle cx="350" cy="550" r="8" fill="#F43F5E" stroke="white" stroke-width="2"/>
-             <circle cx="150" cy="650" r="8" fill="#F43F5E" stroke="white" stroke-width="2"/>
-          </svg>
-          <div class="map-attribution">mapPNG.com</div>
+          <img :src="japanMapImg" alt="Japan Map" class="japan-map-img" />
+          <!-- Pins could be overlaid absolute if needed, for now just the map as requested -->
         </div>
 
         <!-- Right Column: Category Grid -->
@@ -100,6 +92,7 @@
 <script>
 import { useRouter } from 'vue-router';
 import { ref } from 'vue';
+import japanMapImg from '../assets/japan_map.png';
 
 export default {
   name: 'HomeView',
@@ -108,9 +101,14 @@ export default {
     const navigateToMap = () => {
       router.push('/map');
     };
+    const navigateToLogin = () => {
+      router.push('/login');
+    };
 
     return {
-      navigateToMap
+      navigateToMap,
+      navigateToLogin,
+      japanMapImg
     };
   }
 };
@@ -125,13 +123,19 @@ export default {
 }
 
 /* Header */
+/* Header */
 .dashboard-header {
+  height: 60px;
   background-color: #1976D2; /* Solid Blue matched from image */
   color: white;
-  padding: 1.5rem 0;
+  display: flex;
+  align-items: center;
+  padding: 0 1rem;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .header-content {
+  width: 100%;
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -154,9 +158,10 @@ export default {
 }
 
 .logo-text {
-  font-size: 2rem;
+  font-size: 1.5rem;
   font-weight: 700;
   font-family: 'Outfit', sans-serif;
+  color: white; /* Explicitly set white */
 }
 
 .user-icon {
@@ -275,11 +280,12 @@ export default {
   align-items: center;
 }
 
-.japan-map-svg {
+.japan-map-img {
   width: 100%;
-  max-width: 500px;
+  max-width: 450px; /* Adjusted for image */
   height: auto;
   filter: drop-shadow(0 10px 20px rgba(0,0,0,0.2));
+  object-fit: contain;
 }
 
 .map-attribution {

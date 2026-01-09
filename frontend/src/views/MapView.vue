@@ -10,19 +10,36 @@
             <line x1="3" y1="18" x2="21" y2="18"></line>
           </svg>
         </button>
-        <h1 class="brand-text">Relief Map</h1>
+        <h1 class="brand-text" @click="goHome">Relief Map</h1>
       </div>
       
       <div class="header-right">
-        <div class="user-profile">
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-            <circle cx="12" cy="7" r="4"></circle>
-          </svg>
-          <span class="username">guest</span>
-          <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <polyline points="6 9 12 15 18 9"></polyline>
-          </svg>
+        <div class="user-profile-container">
+          <div class="user-profile" @click="toggleUserMenu">
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+              <circle cx="12" cy="7" r="4"></circle>
+            </svg>
+            <span class="username">{{ isAuthenticated ? 'User' : 'Guest' }}</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </div>
+          
+          <!-- Auth Dropdown -->
+          <transition name="fade">
+            <div v-if="isUserMenuOpen" class="auth-dropdown">
+              <template v-if="!isAuthenticated">
+                <button class="dropdown-item" @click="navigateToLogin">
+                  Login
+                </button>
+              </template>
+              <template v-else>
+                 <button class="dropdown-item">Profile</button>
+                 <button class="dropdown-item" @click="handleLogout">Logout</button>
+              </template>
+            </div>
+          </transition>
         </div>
       </div>
     </header>
@@ -121,6 +138,7 @@ import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
 import RefineFilter from '../components/RefineFilter.vue';
 import AddLocationModal from '../components/AddLocationModal.vue';
 import apiClient from '../services/api';
+import { useRouter } from 'vue-router'; // Import router
 
 import pinGreen from '../assets/toiletPin/green.png';
 import pinYellow from '../assets/toiletPin/yellow.png';
@@ -133,6 +151,10 @@ export default {
     const mapContainer = ref(null);
     const isMenuOpen = ref(false);
     const showRefine = ref(false);
+    // New Auth Refs
+    const isUserMenuOpen = ref(false);
+    const isAuthenticated = ref(false); // Mock auth state
+
     let map = null;
     let markers = [];
     
@@ -312,6 +334,26 @@ export default {
         loadLocations();
     };
 
+    // Auth Logic
+    const router = useRouter();
+    const toggleUserMenu = () => {
+      isUserMenuOpen.value = !isUserMenuOpen.value;
+    };
+
+    const navigateToLogin = () => {
+      router.push('/login');
+    };
+
+    const goHome = () => {
+      router.push('/');
+    };
+
+    const handleLogout = () => {
+      isAuthenticated.value = false;
+      isUserMenuOpen.value = false;
+      // In real app, clear tokens, etc.
+    };
+
     const handleRefineSearch = (filterData) => {
       showRefine.value = false;
       console.log('Search with filters:', filterData);
@@ -365,7 +407,13 @@ export default {
       openRefine,
       openAddLocation,
       handleRefineSearch,
-      handleLocationAdded
+      handleLocationAdded,
+      isUserMenuOpen,
+      isAuthenticated,
+      toggleUserMenu,
+      navigateToLogin,
+      handleLogout,
+      goHome
     };
   }
 };
@@ -405,6 +453,8 @@ export default {
   font-weight: 700;
   font-family: 'Outfit', sans-serif;
   margin-left: 0.5rem;
+  color: white; /* Ensure white */
+  cursor: pointer;
 }
 
 .hamburger-btn {
@@ -614,6 +664,51 @@ export default {
 
 .slide-fade-enter-from,
 .slide-fade-leave-to {
+  opacity: 0;
+}
+
+/* User Profile & Dropdown */
+.user-profile-container {
+  position: relative;
+}
+
+.auth-dropdown {
+  position: absolute;
+  top: 120%;
+  right: 0;
+  background: white;
+  min-width: 150px;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  padding: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  z-index: 100;
+}
+
+.dropdown-item {
+  background: none;
+  border: none;
+  padding: 0.8rem 1rem;
+  text-align: left;
+  font-size: 1rem;
+  color: #333;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.dropdown-item:hover {
+  background-color: #f3f4f6;
+}
+
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.2s ease;
+}
+
+.fade-enter-from,
+.fade-leave-to {
   opacity: 0;
 }
 </style>
