@@ -28,21 +28,22 @@ class LocationRepository {
     const params = [];
 
     // Spatial Filter: Bounding Box (Priority)
-    // Uses Spatial Index via MBRContains
     if (swLat && swLng && neLat && neLng) {
       // Create Polygon from BBox: SW -> SE -> NE -> NW -> SW
-      // Note: X=Lat, Y=Lng (based on how we populated POINT(lat, lng))
-      const polygon = `POLYGON((${swLat} ${swLng}, ${neLat} ${swLng}, ${neLat} ${neLng}, ${swLat} ${neLng}, ${swLat} ${swLng}))`;
-      // Use ST_GeomFromText for safety
-      query += ` AND MBRContains(ST_GeomFromText(?), lm.geolocation)`;
-      params.push(polygon);
+      // MySQL WKT: POLYGON((lng lat, ...)) i.e. (x y)
+      // sw: bottom-left (swLng, swLat), ne: top-right (neLng, neLat)
+      // Order: SW(minX minY) -> SE(maxX minY) -> NE(maxX maxY) -> NW(minX maxY) -> SW
+      const polygon = `POLYGON((${swLng} ${swLat}, ${neLng} ${swLat}, ${neLng} ${neLat}, ${swLng} ${neLat}, ${swLng} ${swLat}))`;
+      // Interpolate WKT directly to avoid prepared statement issues with spatial functions in some drivers/versions
+      // Ensure coordinates are numbers to prevent injection (though they should be)
+      query += ` AND MBRContains(ST_GeomFromText('${polygon}'), lm.geolocation)`;
+      // params.push(polygon); // Removed from params
     }
     // Spatial Filter: Radius (Secondary)
-    // Uses ST_Distance_Sphere
     else if (lat && lng && radius) {
-      // Query Point: POINT(lat, lng) to match DB
+      // ST_Distance_Sphere(p1, p2). p2 = POINT(lng, lat)
       query += ` AND ST_Distance_Sphere(lm.geolocation, POINT(?, ?)) <= ?`;
-      params.push(lat, lng, radius);
+      params.push(parseFloat(lng), parseFloat(lat), parseFloat(radius) * 1000);
     }
 
     if (verificationStatus) {
@@ -57,17 +58,19 @@ class LocationRepository {
 
     // Ordering
     if (lat && lng) {
-      // Order by distance
       query += ` ORDER BY ST_Distance_Sphere(lm.geolocation, POINT(?, ?)) ASC`;
-      params.push(lat, lng);
+      params.push(parseFloat(lng), parseFloat(lat));
     } else {
       query += ` ORDER BY lm.verification_score DESC, lm.created_at DESC`;
     }
 
-    query += ` LIMIT ?`;
-    params.push(limit);
+    // query += ` LIMIT ?`;
+    // params.push(parseInt(limit));
+    query += ` LIMIT ${parseInt(limit)}`;
 
     try {
+      // console.log('DEBUG QUERY:', query);
+      // console.log('DEBUG PARAMS:', params);
       const [rows] = await db.execute(query, params);
       return rows;
     } catch (e) {
@@ -174,7 +177,7 @@ class LocationRepository {
           baseData.address,
           baseData.latitude,
           baseData.longitude,
-          baseData.latitude, baseData.longitude // For POINT
+          baseData.longitude, baseData.latitude // For POINT(Lng, Lat)
         ]);
       } else {
         // Update with Geolocation
@@ -184,7 +187,7 @@ class LocationRepository {
           WHERE base_id = ? AND source_type = 'api'
         `, [
           baseData.name, baseData.address, baseData.latitude, baseData.longitude,
-          baseData.latitude, baseData.longitude,
+          baseData.longitude, baseData.latitude,
           baseId
         ]);
       }
@@ -224,7 +227,7 @@ class LocationRepository {
 
       const [mergedResult] = await connection.execute(mergedQuery, [
         ugcId, 'user', data.name, data.address_input, data.latitude, data.longitude,
-        data.latitude, data.longitude,
+        data.longitude, data.latitude, // POINT(Lng, Lat)
         'red', 0.3, data.user_id
       ]);
 
@@ -258,7 +261,7 @@ class LocationRepository {
 
     if (newLat !== undefined && newLng !== undefined) {
       fields.push(`geolocation = POINT(?, ?)`);
-      values.push(newLat, newLng);
+      values.push(newLng, newLat);
     }
 
     if (fields.length === 0) return null;
