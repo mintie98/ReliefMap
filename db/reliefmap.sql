@@ -32,6 +32,10 @@ CREATE TABLE LOCATIONS_BASE (
     source_name VARCHAR(100) NOT NULL COMMENT 'データソース',
     source_id VARCHAR(100) NULL COMMENT 'ソースID',
     is_official BOOLEAN NOT NULL COMMENT '公式データ',
+    place_types JSON NULL COMMENT '施設タイプ',
+    opening_hours JSON NULL COMMENT '営業時間',
+    google_rating DECIMAL(3, 2) NULL COMMENT 'Google評価',
+    google_ratings_total INT NULL COMMENT '評価数',
     last_updated DATETIME NOT NULL COMMENT '更新日時',
     PRIMARY KEY (base_id),
     INDEX idx_lat_lon (latitude, longitude)

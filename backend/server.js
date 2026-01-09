@@ -15,11 +15,13 @@ const locationsRoutes = require('./routes/locations');
 const usersRoutes = require('./routes/users');
 const reviewsRoutes = require('./routes/reviews');
 const amenitiesRoutes = require('./routes/amenities');
+const authRoutes = require('./routes/authRoutes');
 
 app.use('/api/locations', locationsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/amenities', amenitiesRoutes);
+app.use('/api/auth', authRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
