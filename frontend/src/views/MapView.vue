@@ -95,10 +95,15 @@
             <h2>{{ selectedLocation.display_name }}</h2>
             <div class="detail-scores" v-if="selectedLocation.verification_score">
               <span class="score-badge">Trust: {{ selectedLocation.verification_score.toFixed(1) }}</span>
-              <span v-if="selectedLocation.source_type === 'api'" class="source-badge">
-                Source: Google Maps {{ selectedLocation.verification_score > 0.5 ? '| Updated by ReliefMap' : '' }}
+              <span v-if="selectedLocation.source_type === 'api' && selectedLocation.verification_score > 1.0" class="source-badge merged">
+                Source: Google Maps | Updated by Community
               </span>
-              <span v-else class="source-badge">Source: Community</span>
+              <span v-else-if="selectedLocation.source_type === 'api'" class="source-badge api">
+                Source: Google Maps
+              </span>
+              <span v-else-if="selectedLocation.source_type === 'user'" class="source-badge ugc">
+                Source: Community Contribution
+              </span>
             </div>
           </div>
           <div class="detail-body scroller">
@@ -599,12 +604,28 @@ export default {
 
 /* Transitions */
 .source-badge {
-  background-color: #f1f5f9;
-  color: #64748b;
+  display: inline-block;
   padding: 0.2rem 0.6rem;
   border-radius: 12px;
-  font-size: 0.8rem;
-  margin-left: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  margin-top: 0.25rem;
+}
+
+.source-badge.api {
+  background-color: #e0f2fe;
+  color: #0284c7;
+}
+
+.source-badge.merged {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+}
+
+.source-badge.ugc {
+  background-color: #f3e8ff;
+  color: #7e22ce;
 }
 
 .slide-fade-enter-active,

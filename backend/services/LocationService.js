@@ -243,32 +243,53 @@ class LocationService {
         return { success: false, message: 'User not found' };
       }
 
-      // 1. Check for Duplicates (Matching Logic)
-      // Strategy: Search in a slightly larger radius (e.g. 50m) to be safe, then filter precisely
-      const nearbyFilter = {
-        lat: ugcData.latitude,
-        lng: ugcData.longitude,
-        radius: 0.05 // 50 meters
-      };
-
-      const nearbyLocations = await locationRepository.findAll(nearbyFilter);
       let duplicate = null;
 
-      for (const loc of nearbyLocations) {
-        const dist = this.haversineDistance(ugcData.latitude, ugcData.longitude, loc.latitude, loc.longitude);
+      // 1. Check Matching by Source ID (if available, mostly for explicit edits/reports)
+      if (ugcData.source_id) {
+        duplicate = await locationRepository.findBySourceId(ugcData.source_id);
+      }
 
-        // Check 1: Distance <= 20 meters
-        if (dist <= 0.02) {
-          // Check 2: Name Similarity > 70%
-          const nameSimilarity = this.calculateNameSimilarity(ugcData.name, loc.display_name);
-          if (nameSimilarity >= 0.7) {
-            duplicate = loc;
-            break;
+      // 2. Check Matching by Distance & Name (if not found by ID)
+      if (!duplicate) {
+        // Strategy: Search in a slightly larger radius (50m) to be safe, then filter precisely
+        const nearbyFilter = {
+          lat: ugcData.latitude,
+          lng: ugcData.longitude,
+          radius: 0.05 // 50 meters
+        };
+
+        const nearbyLocations = await locationRepository.findAll(nearbyFilter);
+
+        for (const loc of nearbyLocations) {
+          const dist = this.haversineDistance(ugcData.latitude, ugcData.longitude, loc.latitude, loc.longitude);
+
+          // Check 1: Distance <= 50 meters (0.05 km) - Primary Radius for Address Check
+          if (dist <= 0.05) {
+            // A. Address Similarity Check (> 85%)
+            // Use input address vs stored address
+            const addr1 = ugcData.address_input || "";
+            const addr2 = loc.address || "";
+            const addrSimilarity = this.calculateNameSimilarity(addr1, addr2); // Reuse string sim function
+
+            if (addrSimilarity >= 0.85) {
+              duplicate = loc;
+              break;
+            }
+
+            // B. Name Similarity Check (> 70%) - Only if VERY close (<= 20m)
+            if (dist <= 0.02) {
+              const nameSimilarity = this.calculateNameSimilarity(ugcData.name, loc.display_name);
+              if (nameSimilarity >= 0.7) {
+                duplicate = loc;
+                break;
+              }
+            }
           }
         }
       }
 
-      // 2. Merging Strategy
+      // 3. Merging Strategy
       if (duplicate) {
         // Merge Logic: Update amenities and increment trust
         console.log(`Duplicate found: merging UGC with existing location ID ${duplicate.location_id}`);
@@ -285,8 +306,11 @@ class LocationService {
         // Increment verification/trust score
         await locationRepository.incrementVerificationScore(duplicate.location_id, 0.1);
 
-        // Allow logging the contribution without creating new location
-        // (Optional: You might want to log this into specific CONTRIBUTIONS_LOG table)
+        // Log contribution
+        await userRepository.incrementContribution(ugcData.user_id);
+        if (duplicate.verification_score > 2.0) { // e.g., verified by many
+          await userRepository.incrementVerifiedContribution(ugcData.user_id);
+        }
 
         return {
           success: true,
@@ -295,7 +319,7 @@ class LocationService {
         };
       }
 
-      // 3. No Duplicate -> Create New
+      // 4. No Duplicate -> Create New
       const locationId = await locationRepository.createFromUGC(ugcData);
 
       // Save Amenities for new location

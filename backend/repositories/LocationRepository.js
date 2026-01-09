@@ -98,6 +98,18 @@ class LocationRepository {
     return rows[0] || null;
   }
 
+  // Get location by Source ID (e.g. Google Place ID)
+  async findBySourceId(sourceId) {
+    const query = `SELECT * FROM LOCATIONS_BASE WHERE source_id = ?`;
+    const [rows] = await db.execute(query, [sourceId]);
+    if (rows.length === 0) return null;
+
+    // Find associated MERGED record
+    const mergedQuery = `SELECT * FROM LOCATIONS_MERGED WHERE base_id = ?`;
+    const [mergedRows] = await db.execute(mergedQuery, [rows[0].base_id]);
+    return mergedRows[0] || null;
+  }
+
   // Create or Update location from base (Google API)
   async upsertFromBase(baseData) {
     const connection = await db.getConnection();
@@ -207,8 +219,8 @@ class LocationRepository {
     const connection = await db.getConnection();
     try {
       const query = `
-        INSERT INTO LOCATIONS_UGC (user_id, name, address_input, latitude, longitude)
-        VALUES (?, ?, ?, ?, ?)
+        INSERT INTO LOCATIONS_UGC (user_id, name, address_input, latitude, longitude, created_at)
+        VALUES (?, ?, ?, ?, ?, NOW())
       `;
       const [result] = await connection.execute(query, [
         data.user_id, data.name, data.address_input, data.latitude, data.longitude
@@ -220,9 +232,10 @@ class LocationRepository {
         INSERT INTO LOCATIONS_MERGED (
            ugc_id, source_type, display_name, address, latitude, longitude,
            geolocation,
-           verification_status, verification_score, creator_user_id
+           verification_status, verification_score, creator_user_id,
+           auto_verified, admin_verified, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?)
+        VALUES (?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, FALSE, FALSE, NOW())
       `;
 
       const [mergedResult] = await connection.execute(mergedQuery, [
@@ -299,12 +312,12 @@ class LocationRepository {
     try {
       const query = `
         INSERT INTO AMENITIES (
-          location_id, western_style, japanese_style, accessible, baby_changing, warm_seat, gender_type
+          location_id, western_style, japanese_style, \`accessible\`, baby_changing, warm_seat, gender_type
         ) VALUES (?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           western_style = VALUES(western_style),
           japanese_style = VALUES(japanese_style),
-          accessible = VALUES(accessible),
+          \`accessible\` = VALUES(\`accessible\`),
           baby_changing = VALUES(baby_changing),
           warm_seat = VALUES(warm_seat),
           gender_type = VALUES(gender_type)
