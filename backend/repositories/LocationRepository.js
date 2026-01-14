@@ -21,8 +21,13 @@ class LocationRepository {
         lm.admin_verified,
         lm.creator_user_id,
         lm.creator_trust_score,
-        lm.created_at
+        lm.created_at,
+        lb.google_rating,
+        lb.google_ratings_total,
+        lb.opening_hours,
+        lb.photo_reference
       FROM LOCATIONS_MERGED lm
+      LEFT JOIN LOCATIONS_BASE lb ON lm.base_id = lb.base_id
       WHERE lm.is_deleted = FALSE
     `;
     const params = [];
@@ -75,6 +80,8 @@ class LocationRepository {
       return rows;
     } catch (e) {
       console.error('FindAll Error:', e);
+      console.error('Failed Query:', query);
+      console.error('Failed Params:', params);
       throw e;
     }
   }
@@ -89,9 +96,14 @@ class LocationRepository {
         a.accessible,
         a.baby_changing,
         a.warm_seat,
-        a.gender_type
+        a.gender_type,
+        lb.google_rating,
+        lb.google_ratings_total,
+        lb.opening_hours,
+        lb.photo_reference
       FROM LOCATIONS_MERGED lm
       LEFT JOIN AMENITIES a ON lm.location_id = a.location_id
+      LEFT JOIN LOCATIONS_BASE lb ON lm.base_id = lb.base_id
       WHERE lm.location_id = ? AND lm.is_deleted = FALSE
     `;
     const [rows] = await db.execute(query, [locationId]);
@@ -125,13 +137,18 @@ class LocationRepository {
       let baseId;
       let isNew = false;
 
+      // Debug log
+      if (baseData.photo_reference) {
+        // console.log(`Upserting location with photo_ref: ${baseData.photo_reference.substring(0, 15)}...`);
+      }
+
       if (existing.length > 0) {
         // Update existing
         baseId = existing[0].base_id;
         const updateQuery = `
           UPDATE LOCATIONS_BASE SET
             name = ?, address = ?, latitude = ?, longitude = ?,
-            place_types = ?, opening_hours = ?,
+            place_types = ?, opening_hours = ?, photo_reference = ?,
             google_rating = ?, google_ratings_total = ?,
             last_updated = NOW()
           WHERE base_id = ?
@@ -143,6 +160,7 @@ class LocationRepository {
           baseData.longitude,
           JSON.stringify(baseData.place_types || []),
           JSON.stringify(baseData.opening_hours || {}),
+          baseData.photo_reference || null,
           baseData.rating || null,
           baseData.user_ratings_total || null,
           baseId
@@ -153,9 +171,9 @@ class LocationRepository {
         const insertQuery = `
           INSERT INTO LOCATIONS_BASE (
             name, address, latitude, longitude, source_name, source_id,
-            is_official, place_types, opening_hours,
+            is_official, place_types, opening_hours, photo_reference,
             google_rating, google_ratings_total, last_updated
-          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+          ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
         `;
         const [result] = await connection.execute(insertQuery, [
           baseData.name,
@@ -167,6 +185,7 @@ class LocationRepository {
           baseData.is_official || true,
           JSON.stringify(baseData.place_types || []),
           JSON.stringify(baseData.opening_hours || {}),
+          baseData.photo_reference || null,
           baseData.rating || null,
           baseData.user_ratings_total || null
         ]);
@@ -205,6 +224,7 @@ class LocationRepository {
       }
 
       await connection.commit();
+      // console.log(`Upsert successful for source_id: ${baseData.source_id}, base_id: ${baseId}`);
       return baseId;
     } catch (error) {
       await connection.rollback();

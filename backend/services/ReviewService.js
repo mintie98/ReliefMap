@@ -29,7 +29,36 @@ class ReviewService {
       reviewData.user_trust_score = user.trust_score;
 
       const reviewId = await reviewRepository.create(reviewData);
-      
+
+      // Save Images
+      if (reviewData.files && reviewData.files.length > 0) {
+        const imagePromises = reviewData.files.map(file => {
+          // Construct URL relative to server
+          const imageUrl = `/uploads/${file.filename}`;
+          return reviewRepository.addImage(reviewId, imageUrl);
+        });
+        await Promise.all(imagePromises);
+      }
+
+      // Update Amenities & Verification Logic
+      if (reviewData.amenities) {
+        // Import location Repo lazily or at top to avoid circular if any
+        const locationRepository = require('../repositories/LocationRepository');
+
+        // Update amenities
+        await locationRepository.updateAmenities(reviewData.location_id, {
+          ...reviewData.amenities,
+          // gender_type could be inferred or passed explicitly
+        });
+
+        // Increment verification score for the location
+        // Basic logic: Each review adds small trust
+        await locationRepository.incrementVerificationScore(reviewData.location_id, 0.2);
+
+        // Update verified status if score is high enough (e.g. > 5.0)
+        // This logic could be inside Repository or Service. For now, we trust score.
+      }
+
       // Increment user contribution
       await userRepository.incrementContribution(reviewData.user_id);
 

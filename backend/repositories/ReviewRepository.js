@@ -6,14 +6,22 @@ class ReviewRepository {
       SELECT 
         r.*,
         u.user_name,
-        u.trust_score as user_current_trust_score
+        u.trust_score as user_current_trust_score,
+        GROUP_CONCAT(ri.image_url) as images
       FROM REVIEWS r
       JOIN USERS u ON r.user_id = u.user_id
+      LEFT JOIN REVIEW_IMAGES ri ON r.review_id = ri.review_id AND ri.is_deleted = FALSE
       WHERE r.location_id = ? AND r.is_deleted = FALSE
+      GROUP BY r.review_id
       ORDER BY r.created_at DESC
     `;
     const [rows] = await db.execute(query, [locationId]);
-    return rows;
+
+    // Parse images string back to array
+    return rows.map(row => ({
+      ...row,
+      images: row.images ? row.images.split(',') : []
+    }));
   }
 
   async findById(reviewId) {

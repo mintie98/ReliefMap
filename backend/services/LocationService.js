@@ -1,5 +1,6 @@
 const locationRepository = require('../repositories/LocationRepository');
 const userRepository = require('../repositories/UserRepository');
+const reviewRepository = require('../repositories/ReviewRepository');
 const axios = require('axios');
 
 class LocationService {
@@ -60,12 +61,22 @@ class LocationService {
   // Helper: Fetch from Google Places Nearby and Save to DB
   async fetchAndSaveGoogleNearby(lat, lng, radius) {
     const apiKey = process.env.GOOGLE_MAPS_API_KEY;
-    if (!apiKey) return;
+    if (!apiKey) {
+      console.warn('Google Maps API Key is MISSING in backend .env');
+      return;
+    }
 
+    // Use nearbysearch for better local results than textsearch
+    console.log(`Fetching from Google Nearby: lat=${lat}, lng=${lng}, radius=${radius}`);
     // Use nearbysearch for better local results than textsearch
     const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${Math.min(radius * 1000, 5000)}&type=point_of_interest&keyword=toilet&key=${apiKey}`;
 
     const response = await axios.get(url);
+
+    console.log('Google API Status:', response.data.status);
+    if (response.data.results) {
+      console.log('Google API Results count:', response.data.results.length);
+    }
 
     if (response.data.status === 'OK') {
       const promises = response.data.results.map(place => {
@@ -80,15 +91,34 @@ class LocationService {
           place_types: place.types,
           rating: place.rating,
           user_ratings_total: place.user_ratings_total,
-          opening_hours: place.opening_hours
+          rating: place.rating,
+          user_ratings_total: place.user_ratings_total,
+          opening_hours: place.opening_hours,
+          // Store up to 10 photo references as JSON string
+          photo_reference: place.photos && place.photos.length > 0
+            ? JSON.stringify(place.photos.slice(0, 10).map(p => p.photo_reference))
+            : null
         };
+
+        if (placeData.photo_reference) {
+          console.log(`Found photo for ${place.name}: ${placeData.photo_reference.substring(0, 20)}...`);
+        } else {
+          console.log(`No photos found for ${place.name}`);
+        }
+
         // Upsert silently
-        return locationRepository.upsertFromBase(placeData).catch(err => console.error('Upsert failed:', err.message));
+        return locationRepository.upsertFromBase(placeData)
+          .then(id => console.log('Upserted location ID:', id))
+          .catch(err => console.error('Upsert failed for', place.name, err.message));
       });
 
       await Promise.all(promises);
     }
   }
+
+
+
+  // ... inside class ...
 
   // Get location details by ID
   async getLocationById(locationId) {
@@ -100,9 +130,61 @@ class LocationService {
           message: 'Location not found'
         };
       }
+
+      // Fetch reviews
+      const reviews = await reviewRepository.findByLocationId(locationId);
+
+      // Aggregate images from reviews
+      let images = [];
+      if (reviews && reviews.length > 0) {
+        reviews.forEach(r => {
+          if (r.images && r.images.length > 0) {
+            images = images.concat(r.images);
+          }
+        });
+      }
+
+      // If we need more images (e.g. less than 3), fallback/append Google Photos
+      if (images.length < 3 && location.photo_reference) {
+        const apiKey = process.env.GOOGLE_MAPS_API_KEY;
+        if (apiKey) {
+          let photoRefs = [];
+          try {
+            // Try parsing as JSON array
+            if (location.photo_reference.startsWith('[')) {
+              photoRefs = JSON.parse(location.photo_reference);
+            } else {
+              // Legacy: single string
+              photoRefs = [location.photo_reference];
+            }
+          } catch (e) {
+            photoRefs = [location.photo_reference];
+          }
+
+          // Filter out any invalid
+          photoRefs = photoRefs.filter(ref => typeof ref === 'string');
+
+          // Generate URLs (max needed to fill up to reasonable amount, e.g. 10 total)
+          const needed = 10 - images.length;
+          const toAdd = photoRefs.slice(0, needed);
+
+          toAdd.forEach(ref => {
+            const url = `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${apiKey}`;
+            images.push(url);
+          });
+        }
+      }
+
+      // Calculate average scores from reviews if not stored in location
+      // (Optional: depending on if we update location.cleanliness_score on write)
+
       return {
         success: true,
-        data: location
+        data: {
+          ...location,
+          reviews: reviews || [],
+          images: images
+        }
       };
     } catch (error) {
       throw new Error(`Failed to get location: ${error.message}`);

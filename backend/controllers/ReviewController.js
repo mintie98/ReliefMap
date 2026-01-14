@@ -13,10 +13,20 @@ class ReviewController {
 
   async createReview(req, res, next) {
     try {
-      const reviewData = {
+      let reviewData = {
         ...req.body,
-        user_id: req.user?.user_id || req.body.user_id
+        user_id: req.user?.user_id || req.user?.id || req.body.user_id,
+        files: req.files || []
       };
+
+      // Parse JSON fields if they come as strings (common in multipart/form-data)
+      if (typeof reviewData.amenities === 'string') {
+        try {
+          reviewData.amenities = JSON.parse(reviewData.amenities);
+        } catch (e) {
+          reviewData.amenities = {};
+        }
+      }
 
       if (!reviewData.location_id || !reviewData.review_text) {
         return res.status(400).json({
@@ -32,6 +42,7 @@ class ReviewController {
     }
   }
 
+
   async updateReview(req, res, next) {
     try {
       const { id } = req.params;
@@ -39,7 +50,7 @@ class ReviewController {
       const userId = req.user?.user_id || req.body.user_id;
 
       const result = await reviewService.updateReview(id, updateData, userId);
-      
+
       if (!result.success) {
         return res.status(result.message.includes('Unauthorized') ? 403 : 404).json(result);
       }
@@ -56,7 +67,7 @@ class ReviewController {
       const userId = req.user?.user_id || req.body.user_id;
 
       const result = await reviewService.deleteReview(id, userId);
-      
+
       if (!result.success) {
         return res.status(result.message.includes('Unauthorized') ? 403 : 404).json(result);
       }
@@ -81,7 +92,7 @@ class ReviewController {
       }
 
       const result = await reviewService.addReviewImage(reviewId, image_url, userId);
-      
+
       if (!result.success) {
         return res.status(result.message.includes('Unauthorized') ? 403 : 404).json(result);
       }

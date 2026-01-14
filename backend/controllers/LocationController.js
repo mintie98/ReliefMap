@@ -4,9 +4,9 @@ class LocationController {
   async searchLocations(req, res, next) {
     try {
       const filters = {
-        lat: parseFloat(req.query.lat),
-        lng: parseFloat(req.query.lng),
-        radius: parseFloat(req.query.radius), // in km
+        lat: req.query.lat ? parseFloat(req.query.lat) : undefined,
+        lng: req.query.lng ? parseFloat(req.query.lng) : undefined,
+        radius: req.query.radius ? parseFloat(req.query.radius) : undefined, // in km
         swLat: req.query.swLat ? parseFloat(req.query.swLat) : undefined,
         swLng: req.query.swLng ? parseFloat(req.query.swLng) : undefined,
         neLat: req.query.neLat ? parseFloat(req.query.neLat) : undefined,
@@ -18,6 +18,7 @@ class LocationController {
       const result = await locationService.searchLocations(filters);
       res.json(result);
     } catch (error) {
+      console.error('SearchLocationsController Error:', error);
       next(error);
     }
   }

@@ -20,6 +20,12 @@ export class Location {
     this.creator_trust_score = data.creator_trust_score || null;
     this.created_at = data.created_at || null;
 
+    // Google/Base Data
+    this.google_rating = data.google_rating;
+    this.google_ratings_total = data.google_ratings_total;
+    this.opening_hours = data.opening_hours;
+    this.photo_reference = data.photo_reference;
+
     // Amenities
     this.western_style = data.western_style || false;
     this.japanese_style = data.japanese_style || false;

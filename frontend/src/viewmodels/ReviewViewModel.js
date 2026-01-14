@@ -38,7 +38,7 @@ export function useReviewViewModel() {
 
     try {
       const result = await reviewService.getReviewsByLocation(locationId);
-      
+
       if (result.success) {
         reviews.value = result.data;
       } else {
@@ -53,16 +53,20 @@ export function useReviewViewModel() {
     }
   };
 
-  const createReview = async (reviewData) => {
+  const createReview = async (reviewData, locationId = null) => {
     loading.value = true;
     error.value = null;
 
     try {
       const result = await reviewService.createReview(reviewData);
-      
+
       if (result.success) {
-        // Reload reviews
-        await loadReviews(reviewData.location_id);
+        // Reload reviews if locationId provided
+        // If reviewData is object, try to get location_id
+        const locId = locationId || reviewData.location_id;
+        if (locId) {
+          await loadReviews(locId);
+        }
         return result;
       } else {
         error.value = result.error || 'Failed to create review';
@@ -82,7 +86,7 @@ export function useReviewViewModel() {
 
     try {
       const result = await reviewService.updateReview(reviewId, updateData);
-      
+
       if (result.success) {
         // Reload reviews
         const locationId = reviews.value.find(r => r.review_id === reviewId)?.location_id;
@@ -109,7 +113,7 @@ export function useReviewViewModel() {
     try {
       const locationId = reviews.value.find(r => r.review_id === reviewId)?.location_id;
       const result = await reviewService.deleteReview(reviewId);
-      
+
       if (result.success) {
         // Reload reviews
         if (locationId) {
@@ -137,12 +141,12 @@ export function useReviewViewModel() {
     reviews,
     loading,
     error,
-    
+
     // Computed
     averageCleanliness,
     averageWaitTime,
     averageScore,
-    
+
     // Methods
     loadReviews,
     createReview,

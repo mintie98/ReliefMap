@@ -86,7 +86,7 @@
       <div id="map" ref="mapContainer"></div>
       
       <!-- Floating Controls -->
-      <div class="map-controls">
+      <div class="map-controls" :class="{ 'shifted': !!selectedLocation }">
         <button class="control-btn" @click="getCurrentLocation" title="My Location">
           📍
         </button>
@@ -98,32 +98,15 @@
         </button>
       </div>
 
-      <!-- Detail Popup (Mobile/Overlay) -->
-      <transition name="slide-up">
-        <div v-if="selectedLocation" class="location-detail-panel">
-          <button class="close-panel" @click="selectedLocation = null">×</button>
-          <div class="detail-header">
-            <h2>{{ selectedLocation.display_name }}</h2>
-            <div class="detail-scores" v-if="selectedLocation.verification_score">
-              <span class="score-badge">Trust: {{ selectedLocation.verification_score.toFixed(1) }}</span>
-              <span v-if="selectedLocation.source_type === 'api' && selectedLocation.verification_score > 1.0" class="source-badge merged">
-                Source: Google Maps | Updated by Community
-              </span>
-              <span v-else-if="selectedLocation.source_type === 'api'" class="source-badge api">
-                Source: Google Maps
-              </span>
-              <span v-else-if="selectedLocation.source_type === 'user'" class="source-badge ugc">
-                Source: Community Contribution
-              </span>
-            </div>
-          </div>
-          <div class="detail-body scroller">
-             <p class="detail-address">{{ selectedLocation.address }}</p>
-             <!-- Reviews Placeholders -->
-             <div class="detail-actions">
-               <button class="btn btn-primary btn-full">Navigate</button>
-             </div>
-          </div>
+      <!-- Detail Popup (Right Sidebar) -->
+      <transition name="slide-right">
+        <div v-if="selectedLocation" class="location-detail-wrapper">
+             <LocationDetailPanel 
+                :location="selectedLocation" 
+                @close="selectedLocation = null"
+                @navigate="handleNavigate"
+                @add-review="handleAddReview"
+             />
         </div>
       </transition>
     </main>
@@ -132,13 +115,14 @@
 
 <script>
 import { ref, onMounted, watch, computed } from 'vue';
+import { useRouter } from 'vue-router';
 import { useLocationViewModel } from '../viewmodels/LocationViewModel';
 import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
-import RefineFilter from '../components/RefineFilter.vue';
-import AddLocationModal from '../components/AddLocationModal.vue';
-import UserMenu from '../components/UserMenu.vue';
 import apiClient from '../services/api';
-import { useRouter } from 'vue-router'; // Import router
+import AddLocationModal from '../components/AddLocationModal.vue';
+import RefineFilter from '../components/RefineFilter.vue';
+import UserMenu from '../components/UserMenu.vue';
+import LocationDetailPanel from '../components/LocationDetailPanel.vue';
 
 import pinGreen from '../assets/toiletPin/green.png';
 import pinYellow from '../assets/toiletPin/yellow.png';
@@ -146,7 +130,7 @@ import pinRed from '../assets/toiletPin/red.png';
 
 export default {
   name: 'MapView',
-  components: { RefineFilter, AddLocationModal, UserMenu },
+  components: { RefineFilter, AddLocationModal, UserMenu, LocationDetailPanel },
   setup() {
     const mapContainer = ref(null);
     const isMenuOpen = ref(false);
@@ -344,6 +328,16 @@ export default {
       router.push('/login');
     };
 
+    const handleNavigate = (loc) => {
+        const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`;
+        window.open(url, '_blank');
+    };
+
+    const handleAddReview = () => {
+        alert('Open Review Modal (Implementation Pending)');
+        // Logic to open review modal
+    };
+
     const goHome = () => {
       router.push('/');
     };
@@ -376,7 +370,7 @@ export default {
             initMap();
         } else {
              const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&callback=initReliefMap`;
+            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&callback=initReliefMap&loading=async&libraries=places`;
             script.async = true;
             script.defer = true;
             window.initReliefMap = initMap;
@@ -408,8 +402,11 @@ export default {
       showAddModal,
       openRefine,
       openAddLocation,
+      openAddLocation,
       handleRefineSearch,
       handleLocationAdded,
+      handleNavigate,
+      handleAddReview,
       // isUserMenuOpen,
       // isAuthenticated,
       // toggleUserMenu,
@@ -519,6 +516,12 @@ export default {
   right: 1rem;
   top: auto;
   left: auto;
+  transition: right 0.3s ease;
+  z-index: 15; /* Ensure above map but below panels */
+}
+
+.map-controls.shifted {
+  right: 320px; /* Shift left when panel is open */
 }
 
 .control-btn {
@@ -539,29 +542,34 @@ export default {
   background-color: #f1f5f9;
 }
 
-/* Detail Panel */
-.location-detail-panel {
-  position: absolute;
-  bottom: 2rem;
-  left: 1rem;
-  right: auto;
-  width: 350px;
-  max-width: 90%;
+/* Detail Panel Wrapper */
+.location-detail-wrapper {
+  position: fixed; /* Fixed to viewport like menu drawer */
+  top: 60px;
+  bottom: 0;
+  right: 0;
+  left: auto;
+  width: 300px;
+  max-width: none;
+  height: calc(100vh - 60px);
   background: white;
-  border-radius: 12px;
-  box-shadow: 0 4px 20px rgba(0,0,0,0.15);
-  padding: 1.5rem;
-  z-index: 20;
+  border-left: 1px solid #ddd;
+  box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+  z-index: 1100; /* High z-index to sit above map */
+  overflow: hidden; 
+  border-radius: 5px 0 0 0; /* Round top-left only or as requested */
 }
 
 /* Mobile Responsiveness */
 @media (max-width: 768px) {
-
-  .location-detail-panel {
-    left: 0.5rem;
-    right: 0.5rem;
-    bottom: 0.5rem;
+  .location-detail-wrapper {
+    left: 0;
+    right: 0;
+    bottom: 0;
+    width: 100%;
+    height: 60vh;
     max-width: none;
+    border-radius: 12px 12px 0 0;
   }
 }
 
@@ -793,5 +801,16 @@ export default {
 .fade-enter-from,
 .fade-leave-to {
   opacity: 0;
+}
+
+/* Right Slide Transition */
+.slide-right-enter-active,
+.slide-right-leave-active {
+  transition: transform 0.3s ease;
+}
+
+.slide-right-enter-from,
+.slide-right-leave-to {
+  transform: translateX(100%);
 }
 </style>
