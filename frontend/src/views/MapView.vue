@@ -50,7 +50,7 @@
                 <span class="menu-icon">➕</span>
                 Add new toilet
               </button>
-              <button class="menu-btn">
+              <button class="menu-btn" @click="handleReviewMenuClick">
                 <span class="menu-icon">📝</span>
                 Review toilet
               </button>
@@ -333,9 +333,25 @@ export default {
         window.open(url, '_blank');
     };
 
+    const handleReviewMenuClick = () => {
+        isMenuOpen.value = false;
+        if (selectedLocation.value) {
+            // If location selected, just ensure detail panel is open (it has the add review button)
+            // But detailed panel might cover map. 
+            // Ideally, we focus on the location and maybe wiggle the review button?
+            // For now, let's just alert user to select a location IF none selected.
+            // If selected, we could programmatically trigger the review modal or just show the panel.
+             console.log("Location selected, opening panel");
+        } else {
+            alert("Please select a location on the map to review.");
+        }
+    };
+
     const handleAddReview = () => {
-        alert('Open Review Modal (Implementation Pending)');
-        // Logic to open review modal
+        // This is emitted by detail panel if we wanted to handle it at parent level
+        // But DetailPanel currently handles it internally with the Modal. 
+        // We can keep this empty or remove it.
+        console.log('Detail Panel handles review internally now.');
     };
 
     const goHome = () => {
@@ -406,6 +422,10 @@ export default {
       handleRefineSearch,
       handleLocationAdded,
       handleNavigate,
+      handleRefineSearch,
+      handleLocationAdded,
+      handleNavigate,
+      handleReviewMenuClick,
       handleAddReview,
       // isUserMenuOpen,
       // isAuthenticated,

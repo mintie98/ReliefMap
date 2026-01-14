@@ -13,6 +13,10 @@ class ReviewController {
 
   async createReview(req, res, next) {
     try {
+      console.log('Create Review Request:');
+      console.log('Body:', req.body);
+      console.log('Files:', req.files);
+
       let reviewData = {
         ...req.body,
         user_id: req.user?.user_id || req.user?.id || req.body.user_id,

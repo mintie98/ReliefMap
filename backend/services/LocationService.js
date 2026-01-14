@@ -23,8 +23,8 @@ class LocationService {
         const lngRadius = (filters.neLng - filters.swLng) * 111 * Math.cos(centerLat * Math.PI / 180) / 2;
         const radiusKm = Math.sqrt(latRadius * latRadius + lngRadius * lngRadius);
 
-        // Only fetch if radius is reasonable (e.g. < 5km) to avoid spamming API when zoomed out too far
-        if (radiusKm < 5) {
+        // Only fetch if radius is reasonable (e.g. < 5km) and valid number
+        if (!isNaN(radiusKm) && radiusKm > 0 && radiusKm < 5) {
           try {
             await this.fetchAndSaveGoogleNearby(centerLat, centerLng, radiusKm);
             // Re-fetch from DB

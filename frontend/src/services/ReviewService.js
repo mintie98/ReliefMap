@@ -27,7 +27,12 @@ class ReviewService {
    */
   async createReview(reviewData) {
     try {
-      const response = await apiClient.post('/reviews', reviewData);
+      const config = {};
+      if (reviewData instanceof FormData) {
+        // Important: Set to undefined so browser sets the boundary
+        config.headers = { 'Content-Type': undefined };
+      }
+      const response = await apiClient.post('/reviews', reviewData, config);
       return {
         success: response.success,
         data: response.data,

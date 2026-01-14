@@ -3,14 +3,20 @@ const locationService = require('../services/LocationService');
 class LocationController {
   async searchLocations(req, res, next) {
     try {
+      const parseNum = (val) => {
+        if (val === undefined || val === null || val === '') return undefined;
+        const parsed = parseFloat(val);
+        return isNaN(parsed) ? undefined : parsed;
+      };
+
       const filters = {
-        lat: req.query.lat ? parseFloat(req.query.lat) : undefined,
-        lng: req.query.lng ? parseFloat(req.query.lng) : undefined,
-        radius: req.query.radius ? parseFloat(req.query.radius) : undefined, // in km
-        swLat: req.query.swLat ? parseFloat(req.query.swLat) : undefined,
-        swLng: req.query.swLng ? parseFloat(req.query.swLng) : undefined,
-        neLat: req.query.neLat ? parseFloat(req.query.neLat) : undefined,
-        neLng: req.query.neLng ? parseFloat(req.query.neLng) : undefined,
+        lat: parseNum(req.query.lat),
+        lng: parseNum(req.query.lng),
+        radius: parseNum(req.query.radius), // in km
+        swLat: parseNum(req.query.swLat),
+        swLng: parseNum(req.query.swLng),
+        neLat: parseNum(req.query.neLat),
+        neLng: parseNum(req.query.neLng),
         verificationStatus: req.query.verification_status,
         sourceType: req.query.source_type
       };

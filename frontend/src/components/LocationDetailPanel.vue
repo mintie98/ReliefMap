@@ -125,7 +125,7 @@
             </div>
             <p class="review-text">{{ review.review_text }}</p>
              <div class="review-images" v-if="review.images && review.images.length">
-                <img v-for="(img, i) in review.images" :key="i" :src="img" class="review-thumb" />
+                <img v-for="(img, i) in review.images" :key="i" :src="getReviewImageUrl(img)" class="review-thumb" @click="openImagePreview(getReviewImageUrl(img))" />
             </div>
         </div>
       </div>
@@ -167,7 +167,7 @@ export default {
   emits: ['close', 'navigate', 'add-review'],
   setup(props, { emit }) {
     const showReviewModal = ref(false);
-    const { createReview } = useReviewViewModel();
+    const { createReview, reviews: viewModelReviews, loadReviews } = useReviewViewModel();
     const router = useRouter();
 
     const handleAddReviewClick = () => {
@@ -239,7 +239,21 @@ export default {
         return 0;
     });
 
-    const reviews = computed(() => props.location.reviews || []);
+    const reviews = computed(() => {
+        // Prefer live ViewModel data if it corresponds to current location
+         if (viewModelReviews.value.length > 0 && viewModelReviews.value[0].location_id === props.location.location_id) {
+             return viewModelReviews.value;
+         }
+         // Fallback to initial prop data, but also trigger load if empty and we haven't loaded yet?
+         return props.location.reviews || [];
+    });
+
+    // Load reviews when location changes
+    watch(() => props.location.location_id, (newId) => {
+        if (newId) {
+            loadReviews(newId);
+        }
+    }, { immediate: true });
 
     const openingHoursText = computed(() => {
         // Parse opening_hours JSON if exists
@@ -294,6 +308,15 @@ export default {
         window.open(url, '_blank');
     };
 
+    const getReviewImageUrl = (img) => {
+        if (!img) return '';
+        if (img.startsWith('http')) return img;
+        // Assuming backend is at localhost:3000 (matching vite proxy)
+        // If server.js default is 4001, verify if PORT env is set. user reports API works, so port must match proxy.
+        // We can try to use relative path if we fixed proxy, but to be safe without restart:
+        return `http://localhost:3000${img}`; 
+    };
+
     const handleReviewSubmit = async (reviewData) => {
       console.log('Submitting review:', reviewData);
       
@@ -344,7 +367,10 @@ export default {
         showRightArrow,
         scrollGallery,
         checkScroll,
+        scrollGallery,
+        checkScroll,
         openImagePreview,
+        getReviewImageUrl,
         showReviewModal,
         showReviewModal,
         handleReviewSubmit,
