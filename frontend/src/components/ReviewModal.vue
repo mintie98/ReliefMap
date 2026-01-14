@@ -3,7 +3,7 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>Write a Review</h3>
-        <button class="close-btn" @click="$emit('close')">×</button>
+        <button class="close-btn" @click="$emit('close')">{{ ICONS.CLOSE }}</button>
       </div>
 
       <div class="modal-body">
@@ -17,7 +17,7 @@
               class="star" 
               :class="{ filled: n <= form.cleanliness_score }"
               @click="form.cleanliness_score = n"
-            >★</span>
+            >{{ ICONS.STAR }}</span>
           </div>
           <p class="rating-text" v-if="form.cleanliness_score > 0">
             {{ getRatingText(form.cleanliness_score) }}
@@ -116,6 +116,7 @@
 
 <script>
 import { reactive, ref } from 'vue';
+import { ICONS } from '../assets/icons';
 
 export default {
   name: 'ReviewModal',
@@ -190,7 +191,10 @@ export default {
       getRatingText,
       handleFileUpload,
       removeImage,
-      submitReview
+      handleFileUpload,
+      removeImage,
+      submitReview,
+      ICONS
     };
   }
 };
