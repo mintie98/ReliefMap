@@ -8,6 +8,7 @@
       </div>
 
       <div class="nav-actions">
+        <LanguageSwitcher />
         <UserMenu />
       </div>
     </div>
@@ -16,12 +17,14 @@
 
 <script>
 import UserMenu from './UserMenu.vue';
+import LanguageSwitcher from './LanguageSwitcher.vue';
 import '../assets/styles/AppHeader.css';
 
 export default {
   name: 'AppHeader',
   components: {
-    UserMenu
+    UserMenu,
+    LanguageSwitcher
   }
 };
 </script>

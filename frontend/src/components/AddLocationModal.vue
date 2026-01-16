@@ -2,93 +2,90 @@
   <div class="add-location-overlay">
     <div class="modal-content scroller">
       <div class="modal-header">
-        <h2>Add New Toilet</h2>
+        <h2>{{ $t('add_location.title') }}</h2>
         <button class="close-btn" @click="$emit('close')">{{ ICONS.CLOSE }}</button>
       </div>
 
       <form @submit.prevent="handleSubmit" class="add-form">
         <!-- Basic Info -->
         <div class="form-group">
-          <label for="name">Name *</label>
-          <input type="text" id="name" v-model="form.name" required placeholder="e.g. Park Restroom" />
+          <label for="name">{{ $t('add_location.name') }} *</label>
+          <input type="text" id="name" v-model="form.name" required :placeholder="$t('add_location.name_placeholder')" />
         </div>
 
         <div class="form-group">
-          <label for="address">Address *</label>
+          <label for="address">{{ $t('add_location.address') }} *</label>
           <div class="input-with-action">
             <input 
               type="text" 
               id="address" 
               v-model="form.address" 
               required 
-              placeholder="e.g. 1-1-1 Shibuya" 
+              :placeholder="$t('add_location.address_placeholder')" 
               @blur="geocodeAddress"
             />
             <button type="button" class="btn-icon" @click="geocodeAddress" title="Find coordinates">{{ ICONS.SEARCH }}</button>
           </div>
-          <small class="hint">Enter address to auto-detect coordinates</small>
+          <small class="hint">{{ $t('add_location.auto_detect_hint') }}</small>
         </div>
 
-        <div class="form-row">
-          <div class="form-group">
-            <label for="lat">Latitude (Auto)</label>
-            <input type="number" id="lat" v-model.number="form.latitude" step="any" readonly class="readonly-input" />
-          </div>
-          <div class="form-group">
-            <label for="lng">Longitude (Auto)</label>
-            <input type="number" id="lng" v-model.number="form.longitude" step="any" readonly class="readonly-input" />
-          </div>
+        <!-- Hidden Lat/Lng, Logic Preserved -->
+        <div class="form-row" style="display:none;">
+          <input type="number" id="lat" v-model.number="form.latitude" step="any" readonly />
+          <input type="number" id="lng" v-model.number="form.longitude" step="any" readonly />
         </div>
 
         <div class="form-group">
            <button type="button" class="btn-secondary btn-sm" @click="getCurrentLocation">
-             {{ ICONS.LOCATION_PIN }} Use Current Location
+             {{ ICONS.LOCATION_PIN }} {{ $t('add_location.use_current_location') }}
            </button>
         </div>
 
         <hr class="divider">
 
         <!-- Amenities -->
+        <!-- Amenities -->
         <div class="form-group">
-          <label>Amenities (Select all that apply)</label>
+          <label>{{ $t('review_modal.amenities_label') }}</label>
           <div class="amenities-grid">
             <label class="checkbox-btn" :class="{ active: form.amenities.western_style }">
               <input type="checkbox" v-model="form.amenities.western_style">
-              Western Style
+              {{ $t('amenities.western_style') }}
             </label>
             <label class="checkbox-btn" :class="{ active: form.amenities.japanese_style }">
               <input type="checkbox" v-model="form.amenities.japanese_style">
-              Japanese Style
+              {{ $t('amenities.japanese_style') }}
             </label>
             <label class="checkbox-btn" :class="{ active: form.amenities.accessible }">
               <input type="checkbox" v-model="form.amenities.accessible">
-              Accessible
+              {{ $t('amenities.accessible') }}
             </label>
             <label class="checkbox-btn" :class="{ active: form.amenities.baby_changing }">
               <input type="checkbox" v-model="form.amenities.baby_changing">
-              Baby Changing
+              {{ $t('amenities.baby_changing') }}
             </label>
             <label class="checkbox-btn" :class="{ active: form.amenities.warm_seat }">
               <input type="checkbox" v-model="form.amenities.warm_seat">
-              Warm Seat
+              {{ $t('amenities.warm_seat') }}
             </label>
           </div>
         </div>
 
         <!-- Gender Type -->
+        <!-- Gender Type -->
         <div class="form-group">
-          <label for="gender">Gender Type *</label>
+          <label for="gender">{{ $t('add_location.gender_type') }} *</label>
           <select id="gender" v-model="form.gender_type" required>
-            <option value="mixed">Mixed</option>
-            <option value="unisex">Unisex</option>
-            <option value="male">Male Only</option>
-            <option value="female">Female Only</option>
+            <option value="mixed">{{ $t('add_location.gender.mixed') }}</option>
+            <option value="unisex">{{ $t('add_location.gender.unisex') }}</option>
+            <option value="male">{{ $t('add_location.gender.male') }}</option>
+            <option value="female">{{ $t('add_location.gender.female') }}</option>
           </select>
         </div>
 
         <div class="form-actions">
           <button type="submit" class="btn-primary" :disabled="loading">
-            {{ loading ? 'Computing...' : 'Submit Toilet' }}
+            {{ loading ? $t('add_location.computing') : $t('add_location.submit') }}
           </button>
         </div>
         

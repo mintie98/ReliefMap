@@ -1,6 +1,8 @@
 import { ref, onMounted, watch, computed } from 'vue';
 import { useRouter } from 'vue-router';
 import { useLocationViewModel } from '../viewmodels/LocationViewModel';
+import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
+import authService from '../services/authService';
 import { ICONS } from '../assets/icons';
 
 import pinGreen from '../assets/toiletPin/green.png';
@@ -79,6 +81,31 @@ export function useMapView() {
         });
     };
 
+    let currentLocationMarker = null;
+
+    const updateCurrentLocationMarker = (loc) => {
+        if (!map) return;
+
+        if (!currentLocationMarker) {
+            currentLocationMarker = new window.google.maps.Marker({
+                position: loc,
+                map: map,
+                title: "You are here",
+                zIndex: 999, // On top of other markers
+                icon: {
+                    path: window.google.maps.SymbolPath.CIRCLE,
+                    scale: 7,
+                    fillColor: "#4285F4",
+                    fillOpacity: 1,
+                    strokeColor: "white",
+                    strokeWeight: 2,
+                }
+            });
+        } else {
+            currentLocationMarker.setPosition(loc);
+        }
+    };
+
     const initMap = () => {
         console.log('initMap called');
         if (!window.google || !mapContainer.value) return;
@@ -117,6 +144,7 @@ export function useMapView() {
                 (pos) => {
                     const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                     map.setCenter(loc);
+                    updateCurrentLocationMarker(loc);
                     updateFilters({ lat: loc.lat, lng: loc.lng });
                     loadLocations();
                 },
@@ -152,6 +180,7 @@ export function useMapView() {
                 const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
                 map.panTo(loc);
                 map.setZoom(15);
+                updateCurrentLocationMarker(loc);
                 updateFilters({ lat: loc.lat, lng: loc.lng });
                 loadLocations();
             });
@@ -190,17 +219,94 @@ export function useMapView() {
         window.open(url, '_blank');
     };
 
+    // Smart Review Flow State
+    const showLocationPicker = ref(false);
+    const showStandaloneReviewModal = ref(false);
+    const targetReviewLocation = ref(null);
+
+
+
     const handleReviewMenuClick = () => {
-        isMenuOpen.value = false;
-        if (selectedLocation.value) {
-            console.log("Location selected, opening panel");
+        console.log("handleReviewMenuClick clicked");
+        try {
+            isMenuOpen.value = false;
+
+            if (!authService) {
+                alert("AuthService is missing!");
+                return;
+            }
+
+            const isAuth = authService.isAuthenticated();
+            console.log("Is Authenticated:", isAuth);
+
+            if (!isAuth) {
+                if (confirm('You need to login to write a review. Go to login page?')) {
+                    router.push('/login');
+                }
+                return;
+            }
+
+            if (selectedLocation.value) {
+                console.log("Has selected location:", selectedLocation.value);
+                targetReviewLocation.value = selectedLocation.value;
+                showStandaloneReviewModal.value = true;
+            } else {
+                console.log("No selected location, showing picker");
+                showLocationPicker.value = true;
+            }
+        } catch (e) {
+            console.error("Error in review menu click:", e);
+            alert("Error: " + e.message);
+        }
+    };
+
+    const handleLocationPick = (loc) => {
+        showLocationPicker.value = false;
+        targetReviewLocation.value = loc;
+        focusLocation(loc);
+        showStandaloneReviewModal.value = true;
+    };
+
+    const closeStandaloneReview = () => {
+        showStandaloneReviewModal.value = false;
+        targetReviewLocation.value = null;
+    };
+
+    const handleStandaloneReviewSubmit = async (reviewData) => {
+        if (!targetReviewLocation.value) return;
+
+        const formData = new FormData();
+        formData.append('location_id', targetReviewLocation.value.location_id);
+        formData.append('review_text', reviewData.review_text);
+        formData.append('cleanliness_score', reviewData.cleanliness_score);
+
+        const waitMap = { 'none': 5, 'short': 4, 'medium': 3, 'long': 1 };
+        formData.append('wait_time_score', waitMap[reviewData.wait_time] || 0);
+
+        formData.append('amenities', JSON.stringify(reviewData.amenities));
+
+        if (reviewData.images && reviewData.images.length > 0) {
+            reviewData.images.forEach(file => {
+                formData.append('images', file);
+            });
+        }
+
+        const { createReview } = useReviewViewModel();
+        const result = await createReview(formData, targetReviewLocation.value.location_id);
+
+        if (result.success) {
+            alert('Review Submitted Successfully!');
+            showStandaloneReviewModal.value = false;
+            loadLocations(); // Refresh map to show new rating/status if changed
         } else {
-            alert("Please select a location on the map to review.");
+            alert('Failed to submit review: ' + (result.error || 'Unknown error'));
         }
     };
 
     const handleAddReview = () => {
-        console.log('Detail Panel handles review internally now.');
+        // Legacy or direct call
+        // If called from DetailPanel, it handles everything internally.
+        console.log('Detail Panel handles review internally.');
     };
 
     const goHome = () => {
@@ -264,6 +370,11 @@ export function useMapView() {
         navigateToLogin,
         navigateToLogin,
         goHome,
-        ICONS
+        ICONS,
+        showLocationPicker,
+        showStandaloneReviewModal,
+        handleLocationPick,
+        closeStandaloneReview,
+        handleStandaloneReviewSubmit
     };
 }

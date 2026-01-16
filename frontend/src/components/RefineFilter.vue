@@ -23,10 +23,10 @@
       <!-- Section: Available Time -->
       <div class="filter-section">
         <div class="section-label">
-          <span class="icon">{{ ICONS.CLOCK }}</span> Available Time
+          <span class="icon">{{ ICONS.CLOCK }}</span> {{ $t('refine_filter.available_time') }}
         </div>
         <button class="btn-option" :class="{ active: filters.visitTime }" @click="filters.visitTime = !filters.visitTime">
-          Visit time
+          {{ $t('refine_filter.visit_time') }}
         </button>
       </div>
 
@@ -35,13 +35,13 @@
       <!-- Section: Verification Status -->
       <div class="filter-section">
         <div class="section-label">
-          <span class="icon" style="color:#10B981">{{ ICONS.CHECK_VERIFIED }}</span> Verification Status
+          <span class="icon" style="color:#10B981">{{ ICONS.CHECK_VERIFIED }}</span> {{ $t('refine_filter.verification_status') }}
         </div>
         <div class="checkbox-group">
           <label class="checkbox-item red-text">
             <input type="checkbox" v-model="filters.status.unverified">
             <span class="checkmark"></span>
-            Unverified
+            {{ $t('location_detail.unverified') }}
           </label>
           <label class="checkbox-item yellow-text">
             <input type="checkbox" v-model="filters.status.inReview">
@@ -51,7 +51,7 @@
           <label class="checkbox-item green-text">
             <input type="checkbox" v-model="filters.status.verified">
             <span class="checkmark"></span>
-            Verified
+            {{ $t('location_detail.verified') }}
           </label>
         </div>
       </div>
@@ -61,7 +61,7 @@
       <!-- Section: Features -->
       <div class="filter-section">
         <div class="section-label">
-          <span class="icon" style="color:#F43F5E">{{ ICONS.CHECK_FEATURE }}</span> Features
+          <span class="icon" style="color:#F43F5E">{{ ICONS.CHECK_FEATURE }}</span> {{ $t('refine_filter.features') }}
         </div>
         <div class="features-grid">
           <button 
@@ -71,7 +71,7 @@
             :class="{ active: filters.features[feature.key] }"
             @click="toggleFeature(feature.key)"
           >
-            {{ feature.label }}
+            {{ getFeatureLabel(feature.key) }}
           </button>
         </div>
       </div>
@@ -79,13 +79,14 @@
 
     <!-- Footer -->
     <div class="filter-footer">
-      <button class="btn-search" @click="applyFilters">search</button>
+      <button class="btn-search" @click="applyFilters">{{ $t('refine_filter.search') }}</button>
     </div>
   </div>
 </template>
 
 <script>
 import { useRefineFilter } from '../composables/useRefineFilter';
+import { useI18n } from 'vue-i18n';
 import '../assets/styles/RefineFilter.css';
 
 export default {
@@ -98,6 +99,7 @@ export default {
   },
   emits: ['close', 'search'],
   setup(props, { emit }) {
+    const { t } = useI18n();
     const {
       filters,
       featureList,
@@ -106,12 +108,17 @@ export default {
       ICONS
     } = useRefineFilter(emit);
 
+    const getFeatureLabel = (key) => {
+      return t(`refine_filter.feature_list.${key}`);
+    };
+
     return {
       filters,
       featureList,
       toggleFeature,
       applyFilters,
-      ICONS
+      ICONS,
+      getFeatureLabel
     };
   }
 };

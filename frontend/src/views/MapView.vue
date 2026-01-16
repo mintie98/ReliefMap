@@ -15,6 +15,7 @@
       
       <div class="header-right">
         <div class="user-profile-container">
+          <LanguageSwitcher />
           <UserMenu />
         </div>
       </div>
@@ -32,7 +33,7 @@
                   <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
                   <polyline points="9 22 9 12 15 12 15 22"></polyline>
                 </svg>
-                Back to Home
+                {{ $t('map_drawer.back_home') }}
               </button>
                <button class="close-menu-btn" @click="isMenuOpen = false">
                  <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -44,19 +45,19 @@
             <div class="menu-items">
               <button class="menu-btn" @click="openRefine">
                 <span class="menu-icon">{{ ICONS.SEARCH }}</span>
-                Refine
+                {{ $t('map_drawer.refine') }}
               </button>
               <button class="menu-btn" @click="openAddLocation">
                 <span class="menu-icon">{{ ICONS.ADD }}</span>
-                Add new toilet
+                {{ $t('map_drawer.add_new') }}
               </button>
               <button class="menu-btn" @click="handleReviewMenuClick">
                 <span class="menu-icon">{{ ICONS.REVIEW }}</span>
-                Review toilet
+                {{ $t('map_drawer.review') }}
               </button>
               <button class="menu-btn">
                 <span class="menu-icon">{{ ICONS.FAQ }}</span>
-                FAQ
+                {{ $t('map_drawer.faq') }}
               </button>
             </div>
           </template>
@@ -110,6 +111,21 @@
         </div>
       </transition>
     </main>
+
+    <!-- Global Review Modal (Standalone Flow) -->
+    <teleport to="body">
+       <ReviewModal 
+          v-if="showStandaloneReviewModal" 
+          @close="closeStandaloneReview"
+          @submit="handleStandaloneReviewSubmit"
+       />
+       <LocationPickerModal
+          v-if="showLocationPicker"
+          :locations="filteredLocations"
+          @close="showLocationPicker = false"
+          @select="handleLocationPick"
+       />
+    </teleport>
   </div>
 </template>
 
@@ -119,13 +135,16 @@ import AddLocationModal from '../components/AddLocationModal.vue';
 import RefineFilter from '../components/RefineFilter.vue';
 import UserMenu from '../components/UserMenu.vue';
 import LocationDetailPanel from '../components/LocationDetailPanel.vue';
+import LanguageSwitcher from '../components/LanguageSwitcher.vue';
+import ReviewModal from '../components/ReviewModal.vue'; 
+import LocationPickerModal from '../components/LocationPickerModal.vue';
 
 // Import CSS
 import '../assets/styles/MapView.css';
 
 export default {
   name: 'MapView',
-  components: { RefineFilter, AddLocationModal, UserMenu, LocationDetailPanel },
+  components: { RefineFilter, AddLocationModal, UserMenu, LocationDetailPanel, LanguageSwitcher, ReviewModal, LocationPickerModal },
   setup() {
     const {
       mapContainer,
@@ -151,11 +170,18 @@ export default {
       handleRefineSearch,
       handleLocationAdded,
       handleNavigate,
-      handleReviewMenuClick,
+      handleReviewMenuClick, // Triggers Smart Flow
       handleAddReview,
       navigateToLogin,
       goHome,
-      ICONS
+      ICONS,
+      
+      // New Smart Flow State
+      showLocationPicker,
+      showStandaloneReviewModal,
+      handleLocationPick,
+      closeStandaloneReview,
+      handleStandaloneReviewSubmit
     } = useMapView();
 
     return {
@@ -186,7 +212,12 @@ export default {
       handleAddReview,
       navigateToLogin,
       goHome,
-      ICONS
+      ICONS,
+      showLocationPicker,
+      showStandaloneReviewModal,
+      handleLocationPick,
+      closeStandaloneReview,
+      handleStandaloneReviewSubmit
     };
   }
 };

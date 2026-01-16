@@ -20,7 +20,7 @@
                 <span class="icon">{{ ICONS.TOILET }}</span>
                 <div class="pin-point"></div>
               </div>
-              <span class="category-label">Toilet</span>
+              <span class="category-label">{{ $t('home.categories.toilet') }}</span>
             </div>
 
             <!-- Travel Checkin -->
@@ -29,7 +29,7 @@
                 <span class="icon">{{ ICONS.TRAVEL_CHECKIN }}</span>
                 <div class="pin-point"></div>
               </div>
-              <span class="category-label">Travel Checkin</span>
+              <span class="category-label">{{ $t('home.categories.travel_checkin') }}</span>
             </div>
 
             <!-- Hot Spring -->
@@ -38,7 +38,7 @@
                 <span class="icon">{{ ICONS.HOT_SPRING }}</span>
                 <div class="pin-point"></div>
               </div>
-              <span class="category-label">Hot Spring</span>
+              <span class="category-label">{{ $t('home.categories.hot_spring') }}</span>
             </div>
 
             <!-- Disaster Prevention -->
@@ -47,7 +47,7 @@
                 <span class="icon">{{ ICONS.DISASTER_PREVENTION }}</span>
                 <div class="pin-point"></div>
               </div>
-              <span class="category-label">Disaster prevention<br>and evacuation</span>
+              <span class="category-label" style="white-space: pre-line;">{{ $t('home.categories.disaster_prevention') }}</span>
             </div>
 
             <!-- Fishing Ground -->
@@ -56,7 +56,7 @@
                 <span class="icon">{{ ICONS.FISHING }}</span>
                 <div class="pin-point"></div>
               </div>
-              <span class="category-label">Fishing ground</span>
+              <span class="category-label">{{ $t('home.categories.fishing') }}</span>
             </div>
 
             <!-- Camping -->
@@ -65,7 +65,7 @@
                 <span class="icon">{{ ICONS.CAMPING }}</span>
                 <div class="pin-point"></div>
               </div>
-              <span class="category-label">Camping</span>
+              <span class="category-label">{{ $t('home.categories.camping') }}</span>
             </div>
 
           </div>

@@ -2,14 +2,14 @@
   <div class="modal-overlay" @click.self="$emit('close')">
     <div class="modal-content">
       <div class="modal-header">
-        <h3>Write a Review</h3>
+        <h3>{{ $t('review_modal.title') }}</h3>
         <button class="close-btn" @click="$emit('close')">{{ ICONS.CLOSE }}</button>
       </div>
 
       <div class="modal-body">
         <!-- Cleanliness Rating -->
         <div class="form-group">
-          <label>Cleanliness Rating <span class="required">*</span></label>
+          <label>{{ $t('review_modal.cleanliness_rating') }} <span class="required">*</span></label>
           <div class="star-rating">
             <span 
               v-for="n in 5" 
@@ -26,49 +26,49 @@
 
         <!-- Amenities Verification -->
         <div class="form-group">
-          <label>Amenities (What's available?)</label>
+          <label>{{ $t('review_modal.amenities_label') }}</label>
           <div class="amenities-grid">
             <label class="amenity-check">
               <input type="checkbox" v-model="form.amenities.western_style">
-              <span> Western Style</span>
+              {{ $t('amenities.western_style') }}
             </label>
             <label class="amenity-check">
               <input type="checkbox" v-model="form.amenities.japanese_style">
-              <span> Japanese Style</span>
+              {{ $t('amenities.japanese_style') }}
             </label>
             <label class="amenity-check">
               <input type="checkbox" v-model="form.amenities.accessible">
-              <span> Accessible</span>
+              {{ $t('amenities.accessible') }}
             </label>
             <label class="amenity-check">
               <input type="checkbox" v-model="form.amenities.baby_changing">
-              <span> Baby Changing</span>
+              {{ $t('amenities.baby_changing') }}
             </label>
             <label class="amenity-check">
               <input type="checkbox" v-model="form.amenities.warm_seat">
-              <span> Warm Seat/Bidet</span>
+              {{ $t('amenities.warm_seat') }}
             </label>
           </div>
         </div>
 
         <!-- Waiting Time -->
         <div class="form-group">
-          <label>Wait Time</label>
+          <label>{{ $t('review_modal.wait_time') }}</label>
           <select v-model="form.wait_time" class="form-input">
-            <option value="">Select (Optional)</option>
-            <option value="none">No wait</option>
-            <option value="short">Short (&lt; 5 mins)</option>
-            <option value="medium">Medium (5-10 mins)</option>
-            <option value="long">Long (&gt; 10 mins)</option>
+            <option value="">{{ $t('review_modal.select_optional') }}</option>
+            <option value="none">{{ $t('review_modal.wait_time_options.none') }}</option>
+            <option value="short">{{ $t('review_modal.wait_time_options.short') }}</option>
+            <option value="medium">{{ $t('review_modal.wait_time_options.medium') }}</option>
+            <option value="long">{{ $t('review_modal.wait_time_options.long') }}</option>
           </select>
         </div>
 
         <!-- Comment -->
         <div class="form-group">
-          <label>Comment</label>
+          <label>{{ $t('review_modal.comment') }}</label>
           <textarea 
             v-model="form.review_text" 
-            placeholder="Share your experience (e.g. Is it clean? Is it crowded?)" 
+            :placeholder="$t('review_modal.comment_placeholder')"
             rows="3"
             maxlength="500"
             class="form-input"
@@ -77,7 +77,7 @@
 
         <!-- Photos -->
         <div class="form-group">
-           <label>Photos (Max 3)</label>
+           <label>{{ $t('review_modal.photos') }}</label>
            <div class="photo-upload-area">
               <input 
                 type="file" 
@@ -97,7 +97,7 @@
                     v-if="previewImages.length < 3"
                     @click="$refs.fileInput.click()"
                  >
-                    <span>+ Add Photo</span>
+                    <span>{{ $t('review_modal.add_photo') }}</span>
                  </div>
               </div>
            </div>
@@ -105,9 +105,9 @@
       </div>
 
       <div class="modal-footer">
-        <button class="btn-cancel" @click="$emit('close')">Cancel</button>
+        <button class="btn-cancel" @click="$emit('close')">{{ $t('review_modal.cancel') }}</button>
         <button class="btn-submit" @click="submitReview" :disabled="isSubmitting || form.cleanliness_score === 0">
-          {{ isSubmitting ? 'Submitting...' : 'Submit Review' }}
+          {{ isSubmitting ? $t('review_modal.submitting') : $t('review_modal.submit') }}
         </button>
       </div>
     </div>

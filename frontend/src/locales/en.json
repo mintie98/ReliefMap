@@ -1,0 +1,128 @@
+{
+    "common": {
+        "no_account": "Don't have an account?",
+        "already_have_account": "Already have an account?",
+        "sign_up": "Sign up",
+        "register": "Register",
+        "profile": "Profile",
+        "settings": "Settings",
+        "language": "Language"
+    },
+    "home": {
+        "welcome": "Welcome to ReliefMap",
+        "subtitle": "Find the nearest relief.",
+        "search_placeholder": "Search for location...",
+        "filter": "Filter",
+        "map_view": "Map View",
+        "list_view": "List View",
+        "categories": {
+            "toilet": "Toilet",
+            "travel_checkin": "Travel Checkin",
+            "hot_spring": "Hot Spring",
+            "disaster_prevention": "Disaster prevention\nand evacuation",
+            "fishing": "Fishing ground",
+            "camping": "Camping"
+        }
+    },
+    "location_detail": {
+        "address": "Address",
+        "hours": "Opening Hours",
+        "rating": "Rating",
+        "reviews": "Reviews",
+        "amenities": "Amenities",
+        "get_directions": "Get Directions",
+        "add_review": "Add Review",
+        "status": "Status:",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "crowd_score": "Crowd Score",
+        "cleanliness_score": "Cleanliness Score",
+        "toilet_amenities": "Toilet Amenities",
+        "toilet_info": "Toilet info:",
+        "toilet_details": {
+            "gate_access": "Gate Access Status",
+            "floor_level": "Floor Level",
+            "location_type": "Location Type",
+            "gender_separation": "Gender Separation",
+            "none": "None",
+            "public_toilet": "Public Toilet"
+        },
+        "no_reviews": "No reviews yet. Be the first!",
+        "start_navigation": "Start Navigation",
+        "no_images": "No Images"
+    },
+    "review_modal": {
+        "title": "Write a Review",
+        "cleanliness_rating": "Cleanliness Rating",
+        "amenities_label": "Amenities (What's available?)",
+        "wait_time": "Wait Time",
+        "comment": "Comment",
+        "comment_placeholder": "Share your experience...",
+        "photos": "Photos (Max 3)",
+        "add_photo": "+ Add Photo",
+        "submit": "Submit Review",
+        "cancel": "Cancel",
+        "submitting": "Submitting..."
+    },
+    "refine_filter": {
+        "title": "Refine Results",
+        "reset": "Reset",
+        "apply": "Apply",
+        "distance": "Distance",
+        "rating": "Rating",
+        "open_now": "Open Now Only",
+        "available_time": "Available Time",
+        "visit_time": "Visit time",
+        "verification_status": "Verification Status",
+        "features": "Features",
+        "search": "Search",
+        "feature_list": {
+            "japanese": "Japanese-style",
+            "western": "Western-style",
+            "washlet": "Washlet/Bidet",
+            "public": "Public Toilet",
+            "diaper": "Diaper Changing",
+            "wheelchair": "Wheelchair",
+            "child_seat": "Child Seat",
+            "parking": "Parking"
+        }
+    },
+    "map_drawer": {
+        "back_home": "Back to Home",
+        "refine": "Refine",
+        "add_new": "Add new toilet",
+        "review": "Review toilet",
+        "faq": "FAQ"
+    },
+    "amenities": {
+        "western_style": "Western Style",
+        "japanese_style": "Japanese Style",
+        "accessible": "Accessible",
+        "baby_changing": "Baby Changing",
+        "warm_seat": "Warm Seat",
+        "powder_corner": "Powder Corner"
+    },
+    "add_location": {
+        "title": "Add New Toilet",
+        "name": "Name",
+        "name_placeholder": "e.g. Park Restroom",
+        "address": "Address",
+        "address_placeholder": "e.g. 1-1-1 Shibuya",
+        "auto_detect_hint": "Enter address to auto-detect coordinates",
+        "use_current_location": "Use Current Location",
+        "gender_type": "Gender Type",
+        "submit": "Submit Toilet",
+        "computing": "Computing...",
+        "gender": {
+            "mixed": "Mixed",
+            "unisex": "Unisex",
+            "male": "Male Only",
+            "female": "Female Only"
+        }
+    },
+    "location_picker": {
+        "title": "Select a location to review",
+        "search_placeholder": "Search for a place...",
+        "no_results": "No locations found matching your search."
+    }
+}

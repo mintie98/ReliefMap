@@ -1,54 +1,54 @@
 <template>
   <div class="auth-container">
     <div class="auth-card">
-      <h1 class="auth-title">Create your Free Account</h1>
+      <h1 class="auth-title">{{ $t('auth.sign_up') }}</h1>
       
       <form @submit.prevent="handleRegister" class="auth-form">
         <div class="form-group">
-          <label for="fullname">Full Name</label>
+          <label for="fullname">{{ $t('auth.name_label') }}</label>
           <input 
             type="text" 
             id="fullname" 
             v-model="fullname" 
-            placeholder="Enter your Fulll Name here"
+            :placeholder="$t('auth.name_placeholder')"
             class="auth-input"
             required
           />
         </div>
 
         <div class="form-group">
-          <label for="email">Email</label>
+          <label for="email">{{ $t('auth.email_label') }}</label>
           <input 
             type="email" 
             id="email" 
             v-model="email" 
-            placeholder="Enter your Email here"
+            :placeholder="$t('auth.email_placeholder')"
             class="auth-input"
             required
           />
         </div>
 
         <div class="form-group">
-          <label for="password">Password</label>
+          <label for="password">{{ $t('auth.password_label') }}</label>
           <input 
             type="password" 
             id="password" 
             v-model="password" 
-            placeholder="Enter your Password here"
+            :placeholder="$t('auth.password_placeholder')"
             class="auth-input"
             required
           />
         </div>
 
-        <button type="submit" class="auth-submit">Create Account</button>
+        <button type="submit" class="auth-submit">{{ $t('auth.sign_up') }}</button>
       </form>
 
       <div class="auth-links">
-        <p>Already have a account? <router-link to="/login" class="link-highlight">Log in</router-link></p>
+        <p>{{ $t('auth.already_have_account') }} <router-link to="/login" class="link-highlight">{{ $t('common.login') }}</router-link></p>
       </div>
 
       <div class="auth-divider">
-        <span>- OR -</span>
+        <span>{{ $t('auth.or_continue') }}</span>
       </div>
 
       <button class="btn-google">
@@ -58,7 +58,7 @@
           <path fill="#4CAF50" d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z"/>
           <path fill="#1976D2" d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z"/>
         </svg>
-        Sign up with Google
+        {{ $t('auth.google_signin') }}
       </button>
     </div>
   </div>

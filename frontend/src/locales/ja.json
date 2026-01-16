@@ -1,0 +1,152 @@
+{
+    "common": {
+        "login": "ログイン",
+        "logout": "ログアウト",
+        "register": "登録",
+        "profile": "プロフィール",
+        "settings": "設定",
+        "language": "言語"
+    },
+    "home": {
+        "welcome": "ReliefMapへようこそ",
+        "subtitle": "近くの休憩所を見つけましょう。",
+        "search_placeholder": "場所を検索...",
+        "filter": "フィルター",
+        "map_view": "地図表示",
+        "list_view": "リスト表示",
+        "categories": {
+            "toilet": "トイレ",
+            "travel_checkin": "観光チェックイン",
+            "hot_spring": "温泉",
+            "disaster_prevention": "防災・避難所",
+            "fishing": "釣り場",
+            "camping": "キャンプ場"
+        }
+    },
+    "auth": {
+        "email_label": "メールアドレス",
+        "email_placeholder": "メールアドレスを入力",
+        "password_label": "パスワード",
+        "password_placeholder": "パスワードを入力",
+        "no_account": "アカウントをお持ちでないですか？",
+        "already_have_account": "すでにアカウントをお持ちですか？",
+        "sign_up": "登録する",
+        "forgot_password": "パスワードをお忘れですか？",
+        "or_continue": "- または -",
+        "google_signin": "Googleでログイン",
+        "login_failed": "ログインに失敗しました",
+        "register_success": "登録が完了しました！",
+        "name_label": "氏名",
+        "name_placeholder": "氏名を入力",
+        "confirm_password_label": "パスワード確認",
+        "confirm_password_placeholder": "パスワードを再入力"
+    },
+    "location_detail": {
+        "address": "住所",
+        "hours": "営業時間",
+        "rating": "評価",
+        "reviews": "レビュー",
+        "amenities": "設備",
+        "get_directions": "ルート検索",
+        "add_review": "レビューを書く",
+        "status": "ステータス:",
+        "verified": "認証済み",
+        "unverified": "未認証",
+        "crowd_score": "混雑度",
+        "cleanliness_score": "清潔度",
+        "toilet_amenities": "トイレ設備",
+        "toilet_info": "トイレ情報:",
+        "toilet_details": {
+            "gate_access": "改札内外",
+            "floor_level": "階数",
+            "location_type": "場所タイプ",
+            "gender_separation": "男女別",
+            "none": "なし",
+            "public_toilet": "公衆トイレ"
+        },
+        "no_reviews": "レビューはまだありません。一番乗りしましょう！",
+        "start_navigation": "ナビ開始",
+        "no_images": "画像なし"
+    },
+    "review_modal": {
+        "title": "レビューを書く",
+        "cleanliness_rating": "清潔度評価",
+        "amenities_label": "設備 (利用可能なものは？)",
+        "wait_time": "待ち時間",
+        "wait_time_options": {
+            "none": "なし",
+            "short": "短い (< 5分)",
+            "medium": "普通 (5-15分)",
+            "long": "長い (> 15分)"
+        },
+        "select_optional": "選択 (任意)",
+        "comment": "コメント",
+        "comment_placeholder": "体験を共有してください...",
+        "photos": "写真 (最大3枚)",
+        "add_photo": "+ 写真を追加",
+        "submit": "投稿する",
+        "cancel": "キャンセル",
+        "submitting": "送信中..."
+    },
+    "refine_filter": {
+        "title": "絞り込み",
+        "reset": "リセット",
+        "apply": "適用",
+        "distance": "距離",
+        "rating": "評価",
+        "open_now": "営業中のみ",
+        "available_time": "利用可能時間",
+        "visit_time": "訪問時間",
+        "verification_status": "認証ステータス",
+        "features": "設備",
+        "search": "検索",
+        "feature_list": {
+            "japanese": "和式",
+            "western": "洋式",
+            "washlet": "温水洗浄便座",
+            "public": "公衆トイレ",
+            "diaper": "おむつ交換台",
+            "wheelchair": "車椅子対応",
+            "child_seat": "ベビーチェア",
+            "parking": "駐車場"
+        }
+    },
+    "map_drawer": {
+        "back_home": "ホームに戻る",
+        "refine": "絞り込み",
+        "add_new": "トイレを追加",
+        "review": "レビューを書く",
+        "faq": "よくある質問"
+    },
+    "amenities": {
+        "western_style": "洋式",
+        "japanese_style": "和式",
+        "accessible": "多目的トイレ",
+        "baby_changing": "おむつ交換台",
+        "warm_seat": "温水便座",
+        "powder_corner": "パウダーコーナー"
+    },
+    "add_location": {
+        "title": "新しいトイレを追加",
+        "name": "名称",
+        "name_placeholder": "例: 公園のトイレ",
+        "address": "住所",
+        "address_placeholder": "例: 渋谷区1-1-1",
+        "auto_detect_hint": "住所を入力すると自動で座標を取得します",
+        "use_current_location": "現在地を使用",
+        "gender_type": "性別タイプ",
+        "submit": "追加する",
+        "computing": "処理中...",
+        "gender": {
+            "mixed": "共用",
+            "unisex": "誰でもトイレ",
+            "male": "男性用",
+            "female": "女性用"
+        }
+    },
+    "location_picker": {
+        "title": "レビューする場所を選択",
+        "search_placeholder": "場所を検索...",
+        "no_results": "一致する場所が見つかりませんでした。"
+    }
+}

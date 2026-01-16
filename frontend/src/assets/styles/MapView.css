@@ -133,7 +133,7 @@
     border-left: 1px solid #ddd;
     box-shadow: -2px 0 10px rgba(0, 0, 0, 0.1);
     z-index: 1100;
-    /* High z-index to sit above map */
+    /* High z-index to sit above map but below modal (2000) */
     overflow: hidden;
     border-radius: 5px 0 0 0;
     /* Round top-left only or as requested */
