@@ -45,16 +45,17 @@
 }
 
 .address-section .icon {
-  color: #EA4335; /* Red pin */
+  color: #EA4335;
+  /* Red pin */
   margin-right: 0.5rem;
 }
 
 /* Gallery */
 .gallery-container {
-    position: relative;
-    margin-bottom: 1rem;
-    display: flex;
-    align-items: center;
+  position: relative;
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
 }
 
 .image-gallery {
@@ -63,39 +64,45 @@
   overflow-x: auto;
   padding-bottom: 0.5rem;
   scroll-behavior: smooth;
-  scrollbar-width: none; /* Hide scrollbar for cleaner UI */
+  scrollbar-width: none;
+  /* Hide scrollbar for cleaner UI */
   width: 100%;
 }
+
 .image-gallery::-webkit-scrollbar {
-    display: none;
+  display: none;
 }
 
 .gallery-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    background: rgba(255,255,255,0.8);
-    border: 1px solid #ddd;
-    border-radius: 50%;
-    width: 30px;
-    height: 30px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    font-size: 1.2rem;
-    z-index: 2;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    padding-bottom: 3px; /* visual center fix */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  background: rgba(255, 255, 255, 0.8);
+  border: 1px solid #ddd;
+  border-radius: 50%;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 1.2rem;
+  z-index: 2;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding-bottom: 3px;
+  /* visual center fix */
 }
+
 .gallery-nav:hover {
-    background: white;
+  background: white;
 }
+
 .gallery-nav.prev {
-    left: 0;
+  left: 0;
 }
+
 .gallery-nav.next {
-    right: 0;
+  right: 0;
 }
 
 .gallery-item {
@@ -112,7 +119,9 @@
   margin-bottom: 1.5rem;
 }
 
-.status-row, .time-row, .score-row {
+.status-row,
+.time-row,
+.score-row {
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -121,7 +130,17 @@
 }
 
 .status-verified {
-  color: #34A853; /* Green */
+  color: #34A853;
+  /* Green */
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.status-pending {
+  color: #FBBC04;
+  /* Yellow/Orange */
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -134,14 +153,16 @@
 }
 
 .stars {
-  color: #FBBC04; /* Yellow */
+  color: #FBBC04;
+  /* Yellow */
 }
 
 .stars span.filled {
-    color: #FBBC04;
+  color: #FBBC04;
 }
+
 .stars span {
-    color: #ddd;
+  color: #ddd;
 }
 
 /* Amenities */
@@ -168,122 +189,129 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  opacity: 0.3; /* Inactive style */
+  opacity: 0.3;
+  /* Inactive style */
 }
 
 .amenity-icon.active {
-    opacity: 1;
-    border-color: #1976D2;
+  opacity: 1;
+  border-color: #1976D2;
 }
 
 .amenity-icon img {
-    width: 24px;
-    height: 24px;
+  width: 24px;
+  height: 24px;
 }
 
 /* Details List */
 .details-section {
-    margin-bottom: 1.5rem;
+  margin-bottom: 1.5rem;
 }
+
 .details-section h3 {
-    font-size: 0.9rem;
-    font-weight: 600;
-    margin-bottom: 0.5rem;
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin-bottom: 0.5rem;
 }
+
 .details-section ul {
-    list-style: none;
-    padding: 0;
-    font-size: 0.85rem;
-    color: #444;
+  list-style: none;
+  padding: 0;
+  font-size: 0.85rem;
+  color: #444;
 }
+
 .details-section li {
-    margin-bottom: 0.25rem;
+  margin-bottom: 0.25rem;
 }
 
 /* Reviews */
 .reviews-section {
-    margin-bottom: 3rem;
+  margin-bottom: 3rem;
 }
 
 .reviews-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
 }
 
 .add-review-btn {
-    background: #1976D2;
-    color: white;
-    border: none;
-    padding: 0.4rem 0.8rem;
-    border-radius: 4px;
-    font-size: 0.8rem;
-    cursor: pointer;
+  background: #1976D2;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  cursor: pointer;
 }
 
 .review-item {
-    background: #f9f9f9;
-    padding: 0.8rem;
-    border-radius: 8px;
-    margin-bottom: 1rem;
+  background: #f9f9f9;
+  padding: 0.8rem;
+  border-radius: 8px;
+  margin-bottom: 1rem;
 }
 
 .review-top {
-    display: flex;
-    justify-content: space-between;
-    font-size: 0.8rem;
-    color: #666;
-    margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.8rem;
+  color: #666;
+  margin-bottom: 0.25rem;
 }
 
 .reviewer-name {
-    font-weight: 600;
-    color: #333;
+  font-weight: 600;
+  color: #333;
 }
 
 .review-text {
-    font-size: 0.9rem;
-    margin: 0.5rem 0;
+  font-size: 0.9rem;
+  margin: 0.5rem 0;
 }
 
 .review-thumb {
-    width: 60px;
-    height: 60px;
-    border-radius: 4px;
-    object-fit: cover;
-    margin-right: 0.5rem;
+  width: 60px;
+  height: 60px;
+  border-radius: 4px;
+  object-fit: cover;
+  margin-right: 0.5rem;
 }
 
 /* Footer */
 .panel-footer {
-    /* position: absolute; removed to allow flex flow */
-    /* bottom: 0; */
-    /* left: 0; */
-    width: 100%;
-    padding: 1rem;
-    background: white;
-    border-top: 1px solid #eee;
-    z-index: 10;
-    flex-shrink: 0; /* Don't shrink */
+  /* position: absolute; removed to allow flex flow */
+  /* bottom: 0; */
+  /* left: 0; */
+  width: 100%;
+  padding: 1rem;
+  background: white;
+  border-top: 1px solid #eee;
+  z-index: 10;
+  flex-shrink: 0;
+  /* Don't shrink */
 }
 
 .nav-btn {
-    width: 100%;
-    background-color: #40E0D0; /* Turquoise as in image */
-    color: #000;
-    font-weight: 700;
-    font-size: 1.1rem;
-    padding: 0.8rem;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.5rem;
+  width: 100%;
+  background-color: #40E0D0;
+  /* Turquoise as in image */
+  color: #000;
+  font-weight: 700;
+  font-size: 1.1rem;
+  padding: 0.8rem;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
 }
 
 .nav-icon {
-    color: #E04F5F; /* Red arrow */
+  color: #E04F5F;
+  /* Red arrow */
 }

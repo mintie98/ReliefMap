@@ -21,6 +21,17 @@ class LocationService {
       if (filters.neLat) params.append('neLat', filters.neLat);
       if (filters.neLng) params.append('neLng', filters.neLng);
 
+      // Search & Filtering
+      if (filters.searchTerm) params.append('searchTerm', filters.searchTerm);
+      if (filters.openNow) params.append('openNow', filters.openNow);
+
+      // Amenities (pass as amenities[key]=true or JSON string)
+      // Backend handles JSON string parse if needed, usually axios/searchParams handles array/obj weirdly.
+      // Easiest is to stringify if it's an object
+      if (filters.amenities) {
+        params.append('amenities', JSON.stringify(filters.amenities));
+      }
+
       const response = await apiClient.get(`/locations/search?${params.toString()}`);
       return {
         success: response.success,

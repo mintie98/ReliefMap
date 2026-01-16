@@ -38,6 +38,9 @@
             <span class="value status-verified" v-if="isVerified">
                 <span class="status-icon">{{ ICONS.VERIFIED }}</span> {{ $t('location_detail.verified') }}
             </span>
+            <span class="value status-pending" v-else-if="isPending">
+                <span class="status-icon">⚠️</span> {{ $t('location_detail.pending') }}
+            </span>
             <span class="value status-unverified" v-else>
                 <span class="status-icon">{{ ICONS.UNVERIFIED }}</span> {{ $t('location_detail.unverified') }}
             </span>
@@ -163,6 +166,7 @@ export default {
         amenities,
         galleryImages,
         isVerified,
+        isPending,
         cleanlinessScore,
         reviews,
         openingHoursText,
@@ -184,6 +188,7 @@ export default {
         amenities,
         galleryImages,
         isVerified,
+        isPending,
         cleanlinessScore,
         reviews,
         openingHoursText,

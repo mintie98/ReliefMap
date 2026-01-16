@@ -56,6 +56,12 @@ export function useLocationDetailPanel(props) {
         return props.location.verification_status === 'verified' || props.location.verification_status === 'green';
     });
 
+    const isPending = computed(() => {
+        return props.location.verification_status === 'yellow' ||
+            props.location.verification_status === 'pending' ||
+            props.location.verification_status === 'in_review';
+    });
+
     const cleanlinessScore = computed(() => {
         if (props.location.reviews && props.location.reviews.length > 0) {
             const sum = props.location.reviews.reduce((acc, r) => acc + (r.cleanliness_score || 0), 0);
@@ -169,6 +175,7 @@ export function useLocationDetailPanel(props) {
         amenities,
         galleryImages,
         isVerified,
+        isPending,
         cleanlinessScore,
         reviews,
         openingHoursText,

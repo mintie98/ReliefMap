@@ -21,7 +21,10 @@ export function useLocationViewModel() {
     swLat: null,
     swLng: null,
     neLat: null,
-    neLng: null
+    neLng: null,
+    searchTerm: '',
+    amenities: null,
+    openNow: false
   });
   const searchTerm = ref('');
 
@@ -30,12 +33,18 @@ export function useLocationViewModel() {
     let result = locations.value;
 
     if (filters.verificationStatus) {
-      result = result.filter(loc => loc.verification_status === filters.verificationStatus);
+      if (Array.isArray(filters.verificationStatus)) {
+        result = result.filter(loc => filters.verificationStatus.includes(loc.verification_status));
+      } else {
+        result = result.filter(loc => loc.verification_status === filters.verificationStatus);
+      }
     }
 
     if (filters.sourceType) {
       result = result.filter(loc => loc.source_type === filters.sourceType);
     }
+
+    // Note: searchTerm, amenities, openNow are handled by backend search, so we assume locations.value is already filtered by them.
 
     if (filters.lat && filters.lng) {
       result = result.map(loc => ({

@@ -34,6 +34,7 @@
         "add_review": "Add Review",
         "status": "Status:",
         "verified": "Verified",
+        "pending": "Pending Verification",
         "unverified": "Unverified",
         "crowd_score": "Crowd Score",
         "cleanliness_score": "Cleanliness Score",
@@ -62,6 +63,7 @@
         "add_photo": "+ Add Photo",
         "submit": "Submit Review",
         "cancel": "Cancel",
+        "is_location_accurate": "Is this location accurate? (📍)",
         "submitting": "Submitting..."
     },
     "refine_filter": {

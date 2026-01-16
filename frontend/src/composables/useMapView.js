@@ -43,7 +43,7 @@ export function useMapView() {
 
         const status = loc.verification_status;
         if (status === 'verified' || status === 'green') return pinGreen;
-        if (status === 'yellow' || status === 'in_review') return pinYellow;
+        if (status === 'yellow' || status === 'in_review' || status === 'pending') return pinYellow;
         if (status === 'unverified' || status === 'red') return pinRed;
 
         return pinYellow;
@@ -317,10 +317,32 @@ export function useMapView() {
         showRefine.value = false;
 
         const newFilters = {};
-        if (filterData.status.verified) newFilters.verificationStatus = 'green';
-        else if (filterData.status.inReview) newFilters.verificationStatus = 'yellow';
-        else if (filterData.status.unverified) newFilters.verificationStatus = 'red';
+
+        // Status: Convert booleans to array suitable for backend
+        const statuses = [];
+        if (filterData.status.verified) statuses.push('green', 'verified');
+        if (filterData.status.inReview) statuses.push('yellow', 'pending', 'in_review');
+        if (filterData.status.unverified) statuses.push('red', 'unverified');
+
+        if (statuses.length > 0) newFilters.verificationStatus = statuses;
         else newFilters.verificationStatus = null;
+
+        // Search Term
+        newFilters.searchTerm = filterData.searchText;
+
+        // Open Now
+        newFilters.openNow = filterData.visitTime;
+
+        // Amenities
+        const activeAmenities = {};
+        for (const [key, val] of Object.entries(filterData.features)) {
+            if (val) activeAmenities[key] = true;
+        }
+        if (Object.keys(activeAmenities).length > 0) {
+            newFilters.amenities = activeAmenities;
+        } else {
+            newFilters.amenities = null;
+        }
 
         updateFilters(newFilters);
         loadLocations();

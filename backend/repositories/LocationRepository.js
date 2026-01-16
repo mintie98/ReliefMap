@@ -3,7 +3,7 @@ const db = require('../config/database');
 class LocationRepository {
   // Get all merged locations (search by radius or bounding box)
   async findAll(filters = {}) {
-    const { lat, lng, radius, swLat, swLng, neLat, neLng, verificationStatus, sourceType, limit = 50 } = filters;
+    const { lat, lng, radius, swLat, swLng, neLat, neLng, verificationStatus, sourceType, searchTerm, amenities, limit = 50 } = filters;
 
     let query = `
       SELECT 
@@ -25,40 +25,65 @@ class LocationRepository {
         lb.google_rating,
         lb.google_ratings_total,
         lb.opening_hours,
-        lb.photo_reference
+        lb.photo_reference,
+        a.western_style,
+        a.japanese_style,
+        a.accessible,
+        a.baby_changing,
+        a.warm_seat,
+        a.gender_type
       FROM LOCATIONS_MERGED lm
       LEFT JOIN LOCATIONS_BASE lb ON lm.base_id = lb.base_id
+      LEFT JOIN AMENITIES a ON lm.location_id = a.location_id
       WHERE lm.is_deleted = FALSE
     `;
     const params = [];
 
-    // Spatial Filter: Bounding Box (Priority)
-    if (swLat && swLng && neLat && neLng) {
-      // Create Polygon from BBox: SW -> SE -> NE -> NW -> SW
-      // MySQL WKT: POLYGON((lng lat, ...)) i.e. (x y)
-      // sw: bottom-left (swLng, swLat), ne: top-right (neLng, neLat)
-      // Order: SW(minX minY) -> SE(maxX minY) -> NE(maxX maxY) -> NW(minX maxY) -> SW
-      const polygon = `POLYGON((${swLng} ${swLat}, ${neLng} ${swLat}, ${neLng} ${neLat}, ${swLng} ${neLat}, ${swLng} ${swLat}))`;
-      // Interpolate WKT directly to avoid prepared statement issues with spatial functions in some drivers/versions
-      // Ensure coordinates are numbers to prevent injection (though they should be)
-      query += ` AND MBRContains(ST_GeomFromText('${polygon}'), lm.geolocation)`;
-      // params.push(polygon); // Removed from params
-    }
-    // Spatial Filter: Radius (Secondary)
-    else if (lat && lng && radius) {
-      // ST_Distance_Sphere(p1, p2). p2 = POINT(lng, lat)
-      query += ` AND ST_Distance_Sphere(lm.geolocation, POINT(?, ?)) <= ?`;
-      params.push(parseFloat(lng), parseFloat(lat), parseFloat(radius) * 1000);
+    // Search Term (Name or Address)
+    if (searchTerm) {
+      query += ` AND (lm.display_name LIKE ? OR lm.address LIKE ?)`;
+      const term = `%${searchTerm}%`;
+      params.push(term, term);
     }
 
+    // Verification Status (Array or Single)
     if (verificationStatus) {
-      query += ` AND lm.verification_status = ?`;
-      params.push(verificationStatus);
+      if (Array.isArray(verificationStatus) && verificationStatus.length > 0) {
+        // e.g. status IN (?, ?)
+        const placeholders = verificationStatus.map(() => '?').join(',');
+        query += ` AND lm.verification_status IN (${placeholders})`;
+        params.push(...verificationStatus);
+      } else if (!Array.isArray(verificationStatus)) {
+        query += ` AND lm.verification_status = ?`;
+        params.push(verificationStatus);
+      }
     }
 
+    // Source Type
     if (sourceType) {
       query += ` AND lm.source_type = ?`;
       params.push(sourceType);
+    }
+
+    // Amenities (filters.amenities = { western: true, ... })
+    if (amenities) {
+      if (amenities.western) query += ` AND a.western_style = TRUE`;
+      if (amenities.japanese) query += ` AND a.japanese_style = TRUE`;
+      if (amenities.wheelchair) query += ` AND a.accessible = TRUE`;
+      if (amenities.diaper) query += ` AND a.baby_changing = TRUE`;
+      if (amenities.washlet) query += ` AND a.warm_seat = TRUE`;
+      // 'public', 'child_seat', 'parking' not mapped to simple columns yet
+    }
+
+    // Spatial Filter: Bounding Box (Priority)
+    if (swLat && swLng && neLat && neLng) {
+      const polygon = `POLYGON((${swLng} ${swLat}, ${neLng} ${swLat}, ${neLng} ${neLat}, ${swLng} ${neLat}, ${swLng} ${swLat}))`;
+      query += ` AND MBRContains(ST_GeomFromText('${polygon}'), lm.geolocation)`;
+    }
+    // Spatial Filter: Radius (Secondary)
+    else if (lat && lng && radius) {
+      query += ` AND ST_Distance_Sphere(lm.geolocation, POINT(?, ?)) <= ?`;
+      params.push(parseFloat(lng), parseFloat(lat), parseFloat(radius) * 1000);
     }
 
     // Ordering
@@ -69,19 +94,13 @@ class LocationRepository {
       query += ` ORDER BY lm.verification_score DESC, lm.created_at DESC`;
     }
 
-    // query += ` LIMIT ?`;
-    // params.push(parseInt(limit));
     query += ` LIMIT ${parseInt(limit)}`;
 
     try {
-      // console.log('DEBUG QUERY:', query);
-      // console.log('DEBUG PARAMS:', params);
       const [rows] = await db.execute(query, params);
       return rows;
     } catch (e) {
       console.error('FindAll Error:', e);
-      console.error('Failed Query:', query);
-      console.error('Failed Params:', params);
       throw e;
     }
   }
@@ -371,6 +390,65 @@ class LocationRepository {
       WHERE location_id = ?
     `;
     const [result] = await db.execute(query, [increment, locationId]);
+    return result.affectedRows > 0;
+  }
+
+  // --- WC Verifications (Pending Locations) ---
+
+  // Create pending verification
+  async createVerification(data) {
+    const connection = await db.getConnection();
+    try {
+      const query = `
+        INSERT INTO wc_verifications (user_id, location_data, status, verification_score, created_at)
+        VALUES (?, ?, ?, ?, NOW())
+      `;
+      // location_data stores the full UGC payload
+      const [result] = await connection.execute(query, [
+        data.user_id,
+        JSON.stringify(data.location_data),
+        data.status || 'unverified',
+        data.verification_score || 0
+      ]);
+      return result.insertId;
+    } finally {
+      connection.release();
+    }
+  }
+
+  // Find pending verifications (for Map or Admin)
+  async findAllPending(filters = {}) {
+    // Basic select, filtering by status unverified/pending
+    let query = `SELECT * FROM wc_verifications WHERE status IN ('unverified', 'pending')`;
+    const params = [];
+
+    // Spatial filter support? Not strictly 'spatial' index on JSON, but could parse or use separate columns.
+    // Ideally wc_verifications should have lat/lng columns for efficient query.
+    // For now, let's assume we fetch all pending (usually small list) or we add lat/lng columns.
+    // To make it efficient, let's Update the Table Schema to have lat/lng columns?
+    // Migration script created table: id, user_id, location_data, status... 
+    // JSON search for spatial is slow.
+    // However, user said: "người dùng được chia điểm...".
+    // Let's assume the list is manageable or we iterate in memory for now, OR we modify schema to store lat/lng.
+    // Given I already ran migration, I'll stick to full fetch if dataset is small, OR filter inService.
+    // A better approach is to store lat/lng as columns. 
+    // BUT I can't rerun migration easily without error handling (which I added).
+    // I'll check if I can extract checks.
+
+    // Actually, "location_data" has lat/lng.
+
+    const [rows] = await db.execute(query, params);
+    return rows;
+  }
+
+  // Increment score for pending verification
+  async incrementPendingVerificationScore(verificationId, increment) {
+    const query = `
+      UPDATE wc_verifications 
+      SET verification_score = verification_score + ? 
+      WHERE id = ?
+    `;
+    const [result] = await db.execute(query, [increment, verificationId]);
     return result.affectedRows > 0;
   }
 }

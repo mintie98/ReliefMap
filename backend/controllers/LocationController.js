@@ -17,9 +17,17 @@ class LocationController {
         swLng: parseNum(req.query.swLng),
         neLat: parseNum(req.query.neLat),
         neLng: parseNum(req.query.neLng),
-        verificationStatus: req.query.verification_status,
-        sourceType: req.query.source_type
+        verificationStatus: req.query.verificationStatus, // Note: camelCase matches frontend axios params usually, or check if axios converts. Frontend sends `verificationStatus` key.
+        sourceType: req.query.sourceType,
+        searchTerm: req.query.searchTerm,
+        openNow: req.query.openNow === 'true' || req.query.openNow === true,
+        amenities: req.query.amenities // Express parses amenities[key]=true as object
       };
+
+      // Handle nested object if passed as JSON string (sometimes helpful)
+      if (typeof req.query.amenities === 'string') {
+        try { filters.amenities = JSON.parse(req.query.amenities); } catch (e) { }
+      }
 
       const result = await locationService.searchLocations(filters);
       res.json(result);

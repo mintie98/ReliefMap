@@ -63,6 +63,14 @@
           </select>
         </div>
 
+        <!-- Location Accuracy -->
+        <div class="form-group accuracy-check">
+          <label class="checkbox-label">
+            <input type="checkbox" v-model="form.is_location_accurate">
+             {{ $t('review_modal.is_location_accurate') }}
+          </label>
+        </div>
+
         <!-- Comment -->
         <div class="form-group">
           <label>{{ $t('review_modal.comment') }}</label>
@@ -132,6 +140,7 @@ export default {
         baby_changing: false,
         warm_seat: false
       },
+      is_location_accurate: false,
       wait_time: '',
       review_text: '',
       images: [] // Stores File objects
@@ -414,5 +423,24 @@ export default {
       max-width: none;
       max-height: none;
   }
+}
+
+.accuracy-check {
+    background: #f0f7ff;
+    padding: 0.8rem;
+    border-radius: 6px;
+    border: 1px solid #cce5ff;
+}
+.checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    cursor: pointer;
+    font-weight: 600;
+    color: #1976D2;
+}
+.checkbox-label input {
+    width: 18px;
+    height: 18px;
 }
 </style>

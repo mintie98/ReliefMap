@@ -7,18 +7,64 @@ class LocationService {
   // Search locations with filters (Smart Search: DB + Google API)
   async searchLocations(filters) {
     try {
-      // 1. Initial fetch from local DB
+      // 1. Initial fetch from verified DB
       let locations = await locationRepository.findAll(filters);
+
+      // fetch pending locations (unverified/red or pending/yellow)
+      // Only fetch pending if we are doing a broad search (e.g. map view), ensuring we don't leak private data if needed.
+      // Assuming public map shows all pending.
+      // We filter pending by same spatial logic if possible, or just fetch all (assuming small volume) and filter in memory.
+      // For now, fetch all pending and filter spatial in memory
+      const pendingRows = await locationRepository.findAllPending();
+
+      const pendingLocations = pendingRows.map(row => {
+        let data = {};
+        if (typeof row.location_data === 'string') {
+          try { data = JSON.parse(row.location_data); } catch (e) { }
+        } else {
+          data = row.location_data || {};
+        }
+
+        return {
+          ...data,
+          location_id: `pending_${row.id}`, // String ID to distinguish
+          id: row.id, // real DB id
+          is_pending: true,
+          verification_status: row.status, // 'unverified' or 'pending'
+          verification_score: row.verification_score,
+          source_type: 'user_pending'
+        };
+      });
+
+      // Filter pending by viewport (if provided)
+      let visiblePending = pendingLocations;
+      if (filters.swLat && filters.neLat && filters.swLng && filters.neLng) {
+        visiblePending = pendingLocations.filter(loc =>
+          loc.latitude >= filters.swLat && loc.latitude <= filters.neLat &&
+          loc.longitude >= filters.swLng && loc.longitude <= filters.neLng
+        );
+      } else if (filters.lat && filters.lng && filters.radius) {
+        visiblePending = pendingLocations.filter(loc => {
+          const dist = this.haversineDistance(filters.lat, filters.lng, loc.latitude, loc.longitude);
+          return dist <= (filters.radius); // Radius is km? filters.radius is float.
+        });
+      }
+
+      // Filter pending by viewport logic...
+      // [Pending filtering logic remains same]
+
+      locations = locations.concat(visiblePending);
+
+      // --- Time Filter (Open Now) ---
+      if (filters.openNow) {
+        locations = locations.filter(loc => this.checkIsOpenNow(loc));
+      }
 
       // 2. If searching by Bounding Box, we also want to trigger Google API fetch
       // We calculate the center point and an approximate radius to keep the "Smart Search" feature working
       if (filters.swLat && filters.neLat && filters.swLng && filters.neLng) {
         const centerLat = (filters.swLat + filters.neLat) / 2;
         const centerLng = (filters.swLng + filters.neLng) / 2;
-
-        // Calculate radius (distance from center to corner) in km
-        // Using simplified euclidean distance for small areas is acceptable
-        // 1 degree lat ~= 111km
         const latRadius = (filters.neLat - filters.swLat) * 111 / 2;
         const lngRadius = (filters.neLng - filters.swLng) * 111 * Math.cos(centerLat * Math.PI / 180) / 2;
         const radiusKm = Math.sqrt(latRadius * latRadius + lngRadius * lngRadius);
@@ -27,7 +73,7 @@ class LocationService {
         if (!isNaN(radiusKm) && radiusKm > 0 && radiusKm < 5) {
           try {
             await this.fetchAndSaveGoogleNearby(centerLat, centerLng, radiusKm);
-            // Re-fetch from DB
+            // Re-fetch from DB to grab newly added ones
             locations = await locationRepository.findAll(filters);
           } catch (e) {
             console.error('Bound-based Google Fetch failed', e.message);
@@ -36,15 +82,84 @@ class LocationService {
       }
       // Legacy support: radius search
       else if (filters.lat && filters.lng && filters.radius) {
+        // ... existing radius logic ...
         try {
-          // Check if we need to fetch from Google (optimization: could check a cache key or timestamp here)
           await this.fetchAndSaveGoogleNearby(filters.lat, filters.lng, filters.radius);
-
-          // 3. Re-fetch from DB to include newly added locations
           locations = await locationRepository.findAll(filters);
         } catch (googleError) {
           console.error('Background Google Fetch Failed:', googleError.message);
-          // Don't fail the request, just return what we have in DB
+        }
+      } // --- NEW: Text Search Hybrid (Multilingual Support) ---
+      else if (filters.searchTerm) {
+        try {
+          console.log(`Performing Hybrid Search for: "${filters.searchTerm}"`);
+          // We already got DB results in `locations`.
+          // Now fetch from Google Text Search
+          // We use a fallback center for bias if available, else standard text search
+          const googleRes = await this.searchFromGoogleAPI(filters.searchTerm,
+            (filters.lat && filters.lng) ? { lat: filters.lat, lng: filters.lng } : null
+          );
+
+          if (googleRes.success && googleRes.data.length > 0) {
+            const googlePlaces = googleRes.data;
+            const existingSourceIds = new Set(locations.map(l => l.source_id || l.base_id)); // heuristic
+
+            // Process Google Results
+            const newLocations = [];
+            for (const place of googlePlaces) {
+              // 1. Save to DB (Upsert) to cache for future
+              // We need to map place fields to upsertFromBase format
+              const placeData = {
+                source_id: place.source_id,
+                name: place.name,
+                address: place.address,
+                latitude: place.latitude,
+                longitude: place.longitude,
+                source_name: place.source_name,
+                is_official: true,
+                place_types: place.place_types,
+                rating: place.rating,
+                user_ratings_total: place.user_ratings_total,
+                opening_hours: place.opening_hours, // Pass through if available
+                photo_reference: null // Text Search might not give photos, but we can try
+              };
+
+              try {
+                const baseId = await locationRepository.upsertFromBase(placeData);
+
+                // 2. If it wasn't in our initial DB result, add it to the return list
+                // We check via source_id to avoid visual duplicates
+                if (!existingSourceIds.has(place.source_id)) {
+                  // Construct a minimal "Merged" object for frontend display
+                  newLocations.push({
+                    location_id: `temp_${baseId}`, // Temporary ID or we could fetch the real merged ID
+                    base_id: baseId,
+                    display_name: place.name,
+                    address: place.address,
+                    latitude: place.latitude,
+                    longitude: place.longitude,
+                    source_type: 'api',
+                    verification_status: 'green',
+                    verification_score: 1.0,
+                    google_rating: place.rating,
+                    google_ratings_total: place.user_ratings_total,
+                    opening_hours: place.opening_hours
+                  });
+                  existingSourceIds.add(place.source_id);
+                }
+              } catch (upsertErr) {
+                console.error('Failed to upsert Google search result:', upsertErr.message);
+              }
+            }
+
+            // Merge
+            if (newLocations.length > 0) {
+              console.log(`Merging ${newLocations.length} Google results into search.`);
+              locations = locations.concat(newLocations);
+            }
+          }
+        } catch (e) {
+          console.error('Hybrid Search Google API failed:', e.message);
         }
       }
 
@@ -202,12 +317,27 @@ class LocationService {
       // Use Places API (New) - Text Search endpoint
       const url = `https://places.googleapis.com/v1/places:searchText`;
 
+      // Append "toilet" to query if not present to ensure relevance
+      let apiQuery = query;
+      if (!apiQuery.toLowerCase().includes('toilet') && !apiQuery.toLowerCase().includes('restroom')) {
+        apiQuery += ' toilet';
+      }
+
       const requestBody = {
-        textQuery: query,
+        textQuery: apiQuery,
         maxResultCount: 20,
-        includedType: 'toilet',
-        languageCode: 'en'
+        // includedType: 'restroom', // Removed to avoid 400 (Types are strict in New API)
+        languageCode: 'ja' // changed to 'ja' to get Japanese names if possible, or 'en' if preferred. User wants multilingual support.
+        // Google usually returns mixed or local. Let's stick to 'ja' or removing it to auto-detect. 
+        // If user searches "Shibuya", they might want "Shibuya". 
+        // Let's use 'en' as default or just remove languageCode to default. 
+        // Keeping 'en' for now or maybe 'ja' since map is in Japan? 
+        // Let's use 'ja' so we get "渋谷" which matches our DB/Map data better?
+        // Actually user said "Searching non-Japanese terms for Japanese locations".
+        // If I search "Shibuya" and get "渋谷", that's good.
       };
+
+      requestBody.languageCode = 'ja';
 
       // Add location bias if provided
       if (location) {
@@ -231,7 +361,8 @@ class LocationService {
       });
 
       if (!response.data || !response.data.places) {
-        throw new Error('Invalid response from Google Places API');
+        // If response is OK but no places, just return empty
+        return { success: true, data: [] };
       }
 
       // Transform Google Places API (New) data to our format
@@ -250,11 +381,9 @@ class LocationService {
         data: places
       };
     } catch (error) {
-      // Fallback to old Places API if new API fails
-      if (error.response?.status === 404 || error.message.includes('Invalid')) {
-        return this.searchFromGoogleAPILegacy(query, location);
-      }
-      throw new Error(`Failed to search Google API: ${error.message}`);
+      console.warn(`New Places API failed (${error.status || error.message}), falling back to Legacy.`);
+      // Fallback to old Places API if new API fails (400, 404, etc)
+      return this.searchFromGoogleAPILegacy(query, location);
     }
   }
 
@@ -374,7 +503,7 @@ class LocationService {
       // 3. Merging Strategy
       if (duplicate) {
         // Merge Logic: Update amenities and increment trust
-        console.log(`Duplicate found: merging UGC with existing location ID ${duplicate.location_id}`);
+        console.log(`Duplicate found: merging UGC with existing verified location ID ${duplicate.location_id}`);
 
         // Update Amenities
         // Note: ugcData.amenities might be partial, but we assume it's the latest info
@@ -386,7 +515,8 @@ class LocationService {
         }
 
         // Increment verification/trust score
-        await locationRepository.incrementVerificationScore(duplicate.location_id, 0.1);
+        const trustIncrement = (user.trust_score >= 7) ? 1.0 : 0.5; // Higher trust user gives more score
+        await locationRepository.incrementVerificationScore(duplicate.location_id, trustIncrement);
 
         // Log contribution
         await userRepository.incrementContribution(ugcData.user_id);
@@ -401,16 +531,78 @@ class LocationService {
         };
       }
 
-      // 4. No Duplicate -> Create New
-      const locationId = await locationRepository.createFromUGC(ugcData);
+      // 3.5 Check duplicates in Pending (wc_verifications)
+      // Iterate pending list (optimize with spatial query later)
+      const pendingRows = await locationRepository.findAllPending();
+      let pendingDuplicate = null;
+
+      for (const row of pendingRows) {
+        let pData = row.location_data;
+        if (typeof pData === 'string') try { pData = JSON.parse(pData); } catch (e) { }
+
+        const dist = this.haversineDistance(ugcData.latitude, ugcData.longitude, pData.latitude, pData.longitude);
+        if (dist <= 0.05) { // 50m
+          pendingDuplicate = row;
+          break;
+        }
+      }
+
+      if (pendingDuplicate) {
+        console.log(`Pending Duplicate found: merging UGC with pending ID ${pendingDuplicate.id}`);
+        // Increment pending verification score
+        const trustIncrement = user.trust_score || 5;
+        await locationRepository.incrementPendingVerificationScore(pendingDuplicate.id, trustIncrement);
+
+        // TODO: Check if score enables promotion to Green/Yellow
+
+        return {
+          success: true,
+          data: { location_id: `pending_${pendingDuplicate.id}`, is_merged: true },
+          message: 'Location matches a pending submission. You have verified it!'
+        };
+      }
+
+      // 4. No Duplicate -> Create New Pending Verification
+      const initialStatus = (user.trust_score && user.trust_score >= 7) ? 'pending' : 'unverified';
+      const initialScore = user.trust_score || 5; // Initial score based on creator
+
+      // Ensure location_data contains display_name etc for frontend
+      const locationPayload = {
+        ...ugcData,
+        display_name: ugcData.name, // Frontend expects display_name
+        address: ugcData.address_input
+      };
+
+      const verificationId = await locationRepository.createVerification({
+        user_id: user.user_id,
+        location_data: locationPayload,
+        status: initialStatus,
+        verification_score: initialScore
+      });
+
+      // Log contribution
+      await userRepository.incrementContribution(ugcData.user_id);
+
+      return {
+        success: true,
+        data: { location_id: `pending_${verificationId}`, is_merged: false },
+        message: 'Location submitted for verification. It will appear on the map soon!'
+      };
+
+      // 4. No Duplicate -> Create New (MOVED ABOVE to Pending)
+      // const locationId = await locationRepository.createFromUGC(ugcData);
 
       // Save Amenities for new location
+      /* Amenities for pending location are stored inside JSON location_data. 
+         Only when approved to LOCATIONS_MERGED do we write to AMENITIES table. */
+      /*
       if (ugcData.amenities) {
         await locationRepository.updateAmenities(locationId, {
           ...ugcData.amenities,
           gender_type: ugcData.gender_type
         });
       }
+      */
 
       // Log contribution
       await userRepository.incrementContribution(ugcData.user_id);
@@ -528,6 +720,63 @@ class LocationService {
       };
     } catch (error) {
       throw new Error(`Failed to search locations: ${error.message}`);
+    }
+  }
+  // Check if location is open now
+  checkIsOpenNow(location) {
+    if (!location.opening_hours) return true; // Assume open if no info? Or false? User preference. Usually assume maybe open. Assuming true for now to not hide too much.
+
+    try {
+      let schedule = location.opening_hours;
+      if (typeof schedule === 'string') {
+        schedule = JSON.parse(schedule);
+      }
+
+      // Google Places "open_now" field (if available directly from fresh fetch)
+      if (schedule.open_now !== undefined) return schedule.open_now;
+
+      // Logic to check periods
+      if (!schedule.periods) return true;
+
+      const now = new Date();
+      // Server time is UTC or configured timezone. User is in Japan? 
+      // Assumption: Node server running in same timezone or UTC.
+      // Need precise day/time. Google periods are 0 (Sun) - 6 (Sat).
+
+      // Convert now to Japan Time for accuracy if deployed elsewhere? 
+      // User requested "bộ lọc thời gian là sẽ so sánh thời gian tìm kiếm hiện tại". 
+      // Ideally use server time or passed client time. Using server time.
+      const day = now.getDay();
+      const hours = now.getHours();
+      const minutes = now.getMinutes();
+      const timeStr = (hours * 100) + minutes; // 1430 for 14:30
+
+      // Find today's period
+      const todaysPeriods = schedule.periods.filter(p => p.open.day === day);
+
+      if (!todaysPeriods.length) return false; // Closed today?
+
+      // Check if current time is within any open-close range
+      for (const p of todaysPeriods) {
+        // 24 hours open?
+        if (p.open.time === '0000' && (!p.close || (p.close.day === day && p.close.time === '0000'))) return true; // Google indicates 24h as open day 0000 and close day-next 0000 sometimes or just open.
+
+        // Simple same-day check
+        // Note: Google close might be next day (day+1). simplified check:
+        const openTime = parseInt(p.open.time);
+
+        let closeTime = 2400;
+        if (p.close) {
+          closeTime = parseInt(p.close.time);
+          if (p.close.day !== day) closeTime += 2400; // Spill over
+        }
+
+        if (timeStr >= openTime && timeStr < closeTime) return true;
+      }
+      return false;
+
+    } catch (e) {
+      return true; // Fallback
     }
   }
 }

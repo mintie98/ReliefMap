@@ -51,6 +51,7 @@
         "add_review": "レビューを書く",
         "status": "ステータス:",
         "verified": "認証済み",
+        "pending": "確認中",
         "unverified": "未認証",
         "crowd_score": "混雑度",
         "cleanliness_score": "清潔度",
@@ -86,6 +87,7 @@
         "add_photo": "+ 写真を追加",
         "submit": "投稿する",
         "cancel": "キャンセル",
+        "is_location_accurate": "この場所は正確ですか？ (📍)",
         "submitting": "送信中..."
     },
     "refine_filter": {
