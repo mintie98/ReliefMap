@@ -1,8 +1,10 @@
 import { useRouter } from 'vue-router';
 import japanMapImg from '../assets/japan_map.png';
-import pinGreen from '../assets/toiletPin/green.png';
-import pinYellow from '../assets/toiletPin/yellow.png';
-import pinRed from '../assets/toiletPin/red.png';
+import pinToilet from '../assets/pins/red_toilet.png';
+import pinCamera from '../assets/pins/yellow_camera.png';
+import pinMedical from '../assets/pins/green_medical.png';
+import pinFishing from '../assets/pins/yellow_fishing.png';
+import pinOnsen from '../assets/pins/green_onsen.png';
 import { ICONS } from '../assets/icons';
 
 export function useHomeView() {
@@ -20,9 +22,11 @@ export function useHomeView() {
         navigateToMap,
         navigateToLogin,
         japanMapImg,
-        pinGreen,
-        pinYellow,
-        pinRed,
+        pinToilet,
+        pinCamera,
+        pinMedical,
+        pinFishing,
+        pinOnsen,
         ICONS
     };
 }
