@@ -19,6 +19,7 @@
     padding: 0 1rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 1001;
+    position: relative;
 }
 
 .header-left,
@@ -149,13 +150,14 @@
     }
 
     .menu-overlay {
-        top: 50px;
-        height: calc(100vh - 50px);
+        top: 0;
+        height: 100vh;
     }
 
     .menu-drawer {
         width: 85vw; /* Almost full width for mobile */
         max-width: 320px;
+        padding-top: 50px; /* Match mobile header height */
     }
 
     .drawer-header {
@@ -234,15 +236,12 @@
 /* Menu Drawer */
 .menu-overlay {
     position: fixed;
-    top: 60px;
-    /* Start below header */
+    top: 0;
     left: 0;
     width: 100vw;
-    height: calc(100vh - 60px);
-    /* Adjust height */
+    height: 100vh;
     background: rgba(0, 0, 0, 0.5);
-    z-index: 999;
-    /* Below header (1000) */
+    z-index: 1000;
     display: flex;
 }
 
@@ -250,7 +249,7 @@
     width: 300px;
     height: 100%;
     background: white;
-    padding: 0;
+    padding: 60px 0 0 0; /* Padding matches header height */
     position: relative;
     box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
     transform: translateX(0);
