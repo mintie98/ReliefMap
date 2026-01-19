@@ -130,6 +130,14 @@
   transform: translateY(-3px); /* Move up slightly to center */
 }
 
+.icon-travel {
+  transform: translateY(-8px) !important;
+}
+
+.icon-camping {
+  transform: translateY(-7px) !important;
+}
+
 .pin-point {
   position: absolute;
   bottom: -15px;

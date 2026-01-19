@@ -45,7 +45,7 @@
             <!-- Travel Checkin -->
             <div class="category-item">
               <div class="icon-circle red">
-                <span class="icon">{{ ICONS.TRAVEL_CHECKIN }}</span>
+                <span class="icon icon-travel">{{ ICONS.TRAVEL_CHECKIN }}</span>
                 <div class="pin-point"></div>
               </div>
               <span class="category-label">{{ $t('home.categories.travel_checkin') }}</span>
@@ -81,7 +81,7 @@
             <!-- Camping -->
             <div class="category-item">
               <div class="icon-circle red">
-                <span class="icon">{{ ICONS.CAMPING }}</span>
+                <span class="icon icon-camping">{{ ICONS.CAMPING }}</span>
                 <div class="pin-point"></div>
               </div>
               <span class="category-label">{{ $t('home.categories.camping') }}</span>
