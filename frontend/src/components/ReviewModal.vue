@@ -3,10 +3,10 @@
     <div class="modal-content">
       <div class="modal-header">
         <h3>{{ $t('review_modal.title') }}</h3>
-        <button class="close-btn" @click="$emit('close')">{{ ICONS.CLOSE }}</button>
+        <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
-      <div class="modal-body">
+      <div class="modal-body scroller">
         <!-- Cleanliness Rating -->
         <div class="form-group">
           <label>{{ $t('review_modal.cleanliness_rating') }} <span class="required">*</span></label>
@@ -224,40 +224,76 @@ export default {
 }
 
 .modal-content {
+  position: relative;
   background: white;
   width: 90%;
-  max-width: 500px;
-  border-radius: 12px;
+  max-width: 550px; /* Increased */
+  border-radius: 20px;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
+  overflow: hidden;
+  box-shadow: 0 10px 40px rgba(0,0,0,0.15);
 }
 
 .modal-header {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
+  padding: 1.75rem 2rem 1rem; /* Consistent padding */
   display: flex;
   justify-content: space-between;
   align-items: center;
+  border-bottom: none;
 }
 
 .modal-header h3 {
   margin: 0;
   font-size: 1.25rem;
+  font-weight: 800;
+  color: #0f172a;
 }
 
 .close-btn {
-  background: none;
+  position: absolute;
+  top: 1.25rem;
+  right: 1.25rem;
+  background: #f1f5f9;
   border: none;
-  font-size: 1.5rem;
+  font-size: 1rem;
+  color: #64748b;
   cursor: pointer;
-  color: #666;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.close-btn:hover {
+  background: #e2e8f0;
+  color: #0f172a;
 }
 
 .modal-body {
-  padding: 1rem;
+  padding: 0 2rem 2rem; /* Increased padding */
   overflow-y: auto;
   flex: 1;
+}
+
+/* SLEEK Scroller */
+.scroller::-webkit-scrollbar {
+  width: 4px;
+}
+.scroller::-webkit-scrollbar-track {
+  background: transparent;
+}
+.scroller::-webkit-scrollbar-thumb {
+  background: rgba(0,0,0,0.1);
+  border-radius: 10px;
+}
+.scroller::-webkit-scrollbar-thumb:hover {
+  background: rgba(0,0,0,0.2);
 }
 
 .form-group {
@@ -416,12 +452,35 @@ export default {
 
 /* Mobile responsive */
 @media (max-width: 480px) {
+  .modal-overlay {
+    padding: 0;
+    align-items: flex-end;
+  }
+
   .modal-content {
       width: 100%;
-      height: 100%;
-      border-radius: 0;
       max-width: none;
+      height: 85vh;
+      border-radius: 20px 20px 0 0;
       max-height: none;
+  }
+
+  .modal-header {
+    padding: 1.5rem 1.5rem 0.5rem;
+  }
+
+  .modal-body {
+    padding: 0.5rem 1.5rem 2rem;
+  }
+
+  .modal-footer {
+    padding: 1.5rem 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 15px));
+    flex-direction: column-reverse; /* Stack buttons on small screens */
+  }
+
+  .btn-submit, .btn-cancel {
+    width: 100%;
+    padding: 1rem;
   }
 }
 

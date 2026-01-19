@@ -8,18 +8,11 @@ const PORT = process.env.PORT || 4001;
 // Middleware
 app.use(cors({
   origin: function (origin, callback) {
-    // Allow requests with no origin (like mobile apps or curl requests)
-    if (!origin) return callback(null, true);
-
-    const allowedOrigins = [
-      'http://localhost:3000',
-      'http://localhost:5173',
-      'https://localhost:5173',
-      'https://192.168.0.106:5173'
-    ];
-
-    // Also allow any 192.168.x.x origin for dev flexibility
-    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('https://192.168.')) {
+    // For development, we can be more permissive to allow smartphone testing
+    const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
+    
+    // Always allow if no origin (mobile apps, etc.) or if we are in dev mode
+    if (!origin || isDev) {
       callback(null, true);
     } else {
       console.log('Blocked by CORS:', origin);
@@ -53,11 +46,12 @@ app.get('/api/health', (req, res) => {
 
 // Error handling middleware
 app.use((err, req, res, next) => {
+  console.error('SERVER ERROR:', err.message);
   console.error(err.stack);
   res.status(500).json({
     success: false,
-    message: 'Internal server error',
-    error: process.env.NODE_ENV === 'development' ? err.message : undefined
+    message: err.message || 'Internal server error',
+    error: err.stack // Show stack temporarily to help user debug
   });
 });
 

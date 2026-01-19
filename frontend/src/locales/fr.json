@@ -85,7 +85,14 @@
         "submit": "Envoyer",
         "cancel": "Annuler",
         "is_location_accurate": "L'emplacement est-il exact ? (📍)",
-        "submitting": "Envoi..."
+        "submitting": "Envoi...",
+        "select_optional": "-- Sélectionner (Optionnel) --",
+        "wait_time_options": {
+            "none": "Aucune attente",
+            "short": "Courte (< 5 min)",
+            "medium": "Moyenne (5-15 min)",
+            "long": "Longue (> 15 min)"
+        }
     },
     "refine_filter": {
         "title": "Affiner",

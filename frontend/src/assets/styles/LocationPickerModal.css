@@ -19,54 +19,90 @@
 }
 
 .picker-modal {
+    position: relative;
     background: white;
     width: 100%;
-    max-width: 500px;
-    height: 70vh; /* Fixed height for consistency */
-    max-height: 550px;
-    border-radius: 16px 16px 0 0;
+    max-width: 550px; 
+    height: 75vh;
+    max-height: 750px; /* Increased from 550px */
     display: flex;
     flex-direction: column;
     overflow: hidden;
-    box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.2);
+    border-radius: 20px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
 }
 
 @media (min-width: 768px) {
     .picker-modal {
-        border-radius: 12px;
-        height: 50vh; /* Shorter on desktop to stay centered */
-        min-height: 400px;
-        max-height: 500px;
+        height: 75vh;
+        max-height: 800px;
+        min-height: 500px;
     }
 }
 
 .picker-header {
-    padding: 1rem;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    border-bottom: 1px solid #eee;
+    padding: 1.75rem 2rem 1rem; /* Increased horizontal padding */
+    border-bottom: none;
 }
 
 .picker-header h3 {
     margin: 0;
-    font-size: 1.1rem;
-    font-weight: 600;
+    font-size: 1.2rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.modal-body {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    padding: 0 2rem 2rem; /* Consistent padding with header */
+}
+
+/* SLEEK Scroller */
+.scroller::-webkit-scrollbar {
+    width: 4px;
+}
+.scroller::-webkit-scrollbar-track {
+    background: transparent;
+}
+.scroller::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.1);
+    border-radius: 10px;
+}
+.scroller::-webkit-scrollbar-thumb:hover {
+    background: rgba(0,0,0,0.2);
 }
 
 .close-btn {
-    background: none;
+    position: absolute;
+    top: 1.25rem;
+    right: 1.25rem;
+    background: #f1f5f9;
     border: none;
-    font-size: 1.5rem;
+    font-size: 1rem;
+    color: #64748b;
     cursor: pointer;
-    padding: 0 0.5rem;
-    color: #666;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    z-index: 10;
+}
+
+.close-btn:hover {
+    background: #f1f5f9;
+    color: #0f172a;
 }
 
 .picker-search {
-    padding: 1rem;
+    padding: 1rem 0; /* Vertical only, horizontal handled by modal-body */
     position: relative;
-    border-bottom: 1px solid #eee;
+    border-bottom: 1px solid #f1f5f9;
 }
 
 .picker-input {
@@ -149,48 +185,41 @@
 }
 
 @media (max-width: 600px) {
+    .location-picker-overlay {
+        padding: 0; /* Full screen width */
+        align-items: flex-end; /* Bottom sheet */
+    }
+
     .picker-modal {
-        height: 60vh; /* Shorter for better proportion on smartphones */
-        max-height: 480px; /* Strict limit to avoid "bulky" feel */
+        width: 100%;
+        max-width: none;
+        height: 85vh; /* Increased to match ReviewModal */
+        max-height: none;
         border-radius: 20px 20px 0 0;
     }
 
-    .picker-modal::before {
-        content: '';
-        width: 40px;
-        height: 4px;
-        background: #e2e8f0;
-        border-radius: 2px;
-        margin: 8px auto 0;
-        display: block;
-    }
-
     .picker-header {
-        padding: 0.8rem 1rem;
+        padding: 1.5rem 1.5rem 0.5rem;
     }
 
-    .picker-header h3 {
-        font-size: 1.1rem;
+    .modal-body {
+        padding: 0 1.5rem calc(1.5rem + env(safe-area-inset-bottom, 20px));
     }
 
-    .picker-search {
-        padding: 0.8rem;
-    }
-
-    .picker-item {
-        padding: 0.8rem 1rem;
+    .picker-list {
+        padding-bottom: 2rem;
     }
 
     .item-name {
-        font-size: 0.95rem;
+        font-size: 1rem;
     }
 
     .item-address {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
     }
 
     .item-icon img {
-        width: 28px;
-        height: 28px;
+        width: 32px;
+        height: 32px;
     }
 }

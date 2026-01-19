@@ -3,40 +3,42 @@
     <div class="picker-modal">
       <div class="picker-header">
         <h3>{{ $t('location_picker.title') }}</h3>
-        <button class="close-btn" @click="$emit('close')">{{ ICONS.CLOSE }}</button>
+        <button class="close-btn" @click="$emit('close')">✕</button>
       </div>
 
-      <div class="picker-search">
-        <span class="search-icon">{{ ICONS.SEARCH }}</span>
-        <input 
-          type="text" 
-          v-model="searchQuery" 
-          :placeholder="$t('location_picker.search_placeholder')"
-          class="picker-input"
-        >
-      </div>
-
-      <div class="picker-list">
-        <div 
-          v-for="loc in filteredList" 
-          :key="loc.location_id" 
-          class="picker-item"
-          @click="$emit('select', loc)"
-        >
-          <div class="item-icon">
-            <img :src="getPinIcon(loc)" alt="pin" />
-          </div>
-          <div class="item-info">
-            <div class="item-name">{{ loc.display_name }}</div>
-            <div class="item-address">{{ loc.address }}</div>
-          </div>
-          <div class="item-action">
-            <span class="action-arrow">›</span>
-          </div>
+      <div class="modal-body scroller">
+        <div class="picker-search">
+          <span class="search-icon">{{ ICONS.SEARCH }}</span>
+          <input 
+            type="text" 
+            v-model="searchQuery" 
+            :placeholder="$t('location_picker.search_placeholder')"
+            class="picker-input"
+          >
         </div>
-        
-        <div v-if="filteredList.length === 0" class="no-results">
-          {{ $t('location_picker.no_results') }}
+
+        <div class="picker-list">
+          <div 
+            v-for="loc in filteredList" 
+            :key="loc.location_id" 
+            class="picker-item"
+            @click="$emit('select', loc)"
+          >
+            <div class="item-icon">
+              <img :src="getPinIcon(loc)" alt="pin" />
+            </div>
+            <div class="item-info">
+              <div class="item-name">{{ loc.display_name }}</div>
+              <div class="item-address">{{ loc.address }}</div>
+            </div>
+            <div class="item-action">
+              <span class="action-arrow">›</span>
+            </div>
+          </div>
+          
+          <div v-if="filteredList.length === 0" class="no-results">
+            {{ $t('location_picker.no_results') }}
+          </div>
         </div>
       </div>
     </div>

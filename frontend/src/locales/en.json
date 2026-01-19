@@ -85,7 +85,14 @@
         "submit": "Submit Review",
         "cancel": "Cancel",
         "is_location_accurate": "Is this location accurate? (📍)",
-        "submitting": "Submitting..."
+        "submitting": "Submitting...",
+        "select_optional": "-- Select (Optional) --",
+        "wait_time_options": {
+            "none": "No wait",
+            "short": "Short (< 5 min)",
+            "medium": "Medium (5-15 min)",
+            "long": "Long (> 15 min)"
+        }
     },
     "refine_filter": {
         "title": "Refine Results",

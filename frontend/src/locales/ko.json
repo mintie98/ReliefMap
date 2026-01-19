@@ -85,7 +85,14 @@
         "submit": "제출",
         "cancel": "취소",
         "is_location_accurate": "위치가 정확한가요? (📍)",
-        "submitting": "제출 중..."
+        "submitting": "제출 중...",
+        "select_optional": "-- 선택 (선택 사항) --",
+        "wait_time_options": {
+            "none": "대기 없음",
+            "short": "짧음 (< 5분)",
+            "medium": "보통 (5-15분)",
+            "long": "길음 (> 15분)"
+        }
     },
     "refine_filter": {
         "title": "검색 필터",

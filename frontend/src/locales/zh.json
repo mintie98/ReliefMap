@@ -85,7 +85,14 @@
         "submit": "提交评论",
         "cancel": "取消",
         "is_location_accurate": "位置准确吗？(📍)",
-        "submitting": "提交中..."
+        "submitting": "提交中...",
+        "select_optional": "-- 选择（可选）--",
+        "wait_time_options": {
+            "none": "无需等待",
+            "short": "极短（< 5分钟）",
+            "medium": "一般（5-15分钟）",
+            "long": "较长（> 15分钟）"
+        }
     },
     "refine_filter": {
         "title": "筛选结果",

@@ -85,7 +85,14 @@
         "submit": "Gửi nhận xét",
         "cancel": "Hủy",
         "is_location_accurate": "Vị trí này có chính xác không? (📍)",
-        "submitting": "Đang gửi..."
+        "submitting": "Đang gửi...",
+        "select_optional": "-- Chọn (Tùy chọn) --",
+        "wait_time_options": {
+            "none": "Không chờ",
+            "short": "Dưới 5 phút",
+            "medium": "5-15 phút",
+            "long": "Trên 15 phút"
+        }
     },
     "refine_filter": {
         "title": "Lọc kết quả",

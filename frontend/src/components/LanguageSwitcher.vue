@@ -133,8 +133,8 @@ export default {
 }
 
 .flag-icon {
-  width: 40px;
-  height: 40px;
+  width: 28px;
+  height: 28px;
   object-fit: cover;
   border-radius: 50%;
   display: block;

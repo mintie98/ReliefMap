@@ -1,0 +1,5 @@
+﻿user_id	email	password_hash	auth_provider
+1	thanh@thanh.com	$2a$10$3meYsllClKBTDt8S/krrNOKzBWQOhnTtggGSIAPEQrHD1CLb.1DmG	local
+2	thanh22@thanh.com	$2a$10$rihrzdGJvR8eR0XyKY3oye2Z/iI8HD6W9TeDfIzp3tfFPd1OTUXfe	local
+3	thanh2@thanh.com	$2a$10$OECQrLv.41yJlyAL3wwoyOdzYBK22P3K5P9/tEMpybPzPVYkkUulq	local
+4	admin@reliefmap.com	/p9vO5S4Lq9C7.OK5Z0rQ/nS/I.pG9uG9X.r8X.r8X.r8W	local

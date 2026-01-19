@@ -1,0 +1,14 @@
+﻿Field	Type	Null	Key	Default	Extra
+user_id	bigint unsigned	NO	PRI	NULL	auto_increment
+user_name	varchar(100)	NO		NULL	
+email	varchar(255)	NO	UNI	NULL	
+password_hash	varchar(255)	YES		NULL	
+preferred_language	varchar(10)	NO		NULL	
+trust_score	int	NO		5	
+contribution_count	int	NO		0	
+verified_contributions	int	NO		0	
+user_role	enum('general','admin')	NO		NULL	
+ads_disabled_until	datetime	YES		NULL	
+auth_provider	varchar(50)	NO		NULL	
+provider_id	varchar(255)	YES		NULL	
+created_at	datetime	NO		NULL	
