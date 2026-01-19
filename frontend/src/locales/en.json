@@ -55,6 +55,7 @@
         "status": "Status:",
         "verified": "Verified",
         "pending": "Pending Verification",
+        "in_review": "In Review",
         "unverified": "Unverified",
         "crowd_score": "Crowd Score",
         "cleanliness_score": "Cleanliness Score",

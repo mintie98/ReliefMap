@@ -7,7 +7,25 @@ const PORT = process.env.PORT || 4001;
 
 // Middleware
 app.use(cors({
-  origin: ['http://localhost:3000', 'http://localhost:5173'], // Allow both for safety
+  origin: function (origin, callback) {
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) return callback(null, true);
+
+    const allowedOrigins = [
+      'http://localhost:3000',
+      'http://localhost:5173',
+      'https://localhost:5173',
+      'https://192.168.0.106:5173'
+    ];
+
+    // Also allow any 192.168.x.x origin for dev flexibility
+    if (allowedOrigins.indexOf(origin) !== -1 || origin.startsWith('https://192.168.')) {
+      callback(null, true);
+    } else {
+      console.log('Blocked by CORS:', origin);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());

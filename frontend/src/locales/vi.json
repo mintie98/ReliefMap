@@ -1,0 +1,151 @@
+{
+    "common": {
+        "login": "Đăng nhập",
+        "logout": "Đăng xuất",
+        "no_account": "Chưa có tài khoản?",
+        "already_have_account": "Đã có tài khoản?",
+        "sign_up": "Đăng ký",
+        "register": "Đăng ký",
+        "profile": "Hồ sơ",
+        "settings": "Cài đặt",
+        "language": "Ngôn ngữ"
+    },
+    "home": {
+        "welcome": "Chào mừng đến với ReliefMap",
+        "subtitle": "Tìm nơi nghỉ ngơi gần nhất.",
+        "search_placeholder": "Tìm kiếm địa điểm...",
+        "filter": "Bộ lọc",
+        "map_view": "Bản đồ",
+        "list_view": "Danh sách",
+        "categories": {
+            "toilet": "Nhà vệ sinh",
+            "travel_checkin": "Check-in du lịch",
+            "hot_spring": "Suối nước nóng",
+            "disaster_prevention": "Phòng chống thiên tai\nvà sơ tán",
+            "fishing": "Khu câu cá",
+            "camping": "Cắm trại"
+        }
+    },
+    "auth": {
+        "email_label": "Email",
+        "email_placeholder": "Nhập email của bạn",
+        "password_label": "Mật khẩu",
+        "password_placeholder": "Nhập mật khẩu của bạn",
+        "no_account": "Chưa có tài khoản?",
+        "already_have_account": "Đã có tài khoản?",
+        "sign_up": "Đăng ký",
+        "forgot_password": "Quên mật khẩu?",
+        "or_continue": "- HOẶC -",
+        "google_signin": "Đăng nhập bằng Google",
+        "login_failed": "Đăng nhập thất bại",
+        "register_success": "Đăng ký thành công!",
+        "name_label": "Họ và tên",
+        "name_placeholder": "Nhập họ tên của bạn",
+        "confirm_password_label": "Xác nhận mật khẩu",
+        "confirm_password_placeholder": "Nhập lại mật khẩu"
+    },
+    "location_detail": {
+        "address": "Địa chỉ",
+        "hours": "Giờ mở cửa",
+        "rating": "Đánh giá",
+        "reviews": "Nhận xét",
+        "amenities": "Tiện nghi",
+        "get_directions": "Chỉ đường",
+        "add_review": "Viết nhận xét",
+        "status": "Trạng thái:",
+        "verified": "Đã xác minh",
+        "pending": "Chờ xác minh",
+        "in_review": "Đang xem xét",
+        "unverified": "Chưa xác minh",
+        "crowd_score": "Độ đông đúc",
+        "cleanliness_score": "Độ sạch sẽ",
+        "toilet_amenities": "Tiện nghi nhà vệ sinh",
+        "toilet_info": "Thông tin:",
+        "toilet_details": {
+            "gate_access": "Cổng soát vé",
+            "floor_level": "Tầng",
+            "location_type": "Loại địa điểm",
+            "gender_separation": "Khu vực nam/nữ",
+            "none": "Không",
+            "public_toilet": "Nhà vệ sinh công cộng"
+        },
+        "no_reviews": "Chưa có nhận xét nào. Hãy là người đầu tiên!",
+        "start_navigation": "Bắt đầu điều hướng",
+        "no_images": "Không có hình ảnh"
+    },
+    "review_modal": {
+        "title": "Viết nhận xét",
+        "cleanliness_rating": "Đánh giá độ sạch sẽ",
+        "amenities_label": "Tiện nghi (Có sẵn những gì?)",
+        "wait_time": "Thời gian chờ",
+        "comment": "Bình luận",
+        "comment_placeholder": "Chia sẻ trải nghiệm của bạn...",
+        "photos": "Hình ảnh (Tối đa 3)",
+        "add_photo": "+ Thêm ảnh",
+        "submit": "Gửi nhận xét",
+        "cancel": "Hủy",
+        "is_location_accurate": "Vị trí này có chính xác không? (📍)",
+        "submitting": "Đang gửi..."
+    },
+    "refine_filter": {
+        "title": "Lọc kết quả",
+        "reset": "Đặt lại",
+        "apply": "Áp dụng",
+        "distance": "Khoảng cách",
+        "rating": "Đánh giá",
+        "open_now": "Đang mở cửa",
+        "available_time": "Thời gian có sẵn",
+        "visit_time": "Thời gian ghé thăm",
+        "verification_status": "Trạng thái xác minh",
+        "features": "Đặc điểm",
+        "search": "Tìm kiếm",
+        "feature_list": {
+            "japanese": "Kiểu Nhật",
+            "western": "Kiểu Tây",
+            "washlet": "Vòi xịt/Bidet",
+            "public": "Nhà vệ sinh công cộng",
+            "diaper": "Bàn thay tã",
+            "wheelchair": "Xe lăn",
+            "child_seat": "Ghế trẻ em",
+            "parking": "Bãi đỗ xe"
+        }
+    },
+    "map_drawer": {
+        "back_home": "Về trang chủ",
+        "refine": "Bộ lọc",
+        "add_new": "Thêm địa điểm",
+        "review": "Viết nhận xét",
+        "faq": "Câu hỏi thường gặp"
+    },
+    "amenities": {
+        "western_style": "Kiểu Tây",
+        "japanese_style": "Kiểu Nhật",
+        "accessible": "Lối đi cho người khuyết tật",
+        "baby_changing": "Thay tã cho bé",
+        "warm_seat": "Ghế ấm",
+        "powder_corner": "Góc trang điểm"
+    },
+    "add_location": {
+        "title": "Thêm nhà vệ sinh mới",
+        "name": "Tên",
+        "name_placeholder": "Ví dụ: Nhà vệ sinh công viên",
+        "address": "Địa chỉ",
+        "address_placeholder": "Ví dụ: 1-1-1 Shibuya",
+        "auto_detect_hint": "Nhập địa chỉ để tự động tìm tọa độ",
+        "use_current_location": "Sử dụng vị trí hiện tại",
+        "gender_type": "Loại giới tính",
+        "submit": "Gửi",
+        "computing": "Đang xử lý...",
+        "gender": {
+            "mixed": "Hỗn hợp",
+            "unisex": "Unisex",
+            "male": "Nam",
+            "female": "Nữ"
+        }
+    },
+    "location_picker": {
+        "title": "Chọn địa điểm để nhận xét",
+        "search_placeholder": "Tìm kiếm địa điểm...",
+        "no_results": "Không tìm thấy địa điểm nào."
+    }
+}

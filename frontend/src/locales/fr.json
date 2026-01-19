@@ -1,0 +1,151 @@
+{
+    "common": {
+        "login": "Connexion",
+        "logout": "Déconnexion",
+        "no_account": "Pas encore de compte ?",
+        "already_have_account": "Déjà un compte ?",
+        "sign_up": "S'inscrire",
+        "register": "S'inscrire",
+        "profile": "Profil",
+        "settings": "Paramètres",
+        "language": "Langue"
+    },
+    "home": {
+        "welcome": "Bienvenue sur ReliefMap",
+        "subtitle": "Trouvez le repos le plus proche.",
+        "search_placeholder": "Rechercher un lieu...",
+        "filter": "Filtrer",
+        "map_view": "Carte",
+        "list_view": "Liste",
+        "categories": {
+            "toilet": "Toilettes",
+            "travel_checkin": "Point touristique",
+            "hot_spring": "Source chaude",
+            "disaster_prevention": "Prévention et évacuation",
+            "fishing": "Zone de pêche",
+            "camping": "Camping"
+        }
+    },
+    "auth": {
+        "email_label": "Email",
+        "email_placeholder": "Entrez votre email",
+        "password_label": "Mot de passe",
+        "password_placeholder": "Entrez votre mot de passe",
+        "no_account": "Pas encore de compte ?",
+        "already_have_account": "Déjà un compte ?",
+        "sign_up": "S'inscrire",
+        "forgot_password": "Mot de passe oublié ?",
+        "or_continue": "- OU -",
+        "google_signin": "Se connecter avec Google",
+        "login_failed": "Échec de la connexion",
+        "register_success": "Inscription réussie !",
+        "name_label": "Nom complet",
+        "name_placeholder": "Entrez votre nom complet",
+        "confirm_password_label": "Confirmer le mot de passe",
+        "confirm_password_placeholder": "Ressaisissez votre mot de passe"
+    },
+    "location_detail": {
+        "address": "Adresse",
+        "hours": "Horaires",
+        "rating": "Note",
+        "reviews": "Avis",
+        "amenities": "Équipements",
+        "get_directions": "Itinéraire",
+        "add_review": "Ajouter un avis",
+        "status": "Statut :",
+        "verified": "Vérifié",
+        "pending": "En attente",
+        "in_review": "En révision",
+        "unverified": "Non vérifié",
+        "crowd_score": "Affluence",
+        "cleanliness_score": "Propreté",
+        "toilet_amenities": "Équipements toilettes",
+        "toilet_info": "Info toilettes :",
+        "toilet_details": {
+            "gate_access": "Accès portail",
+            "floor_level": "Étage",
+            "location_type": "Type de lieu",
+            "gender_separation": "Séparation H/F",
+            "none": "Aucun",
+            "public_toilet": "Toilettes publiques"
+        },
+        "no_reviews": "Aucun avis pour l'instant. Soyez le premier !",
+        "start_navigation": "Démarrer la navigation",
+        "no_images": "Pas d'images"
+    },
+    "review_modal": {
+        "title": "Écrire un avis",
+        "cleanliness_rating": "Note de propreté",
+        "amenities_label": "Équipements (Qu'y a-t-il ?)",
+        "wait_time": "Temps d'attente",
+        "comment": "Commentaire",
+        "comment_placeholder": "Partagez votre expérience...",
+        "photos": "Photos (Max 3)",
+        "add_photo": "+ Ajouter photo",
+        "submit": "Envoyer",
+        "cancel": "Annuler",
+        "is_location_accurate": "L'emplacement est-il exact ? (📍)",
+        "submitting": "Envoi..."
+    },
+    "refine_filter": {
+        "title": "Affiner",
+        "reset": "Réinitialiser",
+        "apply": "Appliquer",
+        "distance": "Distance",
+        "rating": "Note",
+        "open_now": "Ouvert maintenant",
+        "available_time": "Temps disponible",
+        "visit_time": "Heure de visite",
+        "verification_status": "Statut de vérification",
+        "features": "Caractéristiques",
+        "search": "Recherche",
+        "feature_list": {
+            "japanese": "Style japonais",
+            "western": "Style occidental",
+            "washlet": "Bidet/Washlet",
+            "public": "Toilettes publiques",
+            "diaper": "Table à langer",
+            "wheelchair": "Accès fauteuil roulant",
+            "child_seat": "Siège enfant",
+            "parking": "Parking"
+        }
+    },
+    "map_drawer": {
+        "back_home": "Retour accueil",
+        "refine": "Filtrer",
+        "add_new": "Ajouter toilettes",
+        "review": "Noter un lieu",
+        "faq": "FAQ"
+    },
+    "amenities": {
+        "western_style": "Style occidental",
+        "japanese_style": "Style japonais",
+        "accessible": "Accessible",
+        "baby_changing": "Bébé",
+        "warm_seat": "Siège chauffant",
+        "powder_corner": "Coin maquillage"
+    },
+    "add_location": {
+        "title": "Ajouter nouvelles toilettes",
+        "name": "Nom",
+        "name_placeholder": "ex : Toilettes du parc",
+        "address": "Adresse",
+        "address_placeholder": "ex : 1-1-1 Shibuya",
+        "auto_detect_hint": "Entrez l'adresse pour détecter les coordonnées",
+        "use_current_location": "Utiliser ma position",
+        "gender_type": "Type de genre",
+        "submit": "Soumettre",
+        "computing": "Calcul...",
+        "gender": {
+            "mixed": "Mixte",
+            "unisex": "Unisexe",
+            "male": "Hommes",
+            "female": "Femmes"
+        }
+    },
+    "location_picker": {
+        "title": "Sélectionner un lieu",
+        "search_placeholder": "Rechercher...",
+        "no_results": "Aucun résultat trouvé."
+    }
+}

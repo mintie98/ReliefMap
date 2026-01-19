@@ -1,0 +1,151 @@
+{
+    "common": {
+        "login": "登录",
+        "logout": "退出登录",
+        "no_account": "没有账号？",
+        "already_have_account": "已有账号？",
+        "sign_up": "注册",
+        "register": "注册",
+        "profile": "个人资料",
+        "settings": "设置",
+        "language": "语言"
+    },
+    "home": {
+        "welcome": "欢迎使用 ReliefMap",
+        "subtitle": "寻找最近的休息处。",
+        "search_placeholder": "搜索地点...",
+        "filter": "筛选",
+        "map_view": "地图视图",
+        "list_view": "列表视图",
+        "categories": {
+            "toilet": "洗手间",
+            "travel_checkin": "旅游打卡",
+            "hot_spring": "温泉",
+            "disaster_prevention": "防灾避难",
+            "fishing": "钓鱼场",
+            "camping": "露营地"
+        }
+    },
+    "auth": {
+        "email_label": "邮箱",
+        "email_placeholder": "输入您的邮箱",
+        "password_label": "密码",
+        "password_placeholder": "输入您的密码",
+        "no_account": "没有账号？",
+        "already_have_account": "已有账号？",
+        "sign_up": "注册",
+        "forgot_password": "忘记密码？",
+        "or_continue": "- 或者 -",
+        "google_signin": "通过 Google 登录",
+        "login_failed": "登录失败",
+        "register_success": "注册成功！",
+        "name_label": "姓名",
+        "name_placeholder": "输入您的姓名",
+        "confirm_password_label": "确认密码",
+        "confirm_password_placeholder": "再次输入密码"
+    },
+    "location_detail": {
+        "address": "地址",
+        "hours": "营业时间",
+        "rating": "评分",
+        "reviews": "评论",
+        "amenities": "设施",
+        "get_directions": "获取路线",
+        "add_review": "添加评论",
+        "status": "状态：",
+        "verified": "已验证",
+        "pending": "待验证",
+        "in_review": "审核中",
+        "unverified": "未验证",
+        "crowd_score": "拥挤程度",
+        "cleanliness_score": "清洁程度",
+        "toilet_amenities": "洗手间设施",
+        "toilet_info": "洗手间信息：",
+        "toilet_details": {
+            "gate_access": "检票口",
+            "floor_level": "楼层",
+            "location_type": "地点类型",
+            "gender_separation": "男女分开",
+            "none": "无",
+            "public_toilet": "公共厕所"
+        },
+        "no_reviews": "暂无评论。成为第一个评论的人吧！",
+        "start_navigation": "开始导航",
+        "no_images": "暂无图片"
+    },
+    "review_modal": {
+        "title": "写评论",
+        "cleanliness_rating": "清洁度评分",
+        "amenities_label": "设施（有哪些可用？）",
+        "wait_time": "等待时间",
+        "comment": "评论",
+        "comment_placeholder": "分享您的体验...",
+        "photos": "照片（最多3张）",
+        "add_photo": "+ 添加照片",
+        "submit": "提交评论",
+        "cancel": "取消",
+        "is_location_accurate": "位置准确吗？(📍)",
+        "submitting": "提交中..."
+    },
+    "refine_filter": {
+        "title": "筛选结果",
+        "reset": "重置",
+        "apply": "应用",
+        "distance": "距离",
+        "rating": "评分",
+        "open_now": "仅限营业中",
+        "available_time": "可用时间",
+        "visit_time": "访问时间",
+        "verification_status": "验证状态",
+        "features": "特征",
+        "search": "搜索",
+        "feature_list": {
+            "japanese": "日式",
+            "western": "西式",
+            "washlet": "智能马桶盖",
+            "public": "公共厕所",
+            "diaper": "尿布台",
+            "wheelchair": "轮椅通道",
+            "child_seat": "儿童座椅",
+            "parking": "停车场"
+        }
+    },
+    "map_drawer": {
+        "back_home": "返回首页",
+        "refine": "筛选",
+        "add_new": "添加地点",
+        "review": "评价地点",
+        "faq": "常见问题"
+    },
+    "amenities": {
+        "western_style": "西式",
+        "japanese_style": "日式",
+        "accessible": "无障碍设施",
+        "baby_changing": "婴儿护理",
+        "warm_seat": "暖座",
+        "powder_corner": "化妆区"
+    },
+    "add_location": {
+        "title": "添加新洗手间",
+        "name": "名称",
+        "name_placeholder": "例如：公园洗手间",
+        "address": "地址",
+        "address_placeholder": "例如：涩谷区1-1-1",
+        "auto_detect_hint": "输入地址以自动检测坐标",
+        "use_current_location": "使用当前位置",
+        "gender_type": "性别类型",
+        "submit": "提交",
+        "computing": "计算中...",
+        "gender": {
+            "mixed": "混合",
+            "unisex": "无性别",
+            "male": "男用",
+            "female": "女用"
+        }
+    },
+    "location_picker": {
+        "title": "选择地点进行评价",
+        "search_placeholder": "搜索地点...",
+        "no_results": "未找到匹配的地点。"
+    }
+}

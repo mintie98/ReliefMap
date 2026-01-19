@@ -52,6 +52,7 @@
         "status": "ステータス:",
         "verified": "認証済み",
         "pending": "確認中",
+        "in_review": "審査中",
         "unverified": "未認証",
         "crowd_score": "混雑度",
         "cleanliness_score": "清潔度",

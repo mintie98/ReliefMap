@@ -30,6 +30,11 @@ import { useI18n } from 'vue-i18n';
 // Import images explicitly to ensure Vite resolves them correctly
 import enFlag from '@/assets/flags/en.png';
 import jaFlag from '@/assets/flags/ja.png';
+import viFlag from '@/assets/flags/vi.png'; // Assuming exists
+import zhFlag from '@/assets/flags/zh.png'; // Assuming exists
+import frFlag from '@/assets/flags/fr.png'; // Assuming exists
+import koFlag from '@/assets/flags/ko.png'; // Assuming exists
+
 
 export default {
   name: 'LanguageSwitcher',
@@ -41,11 +46,23 @@ export default {
 
     const availableLocales = [
       { code: 'en', label: 'English' },
-      { code: 'ja', label: '日本語' }
+      { code: 'ja', label: '日本語' },
+      { code: 'vi', label: 'Tiếng Việt' },
+      { code: 'zh', label: '中文' },
+      { code: 'fr', label: 'Français' },
+      { code: 'ko', label: '한국어' }
     ];
 
     const getFlagSrc = (code) => {
-      return code === 'en' ? enFlag : jaFlag;
+      switch(code) {
+        case 'en': return enFlag;
+        case 'ja': return jaFlag;
+        case 'vi': return viFlag;
+        case 'zh': return zhFlag;
+        case 'fr': return frFlag;
+        case 'ko': return koFlag;
+        default: return enFlag;
+      }
     };
 
     const toggleDropdown = () => {

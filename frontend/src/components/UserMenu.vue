@@ -3,7 +3,7 @@
     <!-- Guest State -->
     <template v-if="!isAuthenticated">
       <router-link to="/login" class="login-btn">
-        Login
+        {{ $t('common.login') }}
       </router-link>
     </template>
 
@@ -24,11 +24,11 @@
       <transition name="fade">
         <div v-if="isDropdownOpen" class="dropdown-menu">
           <router-link to="/profile" class="dropdown-item">
-            <span class="icon">{{ ICONS.USER }}</span> User Profile
+            <span class="icon">{{ ICONS.USER }}</span> {{ $t('common.profile') }}
           </router-link>
           <div class="dropdown-divider"></div>
           <button @click="handleLogout" class="dropdown-item logout-item">
-            <span class="icon">{{ ICONS.LOGOUT }}</span> Logout
+            <span class="icon">{{ ICONS.LOGOUT }}</span> {{ $t('common.logout') }}
           </button>
         </div>
       </transition>

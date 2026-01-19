@@ -46,7 +46,7 @@
           <label class="checkbox-item yellow-text">
             <input type="checkbox" v-model="filters.status.inReview">
             <span class="checkmark"></span>
-            In Review
+            {{ $t('location_detail.in_review') }}
           </label>
           <label class="checkbox-item green-text">
             <input type="checkbox" v-model="filters.status.verified">
