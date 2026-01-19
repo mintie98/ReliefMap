@@ -1,7 +1,7 @@
 .app-header {
     background-color: #1976D2;
     color: white;
-    padding: 0.8rem 2rem;
+    padding: 0.8rem 1rem 0.8rem 0.4rem; /* Match MapView left padding */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
@@ -10,7 +10,7 @@
 
 @media (max-width: 600px) {
     .app-header {
-        padding: 0.6rem 1rem;
+        padding: 0.6rem 0.5rem 0.6rem 0.25rem; /* Match MapView mobile padding */
     }
 }
 

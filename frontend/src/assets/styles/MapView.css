@@ -16,7 +16,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 0 1rem;
+    padding: 0 1rem 0 0.4rem; /* Shifted left by reducing left padding from 1rem to 0.4rem */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     z-index: 1001;
     position: relative;
@@ -26,7 +26,7 @@
 .header-right {
     display: flex;
     align-items: center;
-    gap: 0.5rem; /* Reduced from 1rem */
+    gap: 0.25rem; /* Ultra tight gap */
 }
 
 .brand-text {
@@ -124,11 +124,11 @@
 @media (max-width: 600px) {
     .map-header {
         height: 50px;
-        padding: 0 0.5rem;
+        padding: 0 0.5rem 0 0.25rem; /* Shifted left on mobile */
     }
 
     .hamburger-btn {
-        width: 40px;
+        width: 38px; /* Slightly narrower button area */
         height: 40px;
     }
 
@@ -217,11 +217,7 @@
 }
 
 /* Header Left */
-.header-left {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
+/* Removed duplicate .header-left block */
 
 .hamburger-btn {
     background: none;
