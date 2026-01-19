@@ -5,6 +5,7 @@ import pinCamera from '../assets/pins/yellow_camera.png';
 import pinMedical from '../assets/pins/green_medical.png';
 import pinFishing from '../assets/pins/yellow_fishing.png';
 import pinOnsen from '../assets/pins/green_onsen.png';
+import pinCampingNew from '../assets/pins/green_camping_v2.png';
 import { ICONS } from '../assets/icons';
 
 export function useHomeView() {
@@ -27,6 +28,7 @@ export function useHomeView() {
         pinMedical,
         pinFishing,
         pinOnsen,
+        pinCampingNew,
         ICONS
     };
 }

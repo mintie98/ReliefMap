@@ -12,7 +12,7 @@
           <div class="map-pin" style="top: 18%; left: 78%;">
             <img :src="pinMedical" alt="medical" class="pin-img" />
           </div>
-          <div class="map-pin" style="top: 35%; left: 68%;">
+          <div class="map-pin" style="top: 35%; left: 68%;" @click="navigateToMap">
             <img :src="pinToilet" alt="toilet" class="pin-img" />
           </div>
           <div class="map-pin" style="top: 48%; left: 65%;">
@@ -25,7 +25,7 @@
             <img :src="pinFishing" alt="fishing" class="pin-img" />
           </div>
           <div class="map-pin" style="top: 78%; left: 35%;">
-            <img :src="pinToilet" alt="toilet" class="pin-img" />
+            <img :src="pinCampingNew" alt="camping" class="pin-img" />
           </div>
         </div>
 
@@ -112,7 +112,8 @@ export default {
       pinCamera, 
       pinMedical, 
       pinFishing, 
-      pinOnsen, 
+      pinOnsen,
+      pinCampingNew,
       ICONS 
     } = useHomeView();
 
@@ -124,6 +125,7 @@ export default {
       pinMedical,
       pinFishing,
       pinOnsen,
+      pinCampingNew,
       ICONS
     };
   }
