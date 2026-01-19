@@ -198,3 +198,37 @@ select:focus {
     font-size: 0.9rem;
     text-align: center;
 }
+
+@media (max-width: 600px) {
+    .add-location-overlay {
+        padding: 0;
+        align-items: flex-end; /* Bottom sheet style */
+    }
+
+    .modal-content {
+        max-height: 85vh;
+        border-radius: 20px 20px 0 0;
+        padding: 1.5rem 1rem;
+    }
+
+    .modal-header h2 {
+        font-size: 1.3rem;
+    }
+
+    .form-row {
+        flex-direction: column;
+        gap: 1rem;
+    }
+
+    .amenities-grid {
+        grid-template-columns: 1fr; /* Single column on very small screens for clarity */
+    }
+
+    .btn-primary {
+        padding: 1.2rem;
+        font-size: 1.15rem;
+        position: sticky;
+        bottom: 0;
+        margin-top: 2rem;
+    }
+}
