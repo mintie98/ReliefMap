@@ -315,3 +315,38 @@
   color: #E04F5F;
   /* Red arrow */
 }
+
+@media (max-width: 600px) {
+  .location-name {
+    font-size: 1.4rem;
+  }
+
+  .panel-header {
+    padding: 1.2rem 1rem;
+  }
+
+  .gallery-item {
+    min-width: 140px;
+    height: 105px;
+  }
+
+  .status-row, .time-row, .score-row {
+    font-size: 1.05rem;
+    margin-bottom: 0.8rem;
+  }
+
+  .amenity-icon {
+    width: 48px;
+    height: 48px;
+  }
+
+  .nav-btn {
+    padding: 1rem;
+    font-size: 1.2rem;
+  }
+
+  .add-review-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.9rem;
+  }
+}

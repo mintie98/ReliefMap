@@ -1,6 +1,6 @@
 <template>
   <div class="location-picker-overlay" @click.self="$emit('close')">
-    <div class="picker-modal scroller">
+    <div class="picker-modal">
       <div class="picker-header">
         <h3>{{ $t('location_picker.title') }}</h3>
         <button class="close-btn" @click="$emit('close')">{{ ICONS.CLOSE }}</button>

@@ -202,3 +202,41 @@
 .btn-search:hover {
     background-color: #bbb;
 }
+
+@media (max-width: 600px) {
+    .header-search-input {
+        padding: 1rem 2.5rem 1rem 1.2rem;
+        font-size: 1rem;
+    }
+
+    .section-label {
+        font-size: 1rem;
+        margin-bottom: 0.8rem;
+    }
+
+    .btn-option {
+        padding: 0.6rem 1.2rem;
+        font-size: 0.95rem;
+    }
+
+    .checkbox-item {
+        font-size: 0.95rem;
+        padding: 0.5rem 0;
+    }
+
+    .checkbox-item input {
+        width: 22px;
+        height: 22px;
+    }
+
+    .btn-feature {
+        padding: 0.8rem 0.6rem;
+        font-size: 0.9rem;
+    }
+
+    .btn-search {
+        max-width: 100%;
+        padding: 1rem;
+        font-size: 1.1rem;
+    }
+}

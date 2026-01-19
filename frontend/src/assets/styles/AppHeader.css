@@ -1,13 +1,17 @@
-/* App Header Styles */
 .app-header {
     background-color: #1976D2;
-    /* Solid Blue matched from original */
     color: white;
     padding: 0.8rem 2rem;
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
     position: sticky;
     top: 0;
     z-index: 1000;
+}
+
+@media (max-width: 600px) {
+    .app-header {
+        padding: 0.6rem 1rem;
+    }
 }
 
 .header-content {
@@ -30,10 +34,22 @@
     color: inherit;
 }
 
+@media (max-width: 480px) {
+    .brand h1 {
+        font-size: 1.2rem;
+    }
+}
+
 .nav-actions {
     display: flex;
     align-items: center;
     gap: 1rem;
+}
+
+@media (max-width: 600px) {
+    .nav-actions {
+        gap: 0.5rem;
+    }
 }
 
 .login-btn {
