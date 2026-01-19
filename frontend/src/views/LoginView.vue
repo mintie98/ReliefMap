@@ -1,6 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-card">
+      <button class="close-btn" @click="goBack">&times;</button>
       <h1 class="auth-title">{{ $t('common.login') }}</h1>
       
       <form @submit.prevent="handleLogin" class="auth-form">
@@ -10,7 +11,6 @@
             type="email" 
             id="email" 
             v-model="email" 
-            :placeholder="$t('auth.email_placeholder')"
             class="auth-input"
             required
           />
@@ -22,7 +22,6 @@
             type="password" 
             id="password" 
             v-model="password" 
-            :placeholder="$t('auth.password_placeholder')"
             class="auth-input"
             required
           />
@@ -55,16 +54,28 @@
 
 <script>
 import { useLoginView } from '../composables/useLoginView';
+import { useRouter } from 'vue-router';
 import '../assets/styles/AuthView.css';
 
 export default {
   name: 'LoginView',
   setup() {
     const { email, password, handleLogin } = useLoginView();
+    const router = useRouter();
+
+    const goBack = () => {
+        if (window.history.length > 2) {
+            router.go(-1);
+        } else {
+            router.push('/');
+        }
+    };
+
     return {
       email,
       password,
-      handleLogin
+      handleLogin,
+      goBack
     };
   }
 };

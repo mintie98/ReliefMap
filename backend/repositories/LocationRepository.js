@@ -422,21 +422,6 @@ class LocationRepository {
     let query = `SELECT * FROM wc_verifications WHERE status IN ('unverified', 'pending')`;
     const params = [];
 
-    // Spatial filter support? Not strictly 'spatial' index on JSON, but could parse or use separate columns.
-    // Ideally wc_verifications should have lat/lng columns for efficient query.
-    // For now, let's assume we fetch all pending (usually small list) or we add lat/lng columns.
-    // To make it efficient, let's Update the Table Schema to have lat/lng columns?
-    // Migration script created table: id, user_id, location_data, status... 
-    // JSON search for spatial is slow.
-    // However, user said: "người dùng được chia điểm...".
-    // Let's assume the list is manageable or we iterate in memory for now, OR we modify schema to store lat/lng.
-    // Given I already ran migration, I'll stick to full fetch if dataset is small, OR filter inService.
-    // A better approach is to store lat/lng as columns. 
-    // BUT I can't rerun migration easily without error handling (which I added).
-    // I'll check if I can extract checks.
-
-    // Actually, "location_data" has lat/lng.
-
     const [rows] = await db.execute(query, params);
     return rows;
   }

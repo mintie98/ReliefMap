@@ -8,6 +8,7 @@ import { ICONS } from '../assets/icons';
 import pinGreen from '../assets/toiletPin/green.png';
 import pinYellow from '../assets/toiletPin/yellow.png';
 import pinRed from '../assets/toiletPin/red.png';
+import userIcon from '../assets/user.png';
 
 export function useMapView() {
     const mapContainer = ref(null);
@@ -93,12 +94,9 @@ export function useMapView() {
                 title: "You are here",
                 zIndex: 999, // On top of other markers
                 icon: {
-                    path: window.google.maps.SymbolPath.CIRCLE,
-                    scale: 7,
-                    fillColor: "#4285F4",
-                    fillOpacity: 1,
-                    strokeColor: "white",
-                    strokeWeight: 2,
+                    url: userIcon,
+                    scaledSize: new window.google.maps.Size(40, 40),
+                    anchor: new window.google.maps.Point(20, 20)
                 }
             });
         } else {
@@ -206,8 +204,41 @@ export function useMapView() {
         showAddModal.value = true;
     };
 
-    const handleLocationAdded = () => {
-        loadLocations();
+    const handleLocationAdded = (locationData) => {
+        // Pan map to the newly added location to ensure it's in view
+        if (locationData && locationData.latitude && locationData.longitude && map) {
+            const newLoc = { lat: locationData.latitude, lng: locationData.longitude };
+            map.panTo(newLoc);
+            map.setZoom(16); // Zoom in to show the new location clearly
+            
+            // Temporarily clear bounds to ensure new location is loaded
+            // Store current bounds
+            const currentBounds = {
+                swLat: filters.swLat,
+                swLng: filters.swLng,
+                neLat: filters.neLat,
+                neLng: filters.neLng
+            };
+            
+            // Clear bounds filters temporarily
+            updateFilters({
+                swLat: null,
+                swLng: null,
+                neLat: null,
+                neLng: null
+            });
+            
+            // Reload locations without bounds restriction
+            loadLocations().then(() => {
+                // After a short delay, restore bounds-based filtering
+                setTimeout(() => {
+                    // The map's idle event will naturally update bounds on next interaction
+                }, 500);
+            });
+        } else {
+            // Fallback: just reload
+            loadLocations();
+        }
     };
 
     const navigateToLogin = () => {

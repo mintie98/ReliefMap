@@ -8,6 +8,25 @@
         <!-- Left Column: Map Silhouette -->
         <div class="map-silhouette-container">
           <img :src="japanMapImg" alt="Japan Map" class="japan-map-img" />
+          <!-- Decorative Pins -->
+          <div class="map-pin" style="top: 40%; left: 64%;">
+            <img :src="pinGreen" alt="pin" class="pin-img" />
+          </div>
+          <div class="map-pin" style="top: 52%; left: 61%;">
+            <img :src="pinRed" alt="pin" class="pin-img" />
+          </div>
+          <div class="map-pin" style="top: 48%; left: 63%;">
+            <img :src="pinYellow" alt="pin" class="pin-img" />
+          </div>
+          <div class="map-pin" style="top: 25%; left: 62%;">
+            <img :src="pinGreen" alt="pin" class="pin-img" />
+          </div>
+          <div class="map-pin" style="top: 65%; left: 56%;">
+            <img :src="pinYellow" alt="pin" class="pin-img" />
+          </div>
+          <div class="map-pin" style="top: 44%; left: 64%;">
+            <img :src="pinRed" alt="pin" class="pin-img" />
+          </div>
         </div>
 
         <!-- Right Column: Category Grid -->
@@ -86,11 +105,14 @@ export default {
     AppHeader
   },
   setup() {
-    const { navigateToMap, japanMapImg, ICONS } = useHomeView();
+    const { navigateToMap, japanMapImg, pinGreen, pinYellow, pinRed, ICONS } = useHomeView();
 
     return {
       navigateToMap,
       japanMapImg,
+      pinGreen,
+      pinYellow,
+      pinRed,
       ICONS
     };
   }

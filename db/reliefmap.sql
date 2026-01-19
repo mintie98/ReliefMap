@@ -36,6 +36,7 @@ CREATE TABLE LOCATIONS_BASE (
     opening_hours JSON NULL COMMENT '営業時間',
     google_rating DECIMAL(3, 2) NULL COMMENT 'Google評価',
     google_ratings_total INT NULL COMMENT '評価数',
+    photo_reference TEXT NULL COMMENT '写真参照',
     last_updated DATETIME NOT NULL COMMENT '更新日時',
     PRIMARY KEY (base_id),
     INDEX idx_lat_lon (latitude, longitude)

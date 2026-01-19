@@ -345,6 +345,9 @@
 /* User Profile & Dropdown */
 .user-profile-container {
     position: relative;
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 .auth-dropdown {

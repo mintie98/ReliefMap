@@ -9,7 +9,7 @@
         </svg>
       </button>
       <div class="search-input-container">
-        <span class="search-icon">{{ ICONS.SEARCH }}</span>
+        <span class="refine-search-icon">{{ ICONS.SEARCH }}</span>
         <input 
           type="text" 
           v-model="filters.searchText"

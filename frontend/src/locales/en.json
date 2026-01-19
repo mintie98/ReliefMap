@@ -1,5 +1,7 @@
 {
     "common": {
+        "login": "Login",
+        "logout": "Logout",
         "no_account": "Don't have an account?",
         "already_have_account": "Already have an account?",
         "sign_up": "Sign up",
@@ -23,6 +25,24 @@
             "fishing": "Fishing ground",
             "camping": "Camping"
         }
+    },
+    "auth": {
+        "email_label": "Email",
+        "email_placeholder": "Enter your email",
+        "password_label": "Password",
+        "password_placeholder": "Enter your password",
+        "no_account": "Don't have an account?",
+        "already_have_account": "Already have an account?",
+        "sign_up": "Sign up",
+        "forgot_password": "Forgot password?",
+        "or_continue": "- OR -",
+        "google_signin": "Sign in with Google",
+        "login_failed": "Login failed",
+        "register_success": "Registration successful!",
+        "name_label": "Full Name",
+        "name_placeholder": "Enter your full name",
+        "confirm_password_label": "Confirm Password",
+        "confirm_password_placeholder": "Re-enter your password"
     },
     "location_detail": {
         "address": "Address",

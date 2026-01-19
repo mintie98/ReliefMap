@@ -98,24 +98,26 @@ export default {
 }
 
 .lang-btn {
-  background: none;
-  border: 1px solid transparent;
+  background: none !important;
+  border: none !important;
+  box-shadow: none !important;
   cursor: pointer;
-  padding: 4px 8px;
-  border-radius: 20px;
-  transition: all 0.2s ease;
+  padding: 0;
+  transition: opacity 0.2s ease;
   display: flex;
   align-items: center;
-  gap: 6px;
+  justify-content: center;
+  color: inherit;
+  gap: 4px;
 }
 
 .lang-btn:hover {
-  background-color: rgba(0, 0, 0, 0.05);
+  opacity: 0.8;
 }
 
 .flag-icon {
-  width: 24px;
-  height: 24px;
+  width: 40px;
+  height: 40px;
   object-fit: cover;
   border-radius: 50%;
   display: block;

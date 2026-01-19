@@ -27,9 +27,31 @@ export function useAddLocationModal(emit) {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (pos) => {
-                    form.latitude = parseFloat(pos.coords.latitude.toFixed(6));
-                    form.longitude = parseFloat(pos.coords.longitude.toFixed(6));
-                    loading.value = false;
+                    const lat = parseFloat(pos.coords.latitude.toFixed(6));
+                    const lng = parseFloat(pos.coords.longitude.toFixed(6));
+                    
+                    form.latitude = lat;
+                    form.longitude = lng;
+                    
+                    // Reverse geocode to get address
+                    if (window.google) {
+                        const geocoder = new window.google.maps.Geocoder();
+                        const latlng = { lat, lng };
+                        
+                        geocoder.geocode({ location: latlng }, (results, status) => {
+                            if (status === 'OK' && results[0]) {
+                                form.address = results[0].formatted_address;
+                            } else {
+                                console.warn('Reverse geocoding failed:', status);
+                                form.address = `${lat}, ${lng}`;
+                            }
+                            loading.value = false;
+                        });
+                    } else {
+                        // Fallback to coordinates if Google Maps not available
+                        form.address = `${lat}, ${lng}`;
+                        loading.value = false;
+                    }
                 },
                 (err) => {
                     alert('Cannot get location: ' + err.message);
@@ -37,6 +59,7 @@ export function useAddLocationModal(emit) {
                 }
             );
         } else {
+            alert('Geolocation is not supported by your browser');
             loading.value = false;
         }
     };
@@ -81,7 +104,11 @@ export function useAddLocationModal(emit) {
             const result = await createLocation(ugcData);
             if (result.success) {
                 alert(result.message || 'Location processed successfully!');
-                emit('added');
+                // Emit location data so map can pan to it
+                emit('added', {
+                    latitude: form.latitude,
+                    longitude: form.longitude
+                });
                 emit('close');
             } else {
                 error.value = result.error || 'Failed to add location.';

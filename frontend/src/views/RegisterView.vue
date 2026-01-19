@@ -1,6 +1,7 @@
 <template>
   <div class="auth-container">
     <div class="auth-card">
+      <button class="close-btn" @click="goBack">&times;</button>
       <h1 class="auth-title">{{ $t('auth.sign_up') }}</h1>
       
       <form @submit.prevent="handleRegister" class="auth-form">
@@ -10,7 +11,6 @@
             type="text" 
             id="fullname" 
             v-model="fullname" 
-            :placeholder="$t('auth.name_placeholder')"
             class="auth-input"
             required
           />
@@ -22,7 +22,6 @@
             type="email" 
             id="email" 
             v-model="email" 
-            :placeholder="$t('auth.email_placeholder')"
             class="auth-input"
             required
           />
@@ -34,7 +33,6 @@
             type="password" 
             id="password" 
             v-model="password" 
-            :placeholder="$t('auth.password_placeholder')"
             class="auth-input"
             required
           />
@@ -66,17 +64,29 @@
 
 <script>
 import { useRegisterView } from '../composables/useRegisterView';
+import { useRouter } from 'vue-router';
 import '../assets/styles/AuthView.css';
 
 export default {
   name: 'RegisterView',
   setup() {
     const { fullname, email, password, handleRegister } = useRegisterView();
+    const router = useRouter();
+    
+    const goBack = () => {
+        if (window.history.length > 2) {
+            router.go(-1);
+        } else {
+            router.push('/');
+        }
+    };
+
     return {
       fullname,
       email,
       password,
-      handleRegister
+      handleRegister,
+      goBack
     };
   }
 };

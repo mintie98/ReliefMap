@@ -11,10 +11,6 @@ class LocationService {
       let locations = await locationRepository.findAll(filters);
 
       // fetch pending locations (unverified/red or pending/yellow)
-      // Only fetch pending if we are doing a broad search (e.g. map view), ensuring we don't leak private data if needed.
-      // Assuming public map shows all pending.
-      // We filter pending by same spatial logic if possible, or just fetch all (assuming small volume) and filter in memory.
-      // For now, fetch all pending and filter spatial in memory
       const pendingRows = await locationRepository.findAllPending();
 
       const pendingLocations = pendingRows.map(row => {
@@ -27,16 +23,16 @@ class LocationService {
 
         return {
           ...data,
-          location_id: `pending_${row.id}`, // String ID to distinguish
-          id: row.id, // real DB id
+          location_id: `pending_${row.id}`,
+          id: row.id,
           is_pending: true,
-          verification_status: row.status, // 'unverified' or 'pending'
+          verification_status: row.status === 'pending' ? 'yellow' : (row.status === 'unverified' ? 'red' : row.status),
           verification_score: row.verification_score,
           source_type: 'user_pending'
         };
       });
 
-      // Filter pending by viewport (if provided)
+      // Simple in-memory filter (Previous logic)
       let visiblePending = pendingLocations;
       if (filters.swLat && filters.neLat && filters.swLng && filters.neLng) {
         visiblePending = pendingLocations.filter(loc =>
@@ -46,12 +42,9 @@ class LocationService {
       } else if (filters.lat && filters.lng && filters.radius) {
         visiblePending = pendingLocations.filter(loc => {
           const dist = this.haversineDistance(filters.lat, filters.lng, loc.latitude, loc.longitude);
-          return dist <= (filters.radius); // Radius is km? filters.radius is float.
+          return dist <= filters.radius;
         });
       }
-
-      // Filter pending by viewport logic...
-      // [Pending filtering logic remains same]
 
       locations = locations.concat(visiblePending);
 
@@ -60,21 +53,22 @@ class LocationService {
         locations = locations.filter(loc => this.checkIsOpenNow(loc));
       }
 
-      // 2. If searching by Bounding Box, we also want to trigger Google API fetch
-      // We calculate the center point and an approximate radius to keep the "Smart Search" feature working
+      // Smart Search Trigger
       if (filters.swLat && filters.neLat && filters.swLng && filters.neLng) {
-        const centerLat = (filters.swLat + filters.neLat) / 2;
-        const centerLng = (filters.swLng + filters.neLng) / 2;
-        const latRadius = (filters.neLat - filters.swLat) * 111 / 2;
-        const lngRadius = (filters.neLng - filters.swLng) * 111 * Math.cos(centerLat * Math.PI / 180) / 2;
-        const radiusKm = Math.sqrt(latRadius * latRadius + lngRadius * lngRadius);
+        const swLat = parseFloat(filters.swLat);
+        const neLat = parseFloat(filters.neLat);
+        const swLng = parseFloat(filters.swLng);
+        const neLng = parseFloat(filters.neLng);
 
-        // Only fetch if radius is reasonable (e.g. < 5km) and valid number
+        const centerLat = (swLat + neLat) / 2;
+        const centerLng = (swLng + neLng) / 2;
+        const radiusKm = Math.sqrt(Math.pow((neLat - swLat) * 111 / 2, 2) + Math.pow((neLng - swLng) * 111 * Math.cos(centerLat * Math.PI / 180) / 2, 2));
+
         if (!isNaN(radiusKm) && radiusKm > 0 && radiusKm < 5) {
           try {
             await this.fetchAndSaveGoogleNearby(centerLat, centerLng, radiusKm);
-            // Re-fetch from DB to grab newly added ones
-            locations = await locationRepository.findAll(filters);
+            const freshLocations = await locationRepository.findAll(filters);
+            locations = freshLocations.concat(visiblePending); // Re-merge to avoid loss
           } catch (e) {
             console.error('Bound-based Google Fetch failed', e.message);
           }
@@ -82,10 +76,10 @@ class LocationService {
       }
       // Legacy support: radius search
       else if (filters.lat && filters.lng && filters.radius) {
-        // ... existing radius logic ...
         try {
           await this.fetchAndSaveGoogleNearby(filters.lat, filters.lng, filters.radius);
-          locations = await locationRepository.findAll(filters);
+          const freshLocations = await locationRepository.findAll(filters);
+          locations = freshLocations.concat(visiblePending);
         } catch (googleError) {
           console.error('Background Google Fetch Failed:', googleError.message);
         }
