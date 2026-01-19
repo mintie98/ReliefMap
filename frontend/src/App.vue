@@ -47,6 +47,7 @@ body {
 #app {
   min-height: 100vh;
   width: 100vw;
+  overflow-x: hidden;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -54,18 +55,40 @@ h1, h2, h3, h4, h5, h6 {
   color: var(--text-primary);
 }
 
+/* Response Text Ratios */
+@media (max-width: 768px) {
+  html {
+    font-size: 14px;
+  }
+}
+
+@media (max-width: 480px) {
+  html {
+    font-size: 13px;
+  }
+}
+
 /* Global Utility Classes */
 .btn {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0.5rem 1rem;
-  border-radius: 6px;
+  padding: 0.5rem 1.2rem;
+  border-radius: 8px;
   font-weight: 500;
   border: 1px solid transparent;
   cursor: pointer;
   transition: all 0.2s;
   font-family: inherit;
+  font-size: 1rem;
+}
+
+/* Touch-friendly buttons on mobile */
+@media (max-width: 600px) {
+  .btn {
+    padding: 0.75rem 1.5rem;
+    min-height: 44px;
+  }
 }
 
 .btn-primary {
