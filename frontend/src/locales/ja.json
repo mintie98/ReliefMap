@@ -5,7 +5,10 @@
         "register": "登録",
         "profile": "プロフィール",
         "settings": "設定",
-        "language": "言語"
+        "language": "言語",
+        "close": "閉じる",
+        "confirm": "確認",
+        "cancel": "キャンセル"
     },
     "home": {
         "welcome": "ReliefMapへようこそ",
@@ -151,5 +154,14 @@
         "title": "レビューする場所を選択",
         "search_placeholder": "場所を検索...",
         "no_results": "一致する場所が見つかりませんでした。"
+    },
+    "pin_legend": {
+        "title": "ピンの色について",
+        "green_title": "高信頼",
+        "green_desc": "公式データ、またはコミュニティにより複数回検証済み。",
+        "yellow_title": "中信頼",
+        "yellow_desc": "情報はありますが、完全には検証されていません。",
+        "red_title": "未検証",
+        "red_desc": "新規情報、または信頼度が低いため注意が必要です。"
     }
 }

@@ -55,6 +55,11 @@
                 <span class="menu-icon">{{ ICONS.REVIEW }}</span>
                 {{ $t('map_drawer.review') }}
               </button>
+
+              <button class="menu-btn" @click="showPinLegend = true">
+                <span class="menu-icon">ℹ️</span>
+                {{ $t('pin_legend.title') }}
+              </button>
               <button class="menu-btn">
                 <span class="menu-icon">{{ ICONS.FAQ }}</span>
                 {{ $t('map_drawer.faq') }}
@@ -125,6 +130,10 @@
           @close="showLocationPicker = false"
           @select="handleLocationPick"
        />
+       <PinLegendModal
+         v-if="showPinLegend"
+         @close="showPinLegend = false"
+       />
     </teleport>
   </div>
 </template>
@@ -138,14 +147,22 @@ import LocationDetailPanel from '../components/LocationDetailPanel.vue';
 import LanguageSwitcher from '../components/LanguageSwitcher.vue';
 import ReviewModal from '../components/ReviewModal.vue'; 
 import LocationPickerModal from '../components/LocationPickerModal.vue';
+import PinLegendModal from '../components/PinLegendModal.vue';
+import { ref, onMounted } from 'vue';
 
 // Import CSS
 import '../assets/styles/MapView.css';
 
 export default {
   name: 'MapView',
-  components: { RefineFilter, AddLocationModal, UserMenu, LocationDetailPanel, LanguageSwitcher, ReviewModal, LocationPickerModal },
+  components: { RefineFilter, AddLocationModal, UserMenu, LocationDetailPanel, LanguageSwitcher, ReviewModal, LocationPickerModal, PinLegendModal },
   setup() {
+    const showPinLegend = ref(false);
+
+    onMounted(() => {
+      showPinLegend.value = true;
+    });
+
     const {
       mapContainer,
       isMenuOpen,
@@ -217,7 +234,8 @@ export default {
       showStandaloneReviewModal,
       handleLocationPick,
       closeStandaloneReview,
-      handleStandaloneReviewSubmit
+      handleStandaloneReviewSubmit,
+      showPinLegend
     };
   }
 };

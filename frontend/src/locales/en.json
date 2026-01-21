@@ -8,7 +8,10 @@
         "register": "Register",
         "profile": "Profile",
         "settings": "Settings",
-        "language": "Language"
+        "language": "Language",
+        "close": "Close",
+        "confirm": "Confirm",
+        "cancel": "Cancel"
     },
     "home": {
         "welcome": "Welcome to ReliefMap",
@@ -154,5 +157,14 @@
         "title": "Select a location to review",
         "search_placeholder": "Search for a place...",
         "no_results": "No locations found matching your search."
+    },
+    "pin_legend": {
+        "title": "Pin Color Guide",
+        "green_title": "Highly Trusted",
+        "green_desc": "Official data or verified multiple times by the community.",
+        "yellow_title": "Moderately Trusted",
+        "yellow_desc": "Information available but partially verified.",
+        "red_title": "Unverified / New",
+        "red_desc": "New entry or low trust score. Use with caution."
     }
 }

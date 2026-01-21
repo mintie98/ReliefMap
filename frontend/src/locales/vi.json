@@ -8,7 +8,10 @@
         "register": "Đăng ký",
         "profile": "Hồ sơ",
         "settings": "Cài đặt",
-        "language": "Ngôn ngữ"
+        "language": "Ngôn ngữ",
+        "close": "Đóng",
+        "confirm": "Xác nhận",
+        "cancel": "Hủy"
     },
     "home": {
         "welcome": "Chào mừng đến với ReliefMap",
@@ -154,5 +157,14 @@
         "title": "Chọn địa điểm để nhận xét",
         "search_placeholder": "Tìm kiếm địa điểm...",
         "no_results": "Không tìm thấy địa điểm nào."
+    },
+    "pin_legend": {
+        "title": "Hướng dẫn màu sắc ghim",
+        "green_title": "Tin cậy cao",
+        "green_desc": "Dữ liệu chính thức hoặc đã được cộng đồng xác thực nhiều lần.",
+        "yellow_title": "Tin cậy trung bình",
+        "yellow_desc": "Đã có thông tin nhưng chưa được kiểm chứng đầy đủ.",
+        "red_title": "Chưa xác minh",
+        "red_desc": "Dữ liệu mới hoặc bị báo cáo sai lệch nhiều. Cần cẩn thận."
     }
 }

@@ -8,7 +8,10 @@
         "register": "가입하기",
         "profile": "프로필",
         "settings": "설정",
-        "language": "언어"
+        "language": "언어",
+        "close": "닫기",
+        "confirm": "확인",
+        "cancel": "취소"
     },
     "home": {
         "welcome": "ReliefMap에 오신 것을 환영합니다",
@@ -154,5 +157,14 @@
         "title": "리뷰할 장소 선택",
         "search_placeholder": "장소 검색...",
         "no_results": "검색 결과가 없습니다."
+    },
+    "pin_legend": {
+        "title": "핀 색상 가이드",
+        "green_title": "높은 신뢰도",
+        "green_desc": "공식 데이터이거나 커뮤니티에서 여러 번 검증됨.",
+        "yellow_title": "중간 신뢰도",
+        "yellow_desc": "정보는 있지만 부분적으로만 검증됨.",
+        "red_title": "미검증",
+        "red_desc": "새로운 항목이거나 신뢰도가 낮음. 주의 필요."
     }
 }

@@ -4,7 +4,7 @@ import { ICONS } from '../assets/icons';
 export function useRefineFilter(emit) {
     const filters = reactive({
         searchText: '',
-        visitTime: false,
+        visitTime: null,
         status: {
             unverified: false,
             inReview: false,

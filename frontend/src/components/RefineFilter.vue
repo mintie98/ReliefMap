@@ -25,9 +25,13 @@
         <div class="section-label">
           <span class="icon">{{ ICONS.CLOCK }}</span> {{ $t('refine_filter.available_time') }}
         </div>
-        <button class="btn-option" :class="{ active: filters.visitTime }" @click="filters.visitTime = !filters.visitTime">
-          {{ $t('refine_filter.visit_time') }}
-        </button>
+        <div class="time-selector-row">
+            <button class="btn-option time-btn" :class="{ active: !!filters.visitTime }" @click="openTimePicker">
+              {{ filters.visitTime ? filters.visitTime : $t('refine_filter.visit_time') }} 
+              <span v-if="filters.visitTime" class="time-value"></span>
+            </button>
+            <button v-if="filters.visitTime" class="btn-clear-time" @click.stop="clearVisitTime">✕</button>
+        </div>
       </div>
 
       <hr class="divider">
@@ -81,16 +85,28 @@
     <div class="filter-footer">
       <button class="btn-search" @click="applyFilters">{{ $t('refine_filter.search') }}</button>
     </div>
+
+    <!-- Time Picker Modal -->
+    <ScrollTimePicker 
+      v-if="showTimePicker"
+      :title="$t('refine_filter.visit_time')"
+      :initial-time="filters.visitTime || '12:00'"
+      @close="showTimePicker = false"
+      @confirm="handleTimeConfirm"
+    />
   </div>
 </template>
 
 <script>
 import { useRefineFilter } from '../composables/useRefineFilter';
 import { useI18n } from 'vue-i18n';
+import ScrollTimePicker from './ScrollTimePicker.vue';
+import { ref } from 'vue';
 import '../assets/styles/RefineFilter.css';
 
 export default {
   name: 'RefineFilter',
+  components: { ScrollTimePicker },
   props: {
     sidebarMode: {
       type: Boolean,
@@ -112,13 +128,29 @@ export default {
       return t(`refine_filter.feature_list.${key}`);
     };
 
+    const showTimePicker = ref(false);
+    const openTimePicker = () => {
+        showTimePicker.value = true;
+    };
+    const handleTimeConfirm = (time) => {
+        filters.visitTime = time;
+        showTimePicker.value = false;
+    };
+    const clearVisitTime = () => {
+        filters.visitTime = null;
+    };
+
     return {
       filters,
       featureList,
       toggleFeature,
       applyFilters,
       ICONS,
-      getFeatureLabel
+      getFeatureLabel,
+      showTimePicker,
+      openTimePicker,
+      handleTimeConfirm,
+      clearVisitTime
     };
   }
 };

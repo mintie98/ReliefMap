@@ -240,3 +240,33 @@
         font-size: 1.1rem;
     }
 }
+/* Time Picker Styles */
+.time-selector-row {
+    position: relative;
+    width: 100%;
+    margin-top: 8px;
+}
+.time-btn {
+    width: 100%;
+    justify-content: center;
+    position: relative;
+}
+.btn-clear-time {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: #e0e0e0;
+    border: none;
+    border-radius: 50%;
+    width: 24px;
+    height: 24px;
+    display: flex; /* Flex to center X */
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    font-size: 14px;
+    color: #666;
+    z-index: 5;
+}
+

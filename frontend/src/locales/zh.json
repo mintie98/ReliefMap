@@ -8,7 +8,10 @@
         "register": "注册",
         "profile": "个人资料",
         "settings": "设置",
-        "language": "语言"
+        "language": "语言",
+        "close": "关闭",
+        "confirm": "确认",
+        "cancel": "取消"
     },
     "home": {
         "welcome": "欢迎使用 ReliefMap",
@@ -154,5 +157,14 @@
         "title": "选择地点进行评价",
         "search_placeholder": "搜索地点...",
         "no_results": "未找到匹配的地点。"
+    },
+    "pin_legend": {
+        "title": "图钉颜色说明",
+        "green_title": "高可信",
+        "green_desc": "官方数据或经过社区多次验证。",
+        "yellow_title": "中等可信",
+        "yellow_desc": "有信息但尚未完全验证。",
+        "red_title": "未验证",
+        "red_desc": "新条目或可信度低。请谨慎使用。"
     }
 }
