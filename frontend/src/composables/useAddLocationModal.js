@@ -1,10 +1,15 @@
 import { reactive, ref } from 'vue';
 import { useLocationViewModel } from '../viewmodels/LocationViewModel';
+import locationService from '../services/LocationService'; // Import Service
 import { ICONS } from '../assets/icons';
+import { useToast } from './useToast';
+import i18n from '../i18n';
 
 export function useAddLocationModal(emit) {
     const { createLocation } = useLocationViewModel();
+    const toast = useToast();
     const loading = ref(false);
+    const uploading = ref(false); // New state
     const error = ref(null);
 
     const form = reactive({
@@ -13,12 +18,25 @@ export function useAddLocationModal(emit) {
         latitude: null,
         longitude: null,
         gender_type: 'mixed',
+        opening_hours: '', // New
+        closed_days: '', // New
+        notes: '', // New
+        images: [], // New (array of strings)
         amenities: {
             western_style: true,
             japanese_style: false,
             accessible: false,
-            baby_changing: false,
-            warm_seat: false
+            child_seat: false, // Renamed
+            diaper_changing: false,
+            warm_seat: false,
+            public_toilet: false,
+            gender_separated: false,
+            powder_room: false,
+            barrier_free: false,
+            ostomate: false,
+            large_bed: false,
+            parking: false,
+            store_usage: false
         }
     });
 
@@ -29,15 +47,15 @@ export function useAddLocationModal(emit) {
                 (pos) => {
                     const lat = parseFloat(pos.coords.latitude.toFixed(6));
                     const lng = parseFloat(pos.coords.longitude.toFixed(6));
-                    
+
                     form.latitude = lat;
                     form.longitude = lng;
-                    
+
                     // Reverse geocode to get address
                     if (window.google) {
                         const geocoder = new window.google.maps.Geocoder();
                         const latlng = { lat, lng };
-                        
+
                         geocoder.geocode({ location: latlng }, (results, status) => {
                             if (status === 'OK' && results[0]) {
                                 form.address = results[0].formatted_address;
@@ -54,12 +72,12 @@ export function useAddLocationModal(emit) {
                     }
                 },
                 (err) => {
-                    alert('Cannot get location: ' + err.message);
+                    toast.error(i18n.global.t('messages.location_get_error'));
                     loading.value = false;
                 }
             );
         } else {
-            alert('Geolocation is not supported by your browser');
+            toast.error(i18n.global.t('messages.geo_not_supported'));
             loading.value = false;
         }
     };
@@ -79,6 +97,37 @@ export function useAddLocationModal(emit) {
         });
     };
 
+    const handleImageUpload = async (event) => {
+        const files = event.target.files;
+        if (!files || files.length === 0) return;
+
+        uploading.value = true;
+        error.value = null;
+
+        try {
+            // Upload one by one or Promise.all if multiple supported
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const result = await locationService.uploadImage(file);
+
+                if (result.success) {
+                    form.images.push(result.url);
+                } else {
+                    console.error('Upload failed:', result.error);
+                    error.value = `Failed to upload ${file.name}: ${result.error}`;
+                }
+            }
+        } catch (e) {
+            error.value = 'Upload error: ' + e.message;
+        } finally {
+            uploading.value = false;
+        }
+    };
+
+    const removeImage = (index) => {
+        form.images.splice(index, 1);
+    };
+
     const handleSubmit = async () => {
         loading.value = true;
         error.value = null;
@@ -95,15 +144,19 @@ export function useAddLocationModal(emit) {
             address_input: form.address,
             latitude: form.latitude,
             longitude: form.longitude,
-            user_id: 1,
+            user_id: 1, // hardcoded for now or fetch from store
+            gender_type: form.gender_type,
             amenities: form.amenities,
-            gender_type: form.gender_type
+            opening_hours: form.opening_hours,
+            closed_days: form.closed_days,
+            notes: form.notes,
+            images: form.images
         };
 
         try {
             const result = await createLocation(ugcData);
             if (result.success) {
-                alert(result.message || 'Location processed successfully!');
+                toast.success(result.message || i18n.global.t('messages.location_added_success'));
                 // Emit location data so map can pan to it
                 emit('added', {
                     latitude: form.latitude,
@@ -123,11 +176,12 @@ export function useAddLocationModal(emit) {
     return {
         form,
         loading,
+        uploading,
         error,
         getCurrentLocation,
         geocodeAddress,
-        getCurrentLocation,
-        geocodeAddress,
+        handleImageUpload,
+        removeImage,
         handleSubmit,
         ICONS
     };

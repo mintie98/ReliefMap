@@ -47,6 +47,10 @@
         "confirm_password_label": "Xác nhận mật khẩu",
         "confirm_password_placeholder": "Nhập lại mật khẩu"
     },
+    "navigation": {
+        "exit": "Thoát dẫn đường",
+        "error": "Chức năng dẫn đường tạm thời không hoạt động"
+    },
     "location_detail": {
         "address": "Địa chỉ",
         "hours": "Giờ mở cửa",
@@ -74,7 +78,12 @@
         },
         "no_reviews": "Chưa có nhận xét nào. Hãy là người đầu tiên!",
         "start_navigation": "Bắt đầu điều hướng",
-        "no_images": "Không có hình ảnh"
+        "no_images": "Không có hình ảnh",
+        "opening_hours_placeholder": "Ví dụ: 09:00 - 18:00",
+        "closed_days_placeholder": "Ví dụ: T7, CN",
+        "notes_placeholder": "Ghi chú thêm...",
+        "closed_label": "Đóng cửa:",
+        "notes_label": "Ghi chú"
     },
     "review_modal": {
         "title": "Viết nhận xét",
@@ -113,11 +122,16 @@
             "japanese": "Kiểu Nhật",
             "western": "Kiểu Tây",
             "washlet": "Vòi xịt/Bidet",
-            "public": "Nhà vệ sinh công cộng",
+            "public_toilet": "Nhà vệ sinh công cộng",
             "diaper": "Bàn thay tã",
             "wheelchair": "Xe lăn",
             "child_seat": "Ghế trẻ em",
-            "parking": "Bãi đỗ xe"
+            "parking": "Bãi đỗ xe",
+            "gender_separated": "Khu nam/nữ riêng",
+            "powder_room": "Phòng trang điểm",
+            "ostomate": "Ostomate",
+            "large_bed": "Giường lớn",
+            "store_usage": "Cửa hàng / Cơ sở"
         }
     },
     "map_drawer": {
@@ -131,9 +145,18 @@
         "western_style": "Kiểu Tây",
         "japanese_style": "Kiểu Nhật",
         "accessible": "Lối đi cho người khuyết tật",
-        "baby_changing": "Thay tã cho bé",
+        "child_seat": "Ghế trẻ em",
+        "diaper_changing": "Bàn thay tã",
         "warm_seat": "Ghế ấm",
-        "powder_corner": "Góc trang điểm"
+        "powder_corner": "Góc trang điểm",
+        "public_toilet": "Nhà vệ sinh công cộng",
+        "gender_separated": "Khu nam/nữ riêng",
+        "powder_room": "Phòng trang điểm",
+        "barrier_free": "Lối đi không rào cản",
+        "ostomate": "Thiết bị Ostomate",
+        "large_bed": "Giường lớn",
+        "parking": "Bãi đỗ xe",
+        "store_usage": "Cửa hàng / Cơ sở"
     },
     "add_location": {
         "title": "Thêm nhà vệ sinh mới",
@@ -151,7 +174,10 @@
             "unisex": "Unisex",
             "male": "Nam",
             "female": "Nữ"
-        }
+        },
+        "details_label": "Thông tin chi tiết",
+        "images_label": "Hình ảnh",
+        "uploading": "Đang tải lên..."
     },
     "location_picker": {
         "title": "Chọn địa điểm để nhận xét",
@@ -166,5 +192,16 @@
         "yellow_desc": "Đã có thông tin nhưng chưa được kiểm chứng đầy đủ.",
         "red_title": "Chưa xác minh",
         "red_desc": "Dữ liệu mới hoặc bị báo cáo sai lệch nhiều. Cần cẩn thận."
+    },
+    "messages": {
+        "search_searching": "Đang tìm kiếm: {query}",
+        "auth_missing": "Dịch vụ xác thực không khả dụng.",
+        "login_required": "Bạn cần đăng nhập để thực hiện thao tác này.",
+        "review_success": "Gửi nhận xét thành công!",
+        "review_error": "Gửi nhận xét thất bại: {error}",
+        "location_get_error": "Không thể lấy vị trí của bạn.",
+        "geo_not_supported": "Trình duyệt này không hỗ trợ định vị.",
+        "error_prefix": "Lỗi: {message}",
+        "unknown_error": "Lỗi không xác định"
     }
 }

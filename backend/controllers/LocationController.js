@@ -59,6 +59,7 @@ class LocationController {
       if (!query) {
         return res.status(400).json({
           success: false,
+          code: 'MISSING_QUERY',
           message: 'Query parameter is required'
         });
       }
@@ -78,6 +79,7 @@ class LocationController {
       if (!placeData.name || !placeData.latitude || !placeData.longitude) {
         return res.status(400).json({
           success: false,
+          code: 'MISSING_FIELDS',
           message: 'Missing required fields: name, latitude, longitude'
         });
       }
@@ -99,6 +101,7 @@ class LocationController {
       if (!ugcData.name || !ugcData.latitude || !ugcData.longitude) {
         return res.status(400).json({
           success: false,
+          code: 'MISSING_FIELDS',
           message: 'Missing required fields: name, latitude, longitude'
         });
       }
@@ -149,6 +152,7 @@ class LocationController {
       if (!q) {
         return res.status(400).json({
           success: false,
+          code: 'MISSING_QUERY',
           message: 'Search query parameter (q) is required'
         });
       }

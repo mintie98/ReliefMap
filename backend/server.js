@@ -10,7 +10,7 @@ app.use(cors({
   origin: function (origin, callback) {
     // For development, we can be more permissive to allow smartphone testing
     const isDev = !process.env.NODE_ENV || process.env.NODE_ENV === 'development';
-    
+
     // Always allow if no origin (mobile apps, etc.) or if we are in dev mode
     if (!origin || isDev) {
       callback(null, true);
@@ -32,12 +32,14 @@ const usersRoutes = require('./routes/users');
 const reviewsRoutes = require('./routes/reviews');
 const amenitiesRoutes = require('./routes/amenities');
 const authRoutes = require('./routes/authRoutes');
+const uploadRoutes = require('./routes/upload');
 
 app.use('/api/locations', locationsRoutes);
 app.use('/api/users', usersRoutes);
 app.use('/api/reviews', reviewsRoutes);
 app.use('/api/amenities', amenitiesRoutes);
 app.use('/api/auth', authRoutes);
+app.use('/api/upload', uploadRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {

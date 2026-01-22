@@ -1,4 +1,5 @@
 const db = require('../config/database');
+const reviewRepository = require('./ReviewRepository');
 
 class LocationRepository {
   // Get all merged locations (search by radius or bounding box)
@@ -22,17 +23,34 @@ class LocationRepository {
         lm.creator_user_id,
         lm.creator_trust_score,
         lm.created_at,
+        lm.opening_hours as user_opening_hours,
+        lm.closed_days,
+        lm.notes,
+        CASE 
+          WHEN lm.images IS NULL OR lm.images = '[]' OR lm.images = '' THEN lu.images 
+          ELSE lm.images 
+        END as images,
         lb.google_rating,
         lb.google_ratings_total,
-        lb.opening_hours,
+        lb.opening_hours as google_opening_hours,
         lb.photo_reference,
         a.western_style,
         a.japanese_style,
         a.accessible,
-        a.baby_changing,
+        a.child_seat,
+        a.diaper_changing,
         a.warm_seat,
-        a.gender_type
+        a.gender_type,
+        a.public_toilet,
+        a.gender_separated,
+        a.powder_room,
+        a.barrier_free,
+        a.ostomate,
+        a.large_bed,
+        a.parking,
+        a.store_usage
       FROM LOCATIONS_MERGED lm
+      LEFT JOIN LOCATIONS_UGC lu ON lm.ugc_id = lu.ugc_id
       LEFT JOIN LOCATIONS_BASE lb ON lm.base_id = lb.base_id
       LEFT JOIN AMENITIES a ON lm.location_id = a.location_id
       WHERE lm.is_deleted = FALSE
@@ -70,9 +88,18 @@ class LocationRepository {
       if (amenities.western) query += ` AND a.western_style = TRUE`;
       if (amenities.japanese) query += ` AND a.japanese_style = TRUE`;
       if (amenities.wheelchair) query += ` AND a.accessible = TRUE`;
-      if (amenities.diaper) query += ` AND a.baby_changing = TRUE`;
+      if (amenities.child_seat) query += ` AND a.child_seat = TRUE`; // Changed from baby_changing
+      if (amenities.diaper) query += ` AND a.diaper_changing = TRUE`; // Added
       if (amenities.washlet) query += ` AND a.warm_seat = TRUE`;
-      // 'public', 'child_seat', 'parking' not mapped to simple columns yet
+      // New filters
+      if (amenities.public_toilet) query += ` AND a.public_toilet = TRUE`;
+      if (amenities.gender_separated) query += ` AND a.gender_separated = TRUE`;
+      if (amenities.powder_room) query += ` AND a.powder_room = TRUE`;
+      if (amenities.barrier_free) query += ` AND a.barrier_free = TRUE`;
+      if (amenities.ostomate) query += ` AND a.ostomate = TRUE`;
+      if (amenities.large_bed) query += ` AND a.large_bed = TRUE`;
+      if (amenities.parking) query += ` AND a.parking = TRUE`;
+      if (amenities.store_usage) query += ` AND a.store_usage = TRUE`;
     }
 
     // Spatial Filter: Bounding Box (Priority)
@@ -98,7 +125,29 @@ class LocationRepository {
 
     try {
       const [rows] = await db.execute(query, params);
-      return rows;
+
+      // Parse JSON columns (images might be returned as Buffer or string)
+      const parsedRows = rows.map(row => {
+        // Parse images if it's a string or Buffer
+        if (row.images) {
+          if (typeof row.images === 'string') {
+            try {
+              row.images = JSON.parse(row.images);
+            } catch (e) {
+              console.log('Failed to parse images:', e);
+            }
+          } else if (Buffer.isBuffer(row.images)) {
+            try {
+              row.images = JSON.parse(row.images.toString());
+            } catch (e) {
+              console.log('Failed to parse images from Buffer:', e);
+            }
+          }
+        }
+        return row;
+      });
+
+      return parsedRows;
     } catch (e) {
       console.error('FindAll Error:', e);
       throw e;
@@ -110,23 +159,70 @@ class LocationRepository {
     const query = `
       SELECT 
         lm.*,
+        lm.opening_hours as user_opening_hours,
+        lm.closed_days,
+        lm.notes,
+        CASE 
+          WHEN lm.images IS NULL OR lm.images = '[]' OR lm.images = '' THEN lu.images 
+          ELSE lm.images 
+        END as images,
         a.western_style,
         a.japanese_style,
         a.accessible,
-        a.baby_changing,
+        a.child_seat,
+        a.diaper_changing,
         a.warm_seat,
         a.gender_type,
+        a.public_toilet,
+        a.gender_separated,
+        a.powder_room,
+        a.barrier_free,
+        a.ostomate,
+        a.large_bed,
+        a.parking,
+        a.store_usage,
         lb.google_rating,
         lb.google_ratings_total,
-        lb.opening_hours,
+        lb.opening_hours as google_opening_hours,
         lb.photo_reference
       FROM LOCATIONS_MERGED lm
+      LEFT JOIN LOCATIONS_UGC lu ON lm.ugc_id = lu.ugc_id
       LEFT JOIN AMENITIES a ON lm.location_id = a.location_id
       LEFT JOIN LOCATIONS_BASE lb ON lm.base_id = lb.base_id
       WHERE lm.location_id = ? AND lm.is_deleted = FALSE
     `;
     const [rows] = await db.execute(query, [locationId]);
-    return rows[0] || null;
+
+    if (!rows[0]) return null;
+
+    const location = rows[0];
+
+    // Parse images (JSON column might be string or Buffer)
+    if (location.images) {
+      if (typeof location.images === 'string') {
+        try {
+          location.images = JSON.parse(location.images);
+        } catch (e) {
+          console.error('Failed to parse location.images:', e);
+          location.images = [];
+        }
+      } else if (Buffer.isBuffer(location.images)) {
+        try {
+          location.images = JSON.parse(location.images.toString());
+        } catch (e) {
+          console.error('Failed to parse location.images Buffer:', e);
+          location.images = [];
+        }
+      }
+    }
+
+    // Fetch reviews với images từ ReviewRepository (đã JOIN REVIEW_IMAGES)
+    const reviews = await reviewRepository.findByLocationId(locationId);
+
+    // Attach reviews to location
+    location.reviews = reviews;
+
+    return location;
   }
 
   // Get location by Source ID (e.g. Google Place ID)
@@ -258,11 +354,22 @@ class LocationRepository {
     const connection = await db.getConnection();
     try {
       const query = `
-        INSERT INTO LOCATIONS_UGC (user_id, name, address_input, latitude, longitude, created_at)
-        VALUES (?, ?, ?, ?, ?, NOW())
+        INSERT INTO LOCATIONS_UGC (
+          user_id, name, address_input, latitude, longitude, 
+          opening_hours, closed_days, notes, images, created_at
+        )
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `;
       const [result] = await connection.execute(query, [
-        data.user_id, data.name, data.address_input, data.latitude, data.longitude
+        data.user_id,
+        data.name,
+        data.address_input,
+        data.latitude,
+        data.longitude,
+        data.opening_hours || null,
+        data.closed_days || null,
+        data.notes || null,
+        data.images ? JSON.stringify(data.images) : null
       ]);
 
       const ugcId = result.insertId;
@@ -271,15 +378,20 @@ class LocationRepository {
         INSERT INTO LOCATIONS_MERGED (
            ugc_id, source_type, display_name, address, latitude, longitude,
            geolocation,
+           opening_hours, closed_days, notes, images,
            verification_status, verification_score, creator_user_id,
            auto_verified, admin_verified, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, FALSE, FALSE, NOW())
+        VALUES (?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, ?, ?, ?, ?, FALSE, FALSE, NOW())
       `;
 
       const [mergedResult] = await connection.execute(mergedQuery, [
         ugcId, 'user', data.name, data.address_input, data.latitude, data.longitude,
         data.longitude, data.latitude, // POINT(Lng, Lat)
+        data.opening_hours || null,
+        data.closed_days || null,
+        data.notes || null,
+        data.images ? JSON.stringify(data.images) : null,
         'red', 0.3, data.user_id
       ]);
 
@@ -351,15 +463,25 @@ class LocationRepository {
     try {
       const query = `
         INSERT INTO AMENITIES (
-          location_id, western_style, japanese_style, \`accessible\`, baby_changing, warm_seat, gender_type
-        ) VALUES (?, ?, ?, ?, ?, ?, ?)
+          location_id, western_style, japanese_style, \`accessible\`, child_seat, diaper_changing, warm_seat, gender_type,
+          public_toilet, gender_separated, powder_room, barrier_free, ostomate, large_bed, parking, store_usage
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         ON DUPLICATE KEY UPDATE
           western_style = VALUES(western_style),
           japanese_style = VALUES(japanese_style),
           \`accessible\` = VALUES(\`accessible\`),
-          baby_changing = VALUES(baby_changing),
+          child_seat = VALUES(child_seat),
+          diaper_changing = VALUES(diaper_changing),
           warm_seat = VALUES(warm_seat),
-          gender_type = VALUES(gender_type)
+          gender_type = VALUES(gender_type),
+          public_toilet = VALUES(public_toilet),
+          gender_separated = VALUES(gender_separated),
+          powder_room = VALUES(powder_room),
+          barrier_free = VALUES(barrier_free),
+          ostomate = VALUES(ostomate),
+          large_bed = VALUES(large_bed),
+          parking = VALUES(parking),
+          store_usage = VALUES(store_usage)
       `;
 
       const params = [
@@ -367,9 +489,19 @@ class LocationRepository {
         amenities.western_style || false,
         amenities.japanese_style || false,
         amenities.accessible || false,
-        amenities.baby_changing || false,
+        amenities.child_seat || false, // Renamed from baby_changing
+        amenities.diaper_changing || false, // Added
         amenities.warm_seat || false,
-        amenities.gender_type || 'mixed'
+        amenities.gender_type || 'mixed',
+        // New columns
+        amenities.public_toilet || false,
+        amenities.gender_separated || false,
+        amenities.powder_room || false,
+        amenities.barrier_free || false,
+        amenities.ostomate || false,
+        amenities.large_bed || false,
+        amenities.parking || false,
+        amenities.store_usage || false
       ];
 
       await connection.execute(query, params);

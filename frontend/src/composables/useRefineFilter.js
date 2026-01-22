@@ -17,11 +17,16 @@ export function useRefineFilter(emit) {
         { key: 'japanese', label: 'Japanese-style' },
         { key: 'western', label: 'Western-style' },
         { key: 'washlet', label: 'Washlet/Bidet' },
-        { key: 'public', label: 'Public Toilet' },
+        { key: 'public_toilet', label: 'Public Toilet' }, // Changed key to match backend
         { key: 'diaper', label: 'Diaper Changing' },
         { key: 'wheelchair', label: 'Wheelchair' },
         { key: 'child_seat', label: 'Child Seat' },
-        { key: 'parking', label: 'Parking' }
+        { key: 'gender_separated', label: 'Gender Separated' },
+        { key: 'powder_room', label: 'Powder Room' },
+        { key: 'ostomate', label: 'Ostomate' },
+        { key: 'large_bed', label: 'Large Bed' },
+        { key: 'parking', label: 'Parking' },
+        { key: 'store_usage', label: 'Store Usage' }
     ];
 
     // Initialize features state

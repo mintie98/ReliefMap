@@ -47,6 +47,10 @@
         "confirm_password_label": "确认密码",
         "confirm_password_placeholder": "再次输入密码"
     },
+    "navigation": {
+        "exit": "退出导航",
+        "error": "导航暂时不可用"
+    },
     "location_detail": {
         "address": "地址",
         "hours": "营业时间",
@@ -113,11 +117,16 @@
             "japanese": "日式",
             "western": "西式",
             "washlet": "智能马桶盖",
-            "public": "公共厕所",
+            "public_toilet": "公共厕所",
             "diaper": "尿布台",
             "wheelchair": "轮椅通道",
             "child_seat": "儿童座椅",
-            "parking": "停车场"
+            "parking": "停车场",
+            "gender_separated": "男女分离",
+            "powder_room": "化妆室",
+            "ostomate": "人工肛门对应",
+            "large_bed": "护理床",
+            "store_usage": "商店 / 设施"
         }
     },
     "map_drawer": {
@@ -131,9 +140,18 @@
         "western_style": "西式",
         "japanese_style": "日式",
         "accessible": "无障碍设施",
-        "baby_changing": "婴儿护理",
+        "child_seat": "儿童座椅",
+        "diaper_changing": "婴儿护理",
         "warm_seat": "暖座",
-        "powder_corner": "化妆区"
+        "powder_corner": "化妆区",
+        "public_toilet": "公共厕所",
+        "gender_separated": "男女分离",
+        "powder_room": "化妆室",
+        "barrier_free": "无障碍设施",
+        "ostomate": "人工肛门对应",
+        "large_bed": "护理床",
+        "parking": "停车场",
+        "store_usage": "商店 / 设施"
     },
     "add_location": {
         "title": "添加新洗手间",
@@ -166,5 +184,23 @@
         "yellow_desc": "有信息但尚未完全验证。",
         "red_title": "未验证",
         "red_desc": "新条目或可信度低。请谨慎使用。"
+    },
+    "messages": {
+        "search_searching": "正在搜索：{query}",
+        "auth_missing": "认证服务缺失。",
+        "login_required": "您需要登录才能执行此操作。",
+        "review_success": "评论提交成功！",
+        "review_error": "评论提交失败：{error}",
+        "location_get_error": "无法获取您的位置。",
+        "geo_not_supported": "此浏览器不支持地理定位。",
+        "error_prefix": "错误：{message}",
+        "unknown_error": "未知错误"
+    },
+    "errors": {
+        "MISSING_FIELDS": "缺少必填字段。",
+        "MISSING_QUERY": "需要查询参数。",
+        "NOT_FOUND": "未找到资源。",
+        "UNAUTHORIZED": "未授权访问。",
+        "FORBIDDEN": "拒绝访问。"
     }
 }

@@ -1,12 +1,28 @@
 <template>
   <div id="app">
     <router-view />
+    <NotificationToast 
+      :visible="visible"
+      :message="message"
+      :type="type"
+      @close="hide"
+    />
   </div>
 </template>
 
 <script>
+import NotificationToast from './components/NotificationToast.vue';
+import { useToast } from './composables/useToast';
+
 export default {
-  name: 'App'
+  name: 'App',
+  components: {
+    NotificationToast
+  },
+  setup() {
+    const { visible, message, type, hide } = useToast();
+    return { visible, message, type, hide };
+  }
 };
 </script>
 

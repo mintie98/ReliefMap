@@ -4,6 +4,8 @@ import { useLocationViewModel } from '../viewmodels/LocationViewModel';
 import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
 import authService from '../services/authService';
 import { ICONS } from '../assets/icons';
+import i18n from '../i18n'; // Import i18n instance
+import { useToast } from './useToast';
 
 import pinGreen from '../assets/toiletPin/green.png';
 import pinYellow from '../assets/toiletPin/yellow.png';
@@ -13,6 +15,7 @@ import userIcon from '../assets/user.png';
 export function useMapView() {
     const mapContainer = ref(null);
     const isMenuOpen = ref(false);
+    const toast = useToast();
     const showRefine = ref(false);
     const showAddModal = ref(false);
 
@@ -21,6 +24,7 @@ export function useMapView() {
 
     const selectedLocation = ref(null);
     const amenities = ref({});
+    const userLocation = ref(null); // Cache user location
 
     const {
         locations,
@@ -58,7 +62,6 @@ export function useMapView() {
     };
 
     const updateMarkers = () => {
-        console.log('updateMarkers called. Locations:', filteredLocations.value.length);
         if (!map) {
             console.warn('Map not initialized yet');
             return;
@@ -87,6 +90,8 @@ export function useMapView() {
     const updateCurrentLocationMarker = (loc) => {
         if (!map) return;
 
+        userLocation.value = loc; // Cache latest location
+
         if (!currentLocationMarker) {
             currentLocationMarker = new window.google.maps.Marker({
                 position: loc,
@@ -105,7 +110,6 @@ export function useMapView() {
     };
 
     const initMap = () => {
-        console.log('initMap called');
         if (!window.google || !mapContainer.value) return;
         const defaultCenter = { lat: 35.6762, lng: 139.6503 };
 
@@ -165,7 +169,7 @@ export function useMapView() {
     };
 
     const toggleAmenity = (key) => {
-        console.log('Implement toggle amenity:', key);
+        // TODO: Implement toggle amenity logic
     };
 
     const clearFilters = () => {
@@ -191,7 +195,7 @@ export function useMapView() {
     const searchGooglePlaces = (e) => {
         const query = e.target.value;
         if (!query) return;
-        alert(`Search for: ${query} (Implement API call)`);
+        toast.info(i18n.global.t('messages.search_searching', { query }));
         e.target.value = '';
     };
 
@@ -210,7 +214,7 @@ export function useMapView() {
             const newLoc = { lat: locationData.latitude, lng: locationData.longitude };
             map.panTo(newLoc);
             map.setZoom(16); // Zoom in to show the new location clearly
-            
+
             // Temporarily clear bounds to ensure new location is loaded
             // Store current bounds
             const currentBounds = {
@@ -219,7 +223,7 @@ export function useMapView() {
                 neLat: filters.neLat,
                 neLng: filters.neLng
             };
-            
+
             // Clear bounds filters temporarily
             updateFilters({
                 swLat: null,
@@ -227,7 +231,7 @@ export function useMapView() {
                 neLat: null,
                 neLng: null
             });
-            
+
             // Reload locations without bounds restriction
             loadLocations().then(() => {
                 // After a short delay, restore bounds-based filtering
@@ -245,9 +249,89 @@ export function useMapView() {
         router.push('/login');
     };
 
+    // Navigation State
+    const isNavigating = ref(false);
+    const navigationInfo = ref({ distance: '', duration: '' });
+    let directionsService = null;
+    let directionsRenderer = null;
+
     const handleNavigate = (loc) => {
-        const url = `https://www.google.com/maps/dir/?api=1&destination=${loc.latitude},${loc.longitude}`;
-        window.open(url, '_blank');
+        if (!loc) return;
+
+        // Ensure map is initialized
+        if (!map) return;
+
+        // Init services if needed
+        if (!directionsService && window.google) {
+            directionsService = new window.google.maps.DirectionsService();
+            directionsRenderer = new window.google.maps.DirectionsRenderer({
+                map: map,
+                suppressMarkers: true,
+                polylineOptions: {
+                    strokeColor: "#4285F4",
+                    strokeWeight: 6,
+                    strokeOpacity: 0.8
+                }
+            });
+        }
+
+        if (!directionsService) return;
+
+        const performRoute = (origin) => {
+            const destination = { lat: loc.latitude, lng: loc.longitude };
+            const request = {
+                origin: origin,
+                destination: destination,
+                travelMode: window.google.maps.TravelMode.WALKING,
+                language: i18n.global.locale.value
+            };
+
+            directionsService.route(request, (result, status) => {
+                if (status === window.google.maps.DirectionsStatus.OK) {
+                    directionsRenderer.setDirections(result);
+                    isNavigating.value = true;
+
+                    // Extract info
+                    const leg = result.routes[0].legs[0];
+                    navigationInfo.value = {
+                        distance: leg.distance.text,
+                        duration: leg.duration.text
+                    };
+
+                    // Close menus to show map full view
+                    isMenuOpen.value = false;
+                    showRefine.value = false;
+
+                } else {
+                    console.warn('In-app navigation failed:', status);
+                    toast.error(i18n.global.t('navigation.error'));
+                }
+            });
+        };
+
+        // Use cached location if available (Instant)
+        if (userLocation.value) {
+            performRoute(userLocation.value);
+        } else if (navigator.geolocation) {
+            // Fallback: Fetch if not yet cached
+            navigator.geolocation.getCurrentPosition((pos) => {
+                const origin = { lat: pos.coords.lat || pos.coords.latitude, lng: pos.coords.lng || pos.coords.longitude };
+                userLocation.value = origin;
+                performRoute(origin);
+            }, (err) => {
+                toast.error(i18n.global.t('messages.location_get_error'));
+            });
+        } else {
+            toast.error(i18n.global.t('messages.geo_not_supported'));
+        }
+    };
+
+    const cancelNavigation = () => {
+        if (directionsRenderer) {
+            directionsRenderer.setDirections({ routes: [] });
+        }
+        isNavigating.value = false;
+        navigationInfo.value = { distance: '', duration: '' };
     };
 
     // Smart Review Flow State
@@ -255,39 +339,35 @@ export function useMapView() {
     const showStandaloneReviewModal = ref(false);
     const targetReviewLocation = ref(null);
 
-
-
     const handleReviewMenuClick = () => {
-        console.log("handleReviewMenuClick clicked");
+        // console.log("handleReviewMenuClick clicked");
         try {
             isMenuOpen.value = false;
 
             if (!authService) {
-                alert("AuthService is missing!");
+                toast.error(i18n.global.t('messages.auth_missing'));
                 return;
             }
 
             const isAuth = authService.isAuthenticated();
-            console.log("Is Authenticated:", isAuth);
+            // console.log("Is Authenticated:", isAuth);
 
             if (!isAuth) {
-                if (confirm('You need to login to write a review. Go to login page?')) {
+                if (confirm(i18n.global.t('messages.login_required'))) {
                     router.push('/login');
                 }
                 return;
             }
 
             if (selectedLocation.value) {
-                console.log("Has selected location:", selectedLocation.value);
                 targetReviewLocation.value = selectedLocation.value;
                 showStandaloneReviewModal.value = true;
             } else {
-                console.log("No selected location, showing picker");
                 showLocationPicker.value = true;
             }
         } catch (e) {
             console.error("Error in review menu click:", e);
-            alert("Error: " + e.message);
+            toast.error(i18n.global.t('messages.error_prefix', { message: e.message }));
         }
     };
 
@@ -322,22 +402,22 @@ export function useMapView() {
             });
         }
 
-        const { createReview } = useReviewViewModel();
         const result = await createReview(formData, targetReviewLocation.value.location_id);
 
         if (result.success) {
-            alert('Review Submitted Successfully!');
+            toast.success(i18n.global.t('messages.review_success'));
             showStandaloneReviewModal.value = false;
+            loadReviews(targetReviewLocation.value.location_id); // Load reviews immediately for panel
             loadLocations(); // Refresh map to show new rating/status if changed
         } else {
-            alert('Failed to submit review: ' + (result.error || 'Unknown error'));
+            const errorMsg = result.error || i18n.global.t('messages.unknown_error');
+            toast.error(i18n.global.t('messages.review_error', { error: errorMsg }));
         }
     };
 
     const handleAddReview = () => {
         // Legacy or direct call
         // If called from DetailPanel, it handles everything internally.
-        console.log('Detail Panel handles review internally.');
     };
 
     const goHome = () => {
@@ -428,6 +508,9 @@ export function useMapView() {
         showStandaloneReviewModal,
         handleLocationPick,
         closeStandaloneReview,
-        handleStandaloneReviewSubmit
+        handleStandaloneReviewSubmit,
+        isNavigating,
+        navigationInfo,
+        cancelNavigation
     };
 }

@@ -2,9 +2,11 @@ import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from '../services/authService';
 import i18n from '../i18n';
+import { useToast } from './useToast';
 
 export function useLoginView() {
     const router = useRouter();
+    const toast = useToast();
     const email = ref('');
     const password = ref('');
 
@@ -29,7 +31,8 @@ export function useLoginView() {
             }
         } catch (error) {
             console.error('Login error:', error);
-            alert(error.message || 'Login failed');
+            console.error('Login error:', error);
+            toast.error(error.message || i18n.global.t('auth.login_failed'));
         }
     };
 

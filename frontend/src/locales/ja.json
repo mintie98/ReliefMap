@@ -44,6 +44,10 @@
         "confirm_password_label": "パスワード確認",
         "confirm_password_placeholder": "パスワードを再入力"
     },
+    "navigation": {
+        "exit": "ナビゲーションを終了",
+        "error": "ナビゲーションは一時的に利用できません"
+    },
     "location_detail": {
         "address": "住所",
         "hours": "営業時間",
@@ -110,11 +114,16 @@
             "japanese": "和式",
             "western": "洋式",
             "washlet": "温水洗浄便座",
-            "public": "公衆トイレ",
+            "public_toilet": "公衆トイレ",
             "diaper": "おむつ交換台",
             "wheelchair": "車椅子対応",
             "child_seat": "ベビーチェア",
-            "parking": "駐車場"
+            "parking": "駐車場",
+            "gender_separated": "男女別",
+            "powder_room": "パウダールーム",
+            "ostomate": "オストメイト",
+            "large_bed": "大型ベッド",
+            "store_usage": "店舗・施設"
         }
     },
     "map_drawer": {
@@ -128,9 +137,18 @@
         "western_style": "洋式",
         "japanese_style": "和式",
         "accessible": "多目的トイレ",
-        "baby_changing": "おむつ交換台",
+        "child_seat": "ベビーチェア",
+        "diaper_changing": "おむつ交換台",
         "warm_seat": "温水便座",
-        "powder_corner": "パウダーコーナー"
+        "powder_corner": "パウダーコーナー",
+        "public_toilet": "公衆トイレ",
+        "gender_separated": "男女別",
+        "powder_room": "パウダールーム",
+        "barrier_free": "バリアフリー",
+        "ostomate": "オストメイト",
+        "large_bed": "大型ベッド",
+        "parking": "駐車場",
+        "store_usage": "店舗・施設"
     },
     "add_location": {
         "title": "新しいトイレを追加",
@@ -163,5 +181,16 @@
         "yellow_desc": "情報はありますが、完全には検証されていません。",
         "red_title": "未検証",
         "red_desc": "新規情報、または信頼度が低いため注意が必要です。"
+    },
+    "messages": {
+        "search_searching": "{query} を検索中...",
+        "auth_missing": "認証サービスが見つかりません。",
+        "login_required": "この操作を行うにはログインが必要です。",
+        "review_success": "レビューが送信されました！",
+        "review_error": "レビューの送信に失敗しました: {error}",
+        "location_get_error": "現在地を取得できませんでした。",
+        "geo_not_supported": "このブラウザは位置情報をサポートしていません。",
+        "error_prefix": "エラー: {message}",
+        "unknown_error": "不明なエラー"
     }
 }

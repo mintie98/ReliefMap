@@ -86,7 +86,6 @@ class LocationService {
       } // --- NEW: Text Search Hybrid (Multilingual Support) ---
       else if (filters.searchTerm) {
         try {
-          console.log(`Performing Hybrid Search for: "${filters.searchTerm}"`);
           // We already got DB results in `locations`.
           // Now fetch from Google Text Search
           // We use a fallback center for bias if available, else standard text search
@@ -148,7 +147,6 @@ class LocationService {
 
             // Merge
             if (newLocations.length > 0) {
-              console.log(`Merging ${newLocations.length} Google results into search.`);
               locations = locations.concat(newLocations);
             }
           }
@@ -176,16 +174,9 @@ class LocationService {
     }
 
     // Use nearbysearch for better local results than textsearch
-    console.log(`Fetching from Google Nearby: lat=${lat}, lng=${lng}, radius=${radius}`);
-    // Use nearbysearch for better local results than textsearch
     const url = `https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=${lat},${lng}&radius=${Math.min(radius * 1000, 5000)}&type=point_of_interest&keyword=toilet&key=${apiKey}`;
 
     const response = await axios.get(url);
-
-    console.log('Google API Status:', response.data.status);
-    if (response.data.results) {
-      console.log('Google API Results count:', response.data.results.length);
-    }
 
     if (response.data.status === 'OK') {
       const promises = response.data.results.map(place => {
@@ -210,14 +201,14 @@ class LocationService {
         };
 
         if (placeData.photo_reference) {
-          console.log(`Found photo for ${place.name}: ${placeData.photo_reference.substring(0, 20)}...`);
+          // Photo found logic (silent)
         } else {
-          console.log(`No photos found for ${place.name}`);
+          // No photo logic (silent)
         }
 
         // Upsert silently
         return locationRepository.upsertFromBase(placeData)
-          .then(id => console.log('Upserted location ID:', id))
+          .then(id => { })
           .catch(err => console.error('Upsert failed for', place.name, err.message));
       });
 
@@ -244,14 +235,14 @@ class LocationService {
       const reviews = await reviewRepository.findByLocationId(locationId);
 
       // Aggregate images from reviews
+      // Initialize with existing location images (UGC or Merged)
       let images = [];
-      if (reviews && reviews.length > 0) {
-        reviews.forEach(r => {
-          if (r.images && r.images.length > 0) {
-            images = images.concat(r.images);
-          }
-        });
+      if (location.images && Array.isArray(location.images)) {
+        images = [...location.images];
       }
+
+      // Note: We used to aggregate review images here, but Frontend now handles that merge.
+      // We keep 'images' strictly for Location Source Images (UGC or Google).
 
       // If we need more images (e.g. less than 3), fallback/append Google Photos
       if (images.length < 3 && location.photo_reference) {
@@ -497,7 +488,6 @@ class LocationService {
       // 3. Merging Strategy
       if (duplicate) {
         // Merge Logic: Update amenities and increment trust
-        console.log(`Duplicate found: merging UGC with existing verified location ID ${duplicate.location_id}`);
 
         // Update Amenities
         // Note: ugcData.amenities might be partial, but we assume it's the latest info
@@ -542,7 +532,6 @@ class LocationService {
       }
 
       if (pendingDuplicate) {
-        console.log(`Pending Duplicate found: merging UGC with pending ID ${pendingDuplicate.id}`);
         // Increment pending verification score
         const trustIncrement = user.trust_score || 5;
         await locationRepository.incrementPendingVerificationScore(pendingDuplicate.id, trustIncrement);
@@ -556,54 +545,23 @@ class LocationService {
         };
       }
 
-      // 4. No Duplicate -> Create New Pending Verification
-      const initialStatus = (user.trust_score && user.trust_score >= 7) ? 'pending' : 'unverified';
-      const initialScore = user.trust_score || 5; // Initial score based on creator
-
-      // Ensure location_data contains display_name etc for frontend
-      const locationPayload = {
-        ...ugcData,
-        display_name: ugcData.name, // Frontend expects display_name
-        address: ugcData.address_input
-      };
-
-      const verificationId = await locationRepository.createVerification({
-        user_id: user.user_id,
-        location_data: locationPayload,
-        status: initialStatus,
-        verification_score: initialScore
-      });
-
-      // Log contribution
-      await userRepository.incrementContribution(ugcData.user_id);
-
-      return {
-        success: true,
-        data: { location_id: `pending_${verificationId}`, is_merged: false },
-        message: 'Location submitted for verification. It will appear on the map soon!'
-      };
-
-      // 4. No Duplicate -> Create New (MOVED ABOVE to Pending)
-      // const locationId = await locationRepository.createFromUGC(ugcData);
+      // 4. No Duplicate -> Create New Location in DB
+      const locationId = await locationRepository.createFromUGC(ugcData);
 
       // Save Amenities for new location
-      /* Amenities for pending location are stored inside JSON location_data. 
-         Only when approved to LOCATIONS_MERGED do we write to AMENITIES table. */
-      /*
       if (ugcData.amenities) {
         await locationRepository.updateAmenities(locationId, {
           ...ugcData.amenities,
           gender_type: ugcData.gender_type
         });
       }
-      */
 
       // Log contribution
       await userRepository.incrementContribution(ugcData.user_id);
 
       return {
         success: true,
-        data: { location_id: locationId, is_merged: false },
+        data: { location_id: locationId },
         message: 'Location created successfully'
       };
     } catch (error) {

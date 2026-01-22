@@ -115,6 +115,23 @@
              />
         </div>
       </transition>
+      <!-- Navigation Info Panel -->
+      <div class="navigation-panel" v-if="isNavigating">
+        <div class="nav-info">
+          <div class="nav-stat">
+            <span class="nav-icon">🚶</span>
+            <span class="nav-value">{{ navigationInfo.duration }}</span>
+          </div>
+          <div class="nav-stat">
+             <span class="nav-icon">📏</span>
+             <span class="nav-value">{{ navigationInfo.distance }}</span>
+          </div>
+        </div>
+        <button class="cancel-nav-btn" @click="cancelNavigation">
+           {{ $t('navigation.exit') || 'Exit Navigation' }}
+        </button>
+      </div>
+
     </main>
 
     <!-- Global Review Modal (Standalone Flow) -->
@@ -198,7 +215,10 @@ export default {
       showStandaloneReviewModal,
       handleLocationPick,
       closeStandaloneReview,
-      handleStandaloneReviewSubmit
+      handleStandaloneReviewSubmit,
+      isNavigating,
+      navigationInfo,
+      cancelNavigation
     } = useMapView();
 
     return {
@@ -235,7 +255,10 @@ export default {
       handleLocationPick,
       closeStandaloneReview,
       handleStandaloneReviewSubmit,
-      showPinLegend
+      showPinLegend,
+      isNavigating,
+      navigationInfo,
+      cancelNavigation
     };
   }
 };

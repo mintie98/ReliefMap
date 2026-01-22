@@ -1,9 +1,12 @@
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
 import authService from '../services/authService';
+import { useToast } from './useToast';
+import i18n from '../i18n';
 
 export function useRegisterView() {
     const router = useRouter();
+    const toast = useToast();
     const fullname = ref('');
     const email = ref('');
     const password = ref('');
@@ -19,12 +22,14 @@ export function useRegisterView() {
             if (response.success) {
                 localStorage.setItem('auth_token', response.token);
                 localStorage.setItem('user_info', JSON.stringify(response.user));
-                alert('Registration successful!');
+                localStorage.setItem('user_info', JSON.stringify(response.user));
+                toast.success(i18n.global.t('auth.register_success'));
                 router.push('/');
             }
         } catch (error) {
             console.error('Registration error:', error);
-            alert(error.message || 'Registration failed');
+            console.error('Registration error:', error);
+            toast.error(error.message || i18n.global.t('auth.register_failed'));
         }
     };
 

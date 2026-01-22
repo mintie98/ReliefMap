@@ -35,6 +35,7 @@ class ReviewController {
       if (!reviewData.location_id || !reviewData.review_text) {
         return res.status(400).json({
           success: false,
+          code: 'MISSING_FIELDS',
           message: 'Missing required fields: location_id, review_text'
         });
       }
@@ -91,6 +92,7 @@ class ReviewController {
       if (!image_url) {
         return res.status(400).json({
           success: false,
+          code: 'MISSING_FIELDS',
           message: 'Missing required field: image_url'
         });
       }

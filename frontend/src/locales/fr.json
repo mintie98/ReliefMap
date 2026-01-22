@@ -44,6 +44,10 @@
         "confirm_password_label": "Confirmer le mot de passe",
         "confirm_password_placeholder": "Ressaisissez votre mot de passe"
     },
+    "navigation": {
+        "exit": "Quitter la navigation",
+        "error": "La navigation est temporairement indisponible"
+    },
     "location_detail": {
         "address": "Adresse",
         "hours": "Horaires",
@@ -110,11 +114,16 @@
             "japanese": "Style japonais",
             "western": "Style occidental",
             "washlet": "Bidet/Washlet",
-            "public": "Toilettes publiques",
+            "public_toilet": "Toilettes publiques",
             "diaper": "Table à langer",
             "wheelchair": "Accès fauteuil roulant",
             "child_seat": "Siège enfant",
-            "parking": "Parking"
+            "parking": "Parking",
+            "gender_separated": "Séparé H/F",
+            "powder_room": "Salle de maquillage",
+            "ostomate": "Ostomie",
+            "large_bed": "Grand lit",
+            "store_usage": "Magasin / Installation"
         }
     },
     "map_drawer": {
@@ -128,9 +137,17 @@
         "western_style": "Style occidental",
         "japanese_style": "Style japonais",
         "accessible": "Accessible",
-        "baby_changing": "Bébé",
+        "diaper_changing": "Bébé",
         "warm_seat": "Siège chauffant",
-        "powder_corner": "Coin maquillage"
+        "powder_corner": "Coin maquillage",
+        "public_toilet": "Toilettes publiques",
+        "gender_separated": "Séparé H/F",
+        "powder_room": "Salle de maquillage",
+        "barrier_free": "Accès handicapé",
+        "ostomate": "Ostomie",
+        "large_bed": "Grand lit",
+        "parking": "Parking",
+        "store_usage": "Magasin / Installation"
     },
     "add_location": {
         "title": "Ajouter nouvelles toilettes",
@@ -154,5 +171,23 @@
         "title": "Sélectionner un lieu",
         "search_placeholder": "Rechercher...",
         "no_results": "Aucun résultat trouvé."
+    },
+    "messages": {
+        "search_searching": "Recherche de : {query}",
+        "auth_missing": "Service d'authentification manquant.",
+        "login_required": "Vous devez être connecté pour effectuer cette action.",
+        "review_success": "Avis envoyé avec succès !",
+        "review_error": "Échec de l'envoi de l'avis : {error}",
+        "location_get_error": "Impossible d'obtenir votre position.",
+        "geo_not_supported": "La géolocalisation n'est pas supportée par ce navigateur.",
+        "error_prefix": "Erreur : {message}",
+        "unknown_error": "Erreur inconnue"
+    },
+    "errors": {
+        "MISSING_FIELDS": "Champs obligatoires manquants.",
+        "MISSING_QUERY": "Le paramètre de requête est requis.",
+        "NOT_FOUND": "Ressource introuvable.",
+        "UNAUTHORIZED": "Accès non autorisé.",
+        "FORBIDDEN": "Accès refusé."
     }
 }

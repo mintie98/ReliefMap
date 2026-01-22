@@ -130,6 +130,32 @@ class LocationService {
   }
 
   /**
+   * Upload image
+   */
+  async uploadImage(file) {
+    try {
+      const formData = new FormData();
+      formData.append('image', file);
+
+      const response = await apiClient.post('/upload', formData, {
+        headers: {
+          'Content-Type': 'multipart/form-data'
+        }
+      });
+      return {
+        success: response.success,
+        url: response.url,
+        filename: response.filename
+      };
+    } catch (error) {
+      return {
+        success: false,
+        error: error.message
+      };
+    }
+  }
+
+  /**
    * Search locations by text
    */
   async searchByText(searchTerm) {

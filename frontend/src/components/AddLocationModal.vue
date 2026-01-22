@@ -44,10 +44,40 @@
 
           <hr class="divider">
 
+          <!-- Business Info -->
+          <div class="form-group">
+            <label>{{ $t('add_location.details_label') || 'Details' }}</label>
+            <div class="form-row">
+              <input type="text" v-model="form.opening_hours" :placeholder="$t('location_detail.opening_hours_placeholder') || 'Opening Hours (e.g. 09:00 - 18:00)'" />
+              <input type="text" v-model="form.closed_days" :placeholder="$t('location_detail.closed_days_placeholder') || 'Closed Days (e.g. Sat, Sun)'" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <textarea v-model="form.notes" :placeholder="$t('location_detail.notes_placeholder') || 'Additional notes...'" rows="2"></textarea>
+          </div>
+
+          <!-- Images -->
+          <div class="form-group">
+            <label>{{ $t('add_location.images_label') || 'Images' }}</label>
+            <div class="image-upload-section">
+                <input type="file" multiple accept="image/*" @change="handleImageUpload" :disabled="uploading" />
+                <div v-if="uploading" class="uploading-indicator">{{ $t('add_location.uploading') || 'Uploading...' }}</div>
+            </div>
+            <div class="image-preview-list" v-if="form.images.length > 0">
+                <div v-for="(img, idx) in form.images" :key="idx" class="image-preview-item">
+                    <img :src="img" alt="Preview"/>
+                    <button type="button" class="remove-img-btn" @click="removeImage(idx)">×</button>
+                </div>
+            </div>
+          </div>
+
+          <hr class="divider">
+
           <!-- Amenities -->
           <div class="form-group">
             <label>{{ $t('review_modal.amenities_label') }}</label>
-            <div class="amenities-grid">
+            <div class="amenities-grid expanded">
               <label class="checkbox-btn" :class="{ active: form.amenities.western_style }">
                 <input type="checkbox" v-model="form.amenities.western_style">
                 {{ $t('amenities.western_style') }}
@@ -60,13 +90,50 @@
                 <input type="checkbox" v-model="form.amenities.accessible">
                 {{ $t('amenities.accessible') }}
               </label>
-              <label class="checkbox-btn" :class="{ active: form.amenities.baby_changing }">
-                <input type="checkbox" v-model="form.amenities.baby_changing">
-                {{ $t('amenities.baby_changing') }}
+              <label class="checkbox-btn" :class="{ active: form.amenities.child_seat }">
+                <input type="checkbox" v-model="form.amenities.child_seat">
+                {{ $t('amenities.child_seat') }}
+              </label>
+              <label class="checkbox-btn" :class="{ active: form.amenities.diaper_changing }">
+                <input type="checkbox" v-model="form.amenities.diaper_changing">
+                {{ $t('amenities.diaper_changing') }}
               </label>
               <label class="checkbox-btn" :class="{ active: form.amenities.warm_seat }">
                 <input type="checkbox" v-model="form.amenities.warm_seat">
                 {{ $t('amenities.warm_seat') }}
+              </label>
+              <!-- New Amenities -->
+              <label class="checkbox-btn" :class="{ active: form.amenities.public_toilet }">
+                <input type="checkbox" v-model="form.amenities.public_toilet">
+                {{ $t('amenities.public_toilet') || 'Public' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.gender_separated }">
+                <input type="checkbox" v-model="form.amenities.gender_separated">
+                {{ $t('amenities.gender_separated') || 'Gender Separated' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.powder_room }">
+                <input type="checkbox" v-model="form.amenities.powder_room">
+                {{ $t('amenities.powder_room') || 'Powder Room' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.barrier_free }">
+                <input type="checkbox" v-model="form.amenities.barrier_free">
+                {{ $t('amenities.barrier_free') || 'Barrier Free' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.ostomate }">
+                <input type="checkbox" v-model="form.amenities.ostomate">
+                {{ $t('amenities.ostomate') || 'Ostomate' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.large_bed }">
+                <input type="checkbox" v-model="form.amenities.large_bed">
+                {{ $t('amenities.large_bed') || 'Large Bed' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.parking }">
+                <input type="checkbox" v-model="form.amenities.parking">
+                {{ $t('amenities.parking') || 'Parking' }}
+              </label>
+               <label class="checkbox-btn" :class="{ active: form.amenities.store_usage }">
+                <input type="checkbox" v-model="form.amenities.store_usage">
+                {{ $t('amenities.store_usage') || 'Store Usage' }}
               </label>
             </div>
           </div>
@@ -106,9 +173,12 @@ export default {
     const {
       form,
       loading,
+      uploading, // New
       error,
       getCurrentLocation,
       geocodeAddress,
+      handleImageUpload, // New
+      removeImage, // New
       handleSubmit,
       ICONS
     } = useAddLocationModal(emit);
@@ -116,9 +186,12 @@ export default {
     return {
       form,
       loading,
+      uploading,
       error,
       getCurrentLocation,
       geocodeAddress,
+      handleImageUpload,
+      removeImage,
       handleSubmit,
       ICONS
     };

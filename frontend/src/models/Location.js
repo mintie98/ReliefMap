@@ -25,6 +25,11 @@ export class Location {
     this.google_ratings_total = data.google_ratings_total;
     this.opening_hours = data.opening_hours;
     this.photo_reference = data.photo_reference;
+    this.images = data.images || [];
+    this.notes = data.notes || '';
+    this.closed_days = data.closed_days || '';
+    this.user_opening_hours = data.user_opening_hours;
+    this.reviews = data.reviews || [];
 
     // Amenities
     this.western_style = data.western_style || false;

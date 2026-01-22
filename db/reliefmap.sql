@@ -52,6 +52,10 @@ CREATE TABLE LOCATIONS_UGC (
     address_input VARCHAR(255) NOT NULL COMMENT '住所入力',
     latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
     longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
+    opening_hours TEXT NULL COMMENT '営業時間(詳細)',
+    closed_days VARCHAR(255) NULL COMMENT '定休日',
+    notes TEXT NULL COMMENT 'メモ',
+    images JSON NULL COMMENT '画像URLリスト',
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE COMMENT '論理削除フラグ',
     created_at DATETIME NOT NULL COMMENT '作成日時',
     PRIMARY KEY (ugc_id),
@@ -69,6 +73,10 @@ CREATE TABLE LOCATIONS_MERGED (
     address VARCHAR(255) NULL COMMENT '住所',
     latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
     longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
+    opening_hours TEXT NULL COMMENT '営業時間(詳細)',
+    closed_days VARCHAR(255) NULL COMMENT '定休日',
+    notes TEXT NULL COMMENT 'メモ',
+    images JSON NULL COMMENT '画像URLリスト',
     geolocation POINT NOT NULL, -- Spatial Index
     source_type ENUM('api', 'admin', 'user') NOT NULL COMMENT 'データ種別',
     verification_status ENUM('red', 'yellow', 'green') NOT NULL COMMENT '検証状態',
@@ -97,6 +105,7 @@ CREATE TABLE REVIEWS (
     cleanliness_score INT NOT NULL COMMENT '清潔度',
     wait_time_score INT NOT NULL COMMENT '混雑度',
     user_trust_score INT NOT NULL COMMENT '投稿時信頼度',
+    is_location_accurate BOOLEAN DEFAULT FALSE COMMENT '位置情報正確性確認',
     is_deleted BOOLEAN NOT NULL DEFAULT FALSE COMMENT '論理削除フラグ',
     created_at DATETIME NOT NULL COMMENT '作成日時',
     PRIMARY KEY (review_id),
@@ -121,16 +130,14 @@ CREATE TABLE REVIEW_IMAGES (
 -- 7. WC_VERIFICATIONS（検証）
 -- -----------------------------------------------------
 CREATE TABLE WC_VERIFICATIONS (
-    verification_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '検証ID',
-    location_id BIGINT UNSIGNED NOT NULL COMMENT 'WC ID',
-    user_id BIGINT UNSIGNED NOT NULL COMMENT '検証者ID',
-    trust_score INT NOT NULL COMMENT '信頼度',
-    is_correct BOOLEAN NOT NULL COMMENT '正誤',
-    verification_weight FLOAT NOT NULL COMMENT '重み',
-    created_at DATETIME NOT NULL COMMENT '作成日時',
-    PRIMARY KEY (verification_id),
-    FOREIGN KEY (location_id) REFERENCES LOCATIONS_MERGED(location_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    user_id BIGINT UNSIGNED NOT NULL,
+    location_data JSON COMMENT '位置情報の修正提案等',
+    status ENUM('unverified', 'pending', 'approved', 'rejected') DEFAULT 'unverified',
+    verification_score INT DEFAULT 0,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES USERS(user_id)
 ) COMMENT='検証テーブル';
 
 -- -----------------------------------------------------
@@ -138,11 +145,20 @@ CREATE TABLE WC_VERIFICATIONS (
 -- -----------------------------------------------------
 CREATE TABLE AMENITIES (
     location_id BIGINT UNSIGNED NOT NULL COMMENT 'WC ID',
-    western_style BOOLEAN NOT NULL COMMENT '洋式',
-    japanese_style BOOLEAN NOT NULL COMMENT '和式',
-    `accessible` BOOLEAN NOT NULL COMMENT '車椅子', -- Đã sửa lỗi cú pháp MySQL
-    baby_changing BOOLEAN NOT NULL COMMENT 'おむつ台',
-    warm_seat BOOLEAN NOT NULL COMMENT '温水',
+    western_style BOOLEAN NOT NULL DEFAULT FALSE COMMENT '洋式',
+    japanese_style BOOLEAN NOT NULL DEFAULT FALSE COMMENT '和式',
+    `accessible` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '車椅子',
+    public_toilet BOOLEAN DEFAULT FALSE,
+    gender_separated BOOLEAN DEFAULT FALSE,
+    powder_room BOOLEAN DEFAULT FALSE,
+    diaper_changing BOOLEAN DEFAULT FALSE COMMENT 'おむつ交換台',
+    barrier_free BOOLEAN DEFAULT FALSE,
+    ostomate BOOLEAN DEFAULT FALSE,
+    large_bed BOOLEAN DEFAULT FALSE,
+    parking BOOLEAN DEFAULT FALSE,
+    store_usage BOOLEAN DEFAULT FALSE,
+    baby_changing BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Legacy column',
+    warm_seat BOOLEAN NOT NULL DEFAULT FALSE COMMENT '温水',
     gender_type VARCHAR(20) NOT NULL COMMENT '性別',
     PRIMARY KEY (location_id),
     FOREIGN KEY (location_id) REFERENCES LOCATIONS_MERGED(location_id) ON DELETE CASCADE

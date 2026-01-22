@@ -112,6 +112,15 @@
   background-position: center;
   border-radius: 8px;
   background-color: #ddd;
+  cursor: pointer;
+  border: 2px solid #e0e0e0;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.gallery-item:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  border-color: #1976D2;
 }
 
 /* Info */
@@ -330,7 +339,9 @@
     height: 105px;
   }
 
-  .status-row, .time-row, .score-row {
+  .status-row,
+  .time-row,
+  .score-row {
     font-size: 1.05rem;
     margin-bottom: 0.8rem;
   }
@@ -349,4 +360,45 @@
     padding: 0.6rem 1.2rem;
     font-size: 0.9rem;
   }
+}
+
+/* Amenities Tags */
+.amenities-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1rem;
+}
+
+.amenity-tag {
+  background-color: #f1f5f9;
+  color: #333;
+  padding: 0.4rem 0.8rem;
+  border-radius: 16px;
+  font-size: 0.85rem;
+  font-weight: 500;
+}
+
+/* Notes Section */
+.notes-section {
+  margin-bottom: 1.5rem;
+  background: #fff8e1;
+  /* Light yellow note look */
+  padding: 1rem;
+  border-radius: 8px;
+  border-left: 4px solid #fbc02d;
+}
+
+.notes-section h3 {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.5rem 0;
+  color: #e65100;
+}
+
+.notes-section p {
+  font-size: 0.9rem;
+  margin: 0;
+  color: #333;
+  white-space: pre-wrap;
 }

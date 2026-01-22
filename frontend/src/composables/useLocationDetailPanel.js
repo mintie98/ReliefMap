@@ -3,15 +3,18 @@ import { useRouter } from 'vue-router';
 import { useReviewViewModel } from '../viewmodels/ReviewViewModel';
 import authService from '../services/authService';
 import { ICONS } from '../assets/icons';
+import { useToast } from './useToast';
+import i18n from '../i18n';
 
 export function useLocationDetailPanel(props) {
     const showReviewModal = ref(false);
     const { createReview, reviews: viewModelReviews, loadReviews } = useReviewViewModel();
     const router = useRouter();
+    const toast = useToast();
 
     const handleAddReviewClick = () => {
         if (!authService.isAuthenticated()) {
-            if (confirm('You need to login to write a review. Go to login page?')) {
+            if (confirm(i18n.global.t('messages.login_required'))) {
                 router.push('/login');
             }
             return;
@@ -19,37 +22,103 @@ export function useLocationDetailPanel(props) {
         showReviewModal.value = true;
     };
 
-    console.log('LocationDetailPanel mounted with:', props.location);
     const amenities = computed(() => props.location.amenities || {});
 
     const galleryImages = computed(() => {
-        // 1. Prioritize user-contributed images (merged from reviews)
-        if (props.location.images && props.location.images.length > 0) {
-            return props.location.images;
+        let images = [];
+        const appReviewImages = [];
+
+        // 0. Lấy ảnh từ App Reviews (Luôn hiển thị nếu có)
+        // Ưu tiên lấy từ viewModel (đã fetch full) -> props (static)
+        const sourceReviews = (viewModelReviews.value && viewModelReviews.value.length > 0 && viewModelReviews.value[0].location_id === props.location.location_id)
+            ? viewModelReviews.value
+            : (props.location.reviews || []);
+
+        if (sourceReviews && Array.isArray(sourceReviews)) {
+            sourceReviews.forEach(review => {
+                if (review.images && Array.isArray(review.images)) {
+                    review.images.forEach(img => {
+                        // Đảm bảo URL đầy đủ
+                        // Process URL to handle Mixed Content (HTTPS frontend vs HTTP backend)
+                        // Converts http://localhost:3000/... to /... to use Vite proxy
+                        let fullUrl = img;
+                        if (fullUrl.includes('localhost:3000')) {
+                            fullUrl = fullUrl.replace(/^https?:\/\/localhost:3000/, '');
+                        } else if (!fullUrl.startsWith('http')) {
+                            // Keep relative paths relative, don't prepend host
+                            fullUrl = fullUrl;
+                        }
+                        appReviewImages.push(fullUrl);
+                    });
+                }
+            });
         }
 
-        // 2. Google Photo Reference (Frontend Generation)
-        if (props.location.photo_reference) {
-            const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
-            if (apiKey) {
-                let refs = [];
-                try {
-                    if (props.location.photo_reference.startsWith('[')) {
-                        refs = JSON.parse(props.location.photo_reference);
-                    } else {
+        // Trường hợp 1: WC từ Google API (thường có photo_reference và source_type là api/google)
+        // Ưu tiên hiển thị: Ảnh Google API + Ảnh Reviews từ App
+        const isGoogleLocation = props.location.photo_reference ||
+            (props.location.source_type && props.location.source_type.includes('google')) ||
+            (props.location.source_type === 'api');
+
+        if (isGoogleLocation) {
+            // 1a. Lấy ảnh từ Google Photo Reference
+            if (props.location.photo_reference) {
+                const apiKey = import.meta.env.VITE_GOOGLE_MAPS_API_KEY;
+                if (apiKey) {
+                    let refs = [];
+                    try {
+                        if (props.location.photo_reference.startsWith('[')) {
+                            refs = JSON.parse(props.location.photo_reference);
+                        } else {
+                            refs = [props.location.photo_reference];
+                        }
+                    } catch (e) {
                         refs = [props.location.photo_reference];
                     }
-                } catch (e) {
-                    refs = [props.location.photo_reference];
+
+                    // Map ra Google API URL
+                    const googleImages = refs.map(ref =>
+                        `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${apiKey}`
+                    );
+                    images = [...images, ...googleImages];
+                }
+            }
+
+            // 1b. Cộng thêm ảnh từ App Reviews
+            images = [...images, ...appReviewImages];
+
+        } else {
+            // Trường hợp 2: WC do User thêm (UGC)
+            // Hiển thị: Ảnh gốc do người tạo thêm + Ảnh Reviews từ App
+
+            // 2a. Lấy ảnh gốc (Owner images)
+            if (props.location.images) {
+                let ownerImages = props.location.images;
+                // Parse nếu backend trả về string JSON (đề phòng)
+                if (typeof ownerImages === 'string') {
+                    try { ownerImages = JSON.parse(ownerImages); } catch (e) { }
                 }
 
-                return refs.map(ref =>
-                    `https://maps.googleapis.com/maps/api/place/photo?maxwidth=800&photoreference=${ref}&key=${apiKey}`
-                );
+                if (Array.isArray(ownerImages)) {
+                    // Đảm bảo URL đầy đủ cho owner images
+                    const fullOwnerImages = ownerImages.map(img => {
+                        let fullUrl = img;
+                        if (fullUrl.includes('localhost:3000')) {
+                            fullUrl = fullUrl.replace(/^https?:\/\/localhost:3000/, '');
+                        }
+                        // If relative, leave it relative
+                        return fullUrl;
+                    });
+                    images = [...images, ...fullOwnerImages];
+                }
             }
+
+            // 2b. Cộng thêm ảnh từ App Reviews
+            // Nếu không có ảnh gốc thì hiển thị ảnh review
+            images = [...images, ...appReviewImages];
         }
 
-        return [];
+        return images;
     });
 
     const isVerified = computed(() => {
@@ -87,20 +156,30 @@ export function useLocationDetailPanel(props) {
     }, { immediate: true });
 
     const openingHoursText = computed(() => {
-        try {
-            if (props.location.opening_hours) {
-                const hours = typeof props.location.opening_hours === 'string'
-                    ? JSON.parse(props.location.opening_hours)
-                    : props.location.opening_hours;
+        // Prioritize user entered opening hours
+        if (props.location.user_opening_hours) return props.location.user_opening_hours;
 
+        try {
+            // Fallback to Google hours (JSON or object)
+            // Note: DB returns google_opening_hours from query aliases I added
+            const gh = props.location.google_opening_hours || props.location.opening_hours;
+
+            if (gh) {
+                const hours = typeof gh === 'string' ? JSON.parse(gh) : gh;
                 if (hours.open_now !== undefined) {
                     return hours.open_now ? 'Open Now' : 'Closed';
                 }
+                // If it's the simple string format we might have stored
+                if (typeof hours === 'string') return hours;
+
                 return 'Check Schedule';
             }
         } catch (e) { }
         return '';
     });
+
+    const closedDaysText = computed(() => props.location.closed_days || '');
+    const notesText = computed(() => props.location.notes || '');
 
     const formatDate = (dateString) => {
         if (!dateString) return '';
@@ -143,8 +222,6 @@ export function useLocationDetailPanel(props) {
     };
 
     const handleReviewSubmit = async (reviewData) => {
-        console.log('Submitting review:', reviewData);
-
         const formData = new FormData();
         formData.append('location_id', props.location.location_id);
         formData.append('review_text', reviewData.review_text);
@@ -164,10 +241,11 @@ export function useLocationDetailPanel(props) {
         const result = await createReview(formData, props.location.location_id);
 
         if (result.success) {
-            alert('Review Submitted Successfully!');
+            toast.success(i18n.global.t('messages.review_success'));
             showReviewModal.value = false;
         } else {
-            alert('Failed to submit review: ' + (result.error || 'Unknown error'));
+            const errorMsg = result.error || i18n.global.t('messages.unknown_error');
+            toast.error(i18n.global.t('messages.review_error', { error: errorMsg }));
         }
     };
 
@@ -179,6 +257,8 @@ export function useLocationDetailPanel(props) {
         cleanlinessScore,
         reviews,
         openingHoursText,
+        closedDaysText,
+        notesText,
         formatDate,
         hasApiKey: !!import.meta.env.VITE_GOOGLE_MAPS_API_KEY,
         galleryRef,

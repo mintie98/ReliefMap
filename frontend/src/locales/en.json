@@ -42,10 +42,15 @@
         "google_signin": "Sign in with Google",
         "login_failed": "Login failed",
         "register_success": "Registration successful!",
+        "register_failed": "Registration failed",
         "name_label": "Full Name",
         "name_placeholder": "Enter your full name",
         "confirm_password_label": "Confirm Password",
         "confirm_password_placeholder": "Re-enter your password"
+    },
+    "navigation": {
+        "exit": "Exit Navigation",
+        "error": "Navigation is temporarily unavailable"
     },
     "location_detail": {
         "address": "Address",
@@ -74,7 +79,12 @@
         },
         "no_reviews": "No reviews yet. Be the first!",
         "start_navigation": "Start Navigation",
-        "no_images": "No Images"
+        "no_images": "No Images",
+        "opening_hours_placeholder": "e.g. 09:00 - 18:00",
+        "closed_days_placeholder": "e.g. Sat, Sun",
+        "notes_placeholder": "Additional notes...",
+        "closed_label": "Closed:",
+        "notes_label": "Notes"
     },
     "review_modal": {
         "title": "Write a Review",
@@ -113,11 +123,16 @@
             "japanese": "Japanese-style",
             "western": "Western-style",
             "washlet": "Washlet/Bidet",
-            "public": "Public Toilet",
+            "public_toilet": "Public Toilet",
             "diaper": "Diaper Changing",
             "wheelchair": "Wheelchair",
             "child_seat": "Child Seat",
-            "parking": "Parking"
+            "parking": "Parking",
+            "gender_separated": "Gender Separated",
+            "powder_room": "Powder Room",
+            "ostomate": "Ostomate",
+            "large_bed": "Large Bed",
+            "store_usage": "Store / Facility"
         }
     },
     "map_drawer": {
@@ -131,9 +146,18 @@
         "western_style": "Western Style",
         "japanese_style": "Japanese Style",
         "accessible": "Accessible",
-        "baby_changing": "Baby Changing",
+        "child_seat": "Child Seat",
+        "diaper_changing": "Diaper Changing",
         "warm_seat": "Warm Seat",
-        "powder_corner": "Powder Corner"
+        "powder_corner": "Powder Corner",
+        "public_toilet": "Public Toilet",
+        "gender_separated": "Gender Separated",
+        "powder_room": "Powder Room",
+        "barrier_free": "Barrier Free",
+        "ostomate": "Ostomate",
+        "large_bed": "Large Bed",
+        "parking": "Parking",
+        "store_usage": "Store / Facility"
     },
     "add_location": {
         "title": "Add New Toilet",
@@ -151,7 +175,10 @@
             "unisex": "Unisex",
             "male": "Male Only",
             "female": "Female Only"
-        }
+        },
+        "details_label": "Details",
+        "images_label": "Images",
+        "uploading": "Uploading..."
     },
     "location_picker": {
         "title": "Select a location to review",
@@ -166,5 +193,24 @@
         "yellow_desc": "Information available but partially verified.",
         "red_title": "Unverified / New",
         "red_desc": "New entry or low trust score. Use with caution."
+    },
+    "messages": {
+        "search_searching": "Searching for: {query}",
+        "auth_missing": "Authentication service is missing.",
+        "login_required": "You need to login to perform this action.",
+        "review_success": "Review Submitted Successfully!",
+        "review_error": "Failed to submit review: {error}",
+        "location_get_error": "Could not get your location.",
+        "geo_not_supported": "Geolocation is not supported by this browser.",
+        "error_prefix": "Error: {message}",
+        "location_added_success": "Location processed successfully!",
+        "unknown_error": "Unknown error"
+    },
+    "errors": {
+        "MISSING_FIELDS": "Missing required fields.",
+        "MISSING_QUERY": "Query parameter is required.",
+        "NOT_FOUND": "Resource not found.",
+        "UNAUTHORIZED": "Unauthorized access.",
+        "FORBIDDEN": "Access denied."
     }
 }
