@@ -190,6 +190,7 @@
         "review_error": "レビューの送信に失敗しました: {error}",
         "location_get_error": "現在地を取得できませんでした。",
         "geo_not_supported": "このブラウザは位置情報をサポートしていません。",
+        "geo_permission_denied": "位置情報が拒否されました。端末のGPSとブラウザの設定を確認してください。",
         "error_prefix": "エラー: {message}",
         "unknown_error": "不明なエラー"
     }

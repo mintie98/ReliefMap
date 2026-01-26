@@ -201,6 +201,7 @@
         "review_error": "Gửi nhận xét thất bại: {error}",
         "location_get_error": "Không thể lấy vị trí của bạn.",
         "geo_not_supported": "Trình duyệt này không hỗ trợ định vị.",
+        "geo_permission_denied": "Quyền truy cập bị từ chối. Vui lòng bật GPS của máy và cấp quyền cho trình duyệt.",
         "error_prefix": "Lỗi: {message}",
         "unknown_error": "Lỗi không xác định"
     }

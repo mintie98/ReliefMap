@@ -178,14 +178,35 @@ export function useMapView() {
 
     const getCurrentLocation = () => {
         if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition((pos) => {
-                const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                map.panTo(loc);
-                map.setZoom(15);
-                updateCurrentLocationMarker(loc);
-                updateFilters({ lat: loc.lat, lng: loc.lng });
-                loadLocations();
-            });
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+                    map.panTo(loc);
+                    map.setZoom(15);
+                    updateCurrentLocationMarker(loc);
+                    updateFilters({ lat: loc.lat, lng: loc.lng });
+                    loadLocations();
+                },
+                (err) => {
+                    console.error('Geolocation error:', err);
+                    let msg = i18n.global.t('messages.location_get_error');
+                    if (err.code === 1) { // PERMISSION_DENIED
+                        msg = i18n.global.t('messages.geo_permission_denied') || "Location permission denied. Please enable it in browser settings.";
+                    } else if (err.code === 2) { // POSITION_UNAVAILABLE
+                        msg = "Location information is unavailable.";
+                    } else if (err.code === 3) { // TIMEOUT
+                        msg = "The request to get user location timed out.";
+                    }
+                    toast.error(msg);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 10000,
+                    maximumAge: 0
+                }
+            );
+        } else {
+            toast.error(i18n.global.t('messages.geo_not_supported'));
         }
     };
 
@@ -460,16 +481,19 @@ export function useMapView() {
     };
 
     onMounted(() => {
-        if (window.google) {
-            initMap();
-        } else {
-            const script = document.createElement('script');
-            script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&callback=initReliefMap&loading=async&libraries=places`;
-            script.async = true;
-            script.defer = true;
-            window.initReliefMap = initMap;
-            document.head.appendChild(script);
-        }
+        // Delay map initialization slightly to allow UI elements (like Pin Legend) to animate in smoothly first
+        setTimeout(() => {
+            if (window.google) {
+                initMap();
+            } else {
+                const script = document.createElement('script');
+                script.src = `https://maps.googleapis.com/maps/api/js?key=${import.meta.env.VITE_GOOGLE_MAPS_API_KEY || 'YOUR_API_KEY'}&callback=initReliefMap&loading=async&libraries=places`;
+                script.async = true;
+                script.defer = true;
+                window.initReliefMap = initMap;
+                document.head.appendChild(script);
+            }
+        }, 600);
     });
 
     watch(filteredLocations, updateMarkers);

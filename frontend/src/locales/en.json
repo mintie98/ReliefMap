@@ -202,6 +202,7 @@
         "review_error": "Failed to submit review: {error}",
         "location_get_error": "Could not get your location.",
         "geo_not_supported": "Geolocation is not supported by this browser.",
+        "geo_permission_denied": "Location denied. Please enable Device GPS and check browser permissions.",
         "error_prefix": "Error: {message}",
         "location_added_success": "Location processed successfully!",
         "unknown_error": "Unknown error"

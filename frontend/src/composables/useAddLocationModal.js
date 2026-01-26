@@ -72,7 +72,12 @@ export function useAddLocationModal(emit) {
                     }
                 },
                 (err) => {
-                    toast.error(i18n.global.t('messages.location_get_error'));
+                    console.error('AddLocation geolocation error:', err);
+                    let msg = i18n.global.t('messages.location_get_error');
+                    if (err.code === 1) { // PERMISSION_DENIED
+                        msg = i18n.global.t('messages.geo_permission_denied') || msg;
+                    }
+                    toast.error(msg);
                     loading.value = false;
                 }
             );

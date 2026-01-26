@@ -39,7 +39,15 @@
       <!-- Section: Verification Status -->
       <div class="filter-section">
         <div class="section-label">
-          <span class="icon" style="color:#10B981">{{ ICONS.CHECK_VERIFIED }}</span> {{ $t('refine_filter.verification_status') }}
+          <span class="icon" style="color:#10B981">{{ ICONS.CHECK_VERIFIED }}</span> 
+          {{ $t('refine_filter.verification_status') }}
+          <button class="btn-info-circle" @click.stop="$emit('show-pin-legend')">
+             <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+               <circle cx="12" cy="12" r="10"></circle>
+               <line x1="12" y1="16" x2="12" y2="12"></line>
+               <line x1="12" y1="8" x2="12.01" y2="8"></line>
+             </svg>
+          </button>
         </div>
         <div class="checkbox-group">
           <label class="checkbox-item red-text">
@@ -113,7 +121,7 @@ export default {
       default: false
     }
   },
-  emits: ['close', 'search'],
+  emits: ['close', 'search', 'show-pin-legend'],
   setup(props, { emit }) {
     const { t } = useI18n();
     const {

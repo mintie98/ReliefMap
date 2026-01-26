@@ -72,6 +72,7 @@
             <RefineFilter 
               @close="showRefine = false"
               @search="handleRefineSearch"
+              @show-pin-legend="showPinLegend = true"
               :sidebar-mode="true"
             />
           </template>
