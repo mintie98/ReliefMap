@@ -75,7 +75,8 @@
             "location_type": "Location Type",
             "gender_separation": "Gender Separation",
             "none": "None",
-            "public_toilet": "Public Toilet"
+            "public_toilet": "Public Toilet",
+            "store_facility": "Store / Facility"
         },
         "no_reviews": "No reviews yet. Be the first!",
         "start_navigation": "Start Navigation",
@@ -95,6 +96,7 @@
         "comment_placeholder": "Share your experience...",
         "photos": "Photos (Max 3)",
         "add_photo": "+ Add Photo",
+        "take_photo": "Take Photo",
         "submit": "Submit Review",
         "cancel": "Cancel",
         "is_location_accurate": "Is this location accurate? (📍)",
@@ -147,6 +149,7 @@
         "japanese_style": "Japanese Style",
         "accessible": "Accessible",
         "child_seat": "Child Seat",
+        "baby_changing": "Diaper Changing",
         "diaper_changing": "Diaper Changing",
         "warm_seat": "Warm Seat",
         "powder_corner": "Powder Corner",

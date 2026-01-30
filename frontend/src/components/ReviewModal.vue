@@ -86,29 +86,48 @@
         <!-- Photos -->
         <div class="form-group">
            <label>{{ $t('review_modal.photos') }}</label>
-           <div class="photo-upload-area">
-              <input 
-                type="file" 
-                ref="fileInput" 
-                accept="image/*" 
-                multiple 
-                @change="handleFileUpload" 
-                style="display:none"
-              >
-              <div class="preview-grid">
-                 <div class="preview-item" v-for="(img, index) in previewImages" :key="index">
-                    <img :src="img.url" />
-                    <button class="remove-btn" @click="removeImage(index)">×</button>
-                 </div>
-                 <div 
-                    class="add-photo-btn" 
-                    v-if="previewImages.length < 3"
-                    @click="$refs.fileInput.click()"
-                 >
-                    <span>{{ $t('review_modal.add_photo') }}</span>
-                 </div>
-              </div>
-           </div>
+               <div class="photo-upload-area">
+                  <input 
+                    type="file" 
+                    ref="fileInput" 
+                    accept="image/*" 
+                    multiple 
+                    @change="handleFileUpload" 
+                    style="display:none"
+                  >
+                  <input 
+                    type="file" 
+                    ref="cameraInput" 
+                    accept="image/*" 
+                    capture="environment"
+                    @change="handleCameraUpload" 
+                    style="display:none"
+                  >
+                  <div class="preview-grid">
+                     <div class="preview-item" v-for="(img, index) in previewImages" :key="index">
+                        <img :src="img.url" />
+                        <button class="remove-btn" @click="removeImage(index)">×</button>
+                     </div>
+                     
+                     <!-- Add Photo (Gallery) -->
+                     <div 
+                        class="add-photo-btn" 
+                        v-if="previewImages.length < 3"
+                        @click="$refs.fileInput.click()"
+                     >
+                        <span>{{ $t('review_modal.add_photo') }}</span>
+                     </div>
+
+                     <!-- Take Photo (Camera) -->
+                     <div 
+                        class="add-photo-btn camera-btn" 
+                        v-if="previewImages.length < 3"
+                        @click="$refs.cameraInput.click()"
+                     >
+                        <span>📷 {{ $t('review_modal.take_photo') }}</span>
+                     </div>
+                  </div>
+               </div>
         </div>
       </div>
 
@@ -155,6 +174,17 @@ export default {
 
     const handleFileUpload = (event) => {
       const files = Array.from(event.target.files);
+      processFiles(files);
+      event.target.value = '';
+    };
+
+    const handleCameraUpload = (event) => {
+      const files = Array.from(event.target.files); // Camera usually returns 1 file
+      processFiles(files);
+      event.target.value = '';
+    };
+
+    const processFiles = (files) => {
       if (previewImages.value.length + files.length > 3) {
         alert("Maximum 3 photos allowed");
         return;
@@ -168,8 +198,6 @@ export default {
          };
          reader.readAsDataURL(file);
       });
-      // Clear input so same file can be selected again if needed
-      event.target.value = '';
     };
 
     const removeImage = (index) => {
@@ -199,8 +227,7 @@ export default {
       previewImages,
       getRatingText,
       handleFileUpload,
-      removeImage,
-      handleFileUpload,
+      handleCameraUpload,
       removeImage,
       submitReview,
       ICONS
@@ -416,6 +443,15 @@ export default {
 .add-photo-btn:hover {
   background: #eee;
   border-color: #999;
+}
+
+.camera-btn {
+  background: #E8F0FE;
+  border-color: #1976D2;
+  color: #1976D2;
+}
+.camera-btn:hover {
+  background: #D2E3FC;
 }
 
 /* Footer */

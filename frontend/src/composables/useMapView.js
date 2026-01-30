@@ -21,6 +21,7 @@ export function useMapView() {
 
     let map = null;
     let markers = [];
+    let isProgrammaticMove = false;
 
     const selectedLocation = ref(null);
     const amenities = ref({});
@@ -57,6 +58,7 @@ export function useMapView() {
     const focusLocation = (loc) => {
         selectedLocation.value = loc;
         if (map) {
+            isProgrammaticMove = true;
             map.panTo({ lat: loc.latitude, lng: loc.longitude });
         }
     };
@@ -109,13 +111,91 @@ export function useMapView() {
         }
     };
 
-    const initMap = () => {
+    const getUserPosition = () => {
+        return new Promise((resolve, reject) => {
+            if (!navigator.geolocation) {
+                reject(new Error('Geolocation not supported'));
+                return;
+            }
+            // Timeout handling for user permission prompt
+            const timer = setTimeout(() => {
+                reject(new Error('Location request timed out'));
+            }, 5000);
+
+            navigator.geolocation.getCurrentPosition(
+                (pos) => {
+                    clearTimeout(timer);
+                    const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
+
+                    // Cache location
+                    try {
+                        localStorage.setItem('user_location_cache', JSON.stringify({
+                            ...loc,
+                            timestamp: Date.now()
+                        }));
+                    } catch (e) {
+                        console.warn('Failed to cache location:', e);
+                    }
+
+                    resolve(loc);
+                },
+                (err) => {
+                    clearTimeout(timer);
+                    reject(err);
+                },
+                {
+                    enableHighAccuracy: true,
+                    timeout: 5000,
+                    maximumAge: 0
+                }
+            );
+        });
+    };
+
+    const initMap = async () => {
         if (!window.google || !mapContainer.value) return;
         const defaultCenter = { lat: 35.6762, lng: 139.6503 };
+        let center = defaultCenter;
+        let initialLocation = null;
+        let usedCache = false;
+
+        // 1. Try Cache First
+        const cached = localStorage.getItem('user_location_cache');
+        if (cached) {
+            try {
+                const parsed = JSON.parse(cached);
+                // Valid if < 24 hours
+                if (Date.now() - parsed.timestamp < 24 * 60 * 60 * 1000) {
+                    center = { lat: parsed.lat, lng: parsed.lng };
+                    initialLocation = center;
+                    usedCache = true;
+                }
+            } catch (e) {
+                console.warn('Invalid cache');
+            }
+        }
+
+        // 2. If no cache, await fresh location
+        if (!usedCache) {
+            try {
+                initialLocation = await getUserPosition();
+                center = initialLocation;
+            } catch (e) {
+                console.warn('Could not get initial user location:', e);
+                // Fallback to default
+            }
+        } else {
+            // 3. If cached, refresh in background
+            getUserPosition().then(loc => {
+                // Silently update marker and state
+                updateCurrentLocationMarker(loc);
+                userLocation.value = loc;
+            }).catch(e => console.warn('Background location check failed:', e));
+        }
 
         map = new window.google.maps.Map(mapContainer.value, {
             zoom: 14,
-            center: defaultCenter,
+            center: center,
             disableDefaultUI: true,
             styles: [
                 {
@@ -126,7 +206,20 @@ export function useMapView() {
             ]
         });
 
+        // Initialize user marker if we have location
+        if (initialLocation) {
+            updateCurrentLocationMarker(initialLocation);
+            // Update filters so initial load searches around user
+            updateFilters({ lat: initialLocation.lat, lng: initialLocation.lng });
+            // Cache it
+            userLocation.value = initialLocation;
+        }
+
         map.addListener('idle', () => {
+            if (isProgrammaticMove) {
+                isProgrammaticMove = false;
+                return;
+            }
             const bounds = map.getBounds();
             if (bounds) {
                 const ne = bounds.getNorthEast();
@@ -141,23 +234,8 @@ export function useMapView() {
             }
         });
 
-        if (navigator.geolocation) {
-            navigator.geolocation.getCurrentPosition(
-                (pos) => {
-                    const loc = { lat: pos.coords.latitude, lng: pos.coords.longitude };
-                    map.setCenter(loc);
-                    updateCurrentLocationMarker(loc);
-                    updateFilters({ lat: loc.lat, lng: loc.lng });
-                    loadLocations();
-                },
-                (err) => {
-                    console.error('Geolocation error:', err);
-                    loadLocations();
-                }
-            );
-        } else {
-            loadLocations();
-        }
+        // Initial Load
+        loadLocations();
     };
 
     const toggleFilter = (key, value) => {

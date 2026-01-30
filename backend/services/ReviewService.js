@@ -15,6 +15,8 @@ class ReviewService {
     }
   }
 
+
+
   async createReview(reviewData) {
     try {
       // Get user trust score at time of review
@@ -25,6 +27,43 @@ class ReviewService {
           message: 'User not found'
         };
       }
+
+      // Check if this is a Pending Location (e.g. "pending_123")
+      let targetId = reviewData.location_id;
+      let isPending = false;
+
+      if (typeof targetId === 'string' && targetId.startsWith('pending_')) {
+        isPending = true;
+        targetId = parseInt(targetId.replace('pending_', ''));
+      }
+
+      // --- LOGIC FOR PENDING LOCATIONS ---
+      if (isPending) {
+        const locationRepository = require('../repositories/LocationRepository');
+
+        // 1. Increment Verification Score
+        // Formula: Delta = User Trust Score (1-10)
+        const scoreDelta = user.trust_score || 5;
+        await locationRepository.incrementPendingVerificationScore(targetId, scoreDelta);
+
+        // 2. Add Images (if any) to the Pending Location record directly
+        if (reviewData.files && reviewData.files.length > 0) {
+          const imageUrls = reviewData.files.map(file => `/uploads/${file.filename}`);
+          await locationRepository.addImageToPending(targetId, imageUrls);
+        }
+
+        // 3. Log contribution
+        await userRepository.incrementContribution(reviewData.user_id);
+
+        // Return success immediately (No Review created in REVIEWS table)
+        return {
+          success: true,
+          data: { location_id: `pending_${targetId}`, is_pending: true },
+          message: 'Verification submitted! Your contribution helps validatethis location.'
+        };
+      }
+
+      // --- LOGIC FOR VERIFIED LOCATIONS (Standard Review) ---
 
       reviewData.user_trust_score = user.trust_score;
 
@@ -46,59 +85,26 @@ class ReviewService {
         // Import location Repo
         const locationRepository = require('../repositories/LocationRepository');
 
-        // Determine if targeting Verified or Pending location
-        let targetId = reviewData.location_id;
-        let isPending = false;
-
-        if (typeof targetId === 'string' && targetId.startsWith('pending_')) {
-          isPending = true;
-          targetId = parseInt(targetId.replace('pending_', ''));
-        }
-
-        // Calculate Score Delta based on User Trust
-        // Formula: Delta = User Trust Score (1-10)
+        // Standard Location: Update Verified Location Score
         const scoreDelta = user.trust_score || 5;
+        await locationRepository.incrementVerificationScore(targetId, scoreDelta);
 
-        if (isPending) {
-          // Update Pending Location Score
-          await locationRepository.incrementPendingVerificationScore(targetId, scoreDelta);
+        // Check for Promotion (Red -> Yellow -> Green) for LOCATIONS_MERGED
+        const loc = await locationRepository.findById(targetId);
+        if (loc) {
+          let newStatus = loc.verification_status;
+          const score = loc.verification_score;
 
-          // Check for Promotion (Red -> Yellow -> Green)
-          // Fetch current state
-          const [pendingLoc] = await locationRepository.findAllPending(); // Optimize: findById needed but reusing findAll for now
-          const targetLoc = pendingLoc ? pendingLoc /* verify filtering needed if findAll returns all */ : null;
+          // Thresholds
+          if (score >= 5.0 && loc.verification_status === 'red') {
+            newStatus = 'yellow';
+          } else if (score >= 20.0 && loc.verification_status !== 'green') {
+            newStatus = 'green';
+          }
 
-          // TODO: Real implementation should add findVerificationById to Repo for efficiency
-          // For now assuming we just incremented.
-          // Promotion Logic:
-          // If Score > 50 -> Approve to LOCATIONS_MERGED (Green)
-          // If Score > 20 -> Upgrade status to 'pending' (Yellow) if was 'unverified'
-
-          // NOTE: Since we lack findVerificationById in Repo interface shown previously, 
-          // we will implement specific promotion check in a separate step or query.
-          // For simplicity in this iteration: just increment.
-
-        } else {
-          // Update Verified Location Score
-          await locationRepository.incrementVerificationScore(targetId, scoreDelta);
-
-          // Check for Promotion (Red -> Yellow -> Green) for LOCATIONS_MERGED
-          const loc = await locationRepository.findById(targetId);
-          if (loc) {
-            let newStatus = loc.verification_status;
-            const score = loc.verification_score;
-
-            // Thresholds
-            if (score >= 5.0 && loc.verification_status === 'red') {
-              newStatus = 'yellow';
-            } else if (score >= 20.0 && loc.verification_status !== 'green') {
-              newStatus = 'green';
-            }
-
-            if (newStatus !== loc.verification_status) {
-              await locationRepository.update(targetId, { verification_status: newStatus });
-              console.log(`Location ${targetId} promoted from ${loc.verification_status} to ${newStatus}`);
-            }
+          if (newStatus !== loc.verification_status) {
+            await locationRepository.update(targetId, { verification_status: newStatus });
+            console.log(`Location ${targetId} promoted from ${loc.verification_status} to ${newStatus}`);
           }
         }
       }
@@ -107,18 +113,11 @@ class ReviewService {
         // Import location Repo lazily
         const locationRepository = require('../repositories/LocationRepository');
 
-        let targetId = reviewData.location_id;
-        if (typeof targetId === 'string' && targetId.startsWith('pending_')) {
-          // Pending location amenities are stored in JSON blob, cumbersome to update partially via Service without full read-write.
-          // For now, we skip updating amenities on Pending locations via Review to avoid complexity, 
-          // OR we accept that amenities are verified only upon promotion.
-        } else {
-          // Update Verified Location Amenities
-          await locationRepository.updateAmenities(targetId, {
-            ...reviewData.amenities,
-            // gender_type could be inferred or passed explicitly
-          });
-        }
+        // Update Verified Location Amenities
+        await locationRepository.updateAmenities(targetId, {
+          ...reviewData.amenities,
+          // gender_type could be inferred or passed explicitly
+        });
       }
 
       // Increment user contribution

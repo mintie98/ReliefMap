@@ -156,7 +156,7 @@ export default {
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
   padding: 8px 0;
   min-width: 140px;
-  z-index: 1000;
+  z-index: 9999;
   border: 1px solid #eee;
 }
 

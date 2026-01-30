@@ -7,8 +7,8 @@ export class Location {
     this.location_id = data.location_id || null;
     this.base_id = data.base_id || null;
     this.ugc_id = data.ugc_id || null;
-    this.display_name = data.display_name || '';
-    this.address = data.address || '';
+    this.display_name = data.display_name || data.name || '';
+    this.address = data.address || data.formatted_address || data.vicinity || data.address_input || '';
     this.latitude = parseFloat(data.latitude) || 0;
     this.longitude = parseFloat(data.longitude) || 0;
     this.source_type = data.source_type || 'user'; // 'api', 'admin', 'user'
@@ -31,13 +31,49 @@ export class Location {
     this.user_opening_hours = data.user_opening_hours;
     this.reviews = data.reviews || [];
 
-    // Amenities
-    this.western_style = data.western_style || false;
-    this.japanese_style = data.japanese_style || false;
-    this.accessible = data.accessible || false;
-    this.baby_changing = data.baby_changing || false;
-    this.warm_seat = data.warm_seat || false;
-    this.gender_type = data.gender_type || 'mixed';
+    // Helper to get amenity value (flat or nested)
+    const getAm = (key) => Boolean(data[key] || (data.amenities && data.amenities[key]));
+
+    // Flat Amenities (Legacy access + Nested support)
+    this.western_style = getAm('western_style');
+    this.japanese_style = getAm('japanese_style');
+    this.accessible = getAm('accessible');
+    this.baby_changing = getAm('baby_changing');
+    this.warm_seat = getAm('warm_seat');
+    this.gender_type = data.gender_type || (data.amenities && data.amenities.gender_type) || 'mixed';
+
+    // Extended Amenities (Flat + Nested)
+    this.public_toilet = getAm('public_toilet');
+    this.gender_separated = getAm('gender_separated');
+    this.powder_room = getAm('powder_room');
+    this.barrier_free = getAm('barrier_free');
+    this.ostomate = getAm('ostomate');
+    this.large_bed = getAm('large_bed');
+    this.parking = getAm('parking');
+    this.store_usage = getAm('store_usage');
+    this.diaper_changing = getAm('diaper_changing');
+    this.child_seat = getAm('child_seat');
+
+    // Amenities Object (For component compatibility)
+    this.amenities = {
+      western_style: this.western_style,
+      japanese_style: this.japanese_style,
+      accessible: this.accessible,
+      baby_changing: this.baby_changing, // legacy key
+      warm_seat: this.warm_seat,
+      gender_type: this.gender_type,
+
+      public_toilet: this.public_toilet,
+      gender_separated: this.gender_separated,
+      powder_room: this.powder_room,
+      barrier_free: this.barrier_free,
+      ostomate: this.ostomate,
+      large_bed: this.large_bed,
+      parking: this.parking,
+      store_usage: this.store_usage,
+      diaper_changing: this.diaper_changing,
+      child_seat: this.child_seat
+    };
   }
 
   /**

@@ -71,7 +71,8 @@
             "location_type": "場所タイプ",
             "gender_separation": "男女別",
             "none": "なし",
-            "public_toilet": "公衆トイレ"
+            "public_toilet": "公衆トイレ",
+            "store_facility": "店舗・施設"
         },
         "no_reviews": "レビューはまだありません。一番乗りしましょう！",
         "start_navigation": "ナビ開始",
@@ -93,6 +94,7 @@
         "comment_placeholder": "体験を共有してください...",
         "photos": "写真 (最大3枚)",
         "add_photo": "+ 写真を追加",
+        "take_photo": "写真を撮る",
         "submit": "投稿する",
         "cancel": "キャンセル",
         "is_location_accurate": "この場所は正確ですか？ (📍)",
@@ -138,6 +140,7 @@
         "japanese_style": "和式",
         "accessible": "多目的トイレ",
         "child_seat": "ベビーチェア",
+        "baby_changing": "おむつ交換台",
         "diaper_changing": "おむつ交換台",
         "warm_seat": "温水便座",
         "powder_corner": "パウダーコーナー",

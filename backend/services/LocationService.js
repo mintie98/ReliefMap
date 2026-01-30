@@ -556,6 +556,19 @@ class LocationService {
         });
       }
 
+      // Log to wc_verifications (as Admin Log for manual pin upgrade)
+      try {
+        await locationRepository.createVerification({
+          user_id: ugcData.user_id,
+          location_data: ugcData,
+          status: 'unverified', // Default log status
+          verification_score: 0
+        });
+      } catch (logErr) {
+        console.error("Failed to log to wc_verifications:", logErr);
+        // Don't fail the main request
+      }
+
       // Log contribution
       await userRepository.incrementContribution(ugcData.user_id);
 

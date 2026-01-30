@@ -445,16 +445,7 @@ class LocationRepository {
 
   // Search locations by name or address
   async search(searchTerm) {
-    const query = `
-      SELECT * FROM LOCATIONS_MERGED
-      WHERE is_deleted = FALSE
-        AND (display_name LIKE ? OR address LIKE ?)
-      ORDER BY verification_score DESC
-      LIMIT 50
-    `;
-    const searchPattern = `%${searchTerm}%`;
-    const [rows] = await db.execute(query, [searchPattern, searchPattern]);
-    return rows;
+    return this.findAll({ searchTerm, limit: 50 });
   }
 
   // Update or Create Amenities for a location
@@ -566,6 +557,31 @@ class LocationRepository {
       WHERE id = ?
     `;
     const [result] = await db.execute(query, [increment, verificationId]);
+    return result.affectedRows > 0;
+  }
+
+  // Add image to pending verification
+  async addImageToPending(verificationId, imageUrls) {
+    // 1. Fetch current data
+    const query = `SELECT location_data FROM wc_verifications WHERE id = ?`;
+    const [rows] = await db.execute(query, [verificationId]);
+    if (rows.length === 0) return false;
+
+    // 2. Parse and update
+    let locationData = {};
+    try {
+      locationData = JSON.parse(rows[0].location_data);
+    } catch (e) {
+      console.error('Failed to parse pending location data:', e);
+    }
+
+    if (!locationData.images) locationData.images = [];
+    // locations_ugc stores images as array of strings
+    locationData.images.push(...imageUrls);
+
+    // 3. Save back
+    const updateQuery = `UPDATE wc_verifications SET location_data = ? WHERE id = ?`;
+    const [result] = await db.execute(updateQuery, [JSON.stringify(locationData), verificationId]);
     return result.affectedRows > 0;
   }
 }

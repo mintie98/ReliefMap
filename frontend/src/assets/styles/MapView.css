@@ -18,7 +18,7 @@
     align-items: center;
     padding: 0 1rem 0 0.4rem; /* Shifted left by reducing left padding from 1rem to 0.4rem */
     box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    z-index: 1001;
+    z-index: 1200;
     position: relative;
 }
 

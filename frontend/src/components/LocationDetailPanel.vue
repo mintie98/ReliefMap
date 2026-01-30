@@ -85,23 +85,13 @@
         <h3>{{ $t('location_detail.toilet_amenities') }}</h3>
         <!-- Icons for Key Amenities -->
         <div class="amenities-grid">
-            <div class="amenity-icon" :class="{ active: amenities.western_style }" :title="$t('amenities.western_style')">
-                <img src="@/assets/amenities_icon/westen-styles.png" />
-            </div>
-            <div class="amenity-icon" :class="{ active: amenities.japanese_style }" :title="$t('amenities.japanese_style')">
-                <img src="@/assets/amenities_icon/Jp-styles.png" />
-            </div>
-            <div class="amenity-icon" :class="{ active: amenities.accessible }" :title="$t('amenities.accessible')">
-                 <img src="@/assets/amenities_icon/wheelchair.png" />
-            </div>
-            <div class="amenity-icon" :class="{ active: amenities.child_seat }" :title="$t('amenities.child_seat')">
-                <img src="@/assets/amenities_icon/child-seat.png" />
-            </div>
-            <div class="amenity-icon" :class="{ active: amenities.warm_seat }" :title="$t('amenities.warm_seat')">
-                <img src="@/assets/amenities_icon/bidet-seat.png" />
-            </div>
-             <div class="amenity-icon" :class="{ active: amenities.diaper_changing }" :title="$t('amenities.diaper_changing')">
-                <img src="@/assets/amenities_icon/diaper-change.png" />
+            <div 
+                v-for="key in visibleAmenities" 
+                :key="key" 
+                class="amenity-icon active" 
+                :title="$t(`amenities.${key}`)"
+            >
+                <img :src="getAmenityIcon(key)" @error="handleIconError" />
             </div>
         </div>
         
@@ -124,7 +114,7 @@
         <ul>
             <li>{{ $t('location_detail.toilet_details.gate_access') }}: {{ $t('location_detail.toilet_details.none') }}</li> <!-- Placeholder logic -->
             <li>{{ $t('location_detail.toilet_details.floor_level') }}: {{ $t('location_detail.toilet_details.none') }}</li>
-            <li>{{ $t('location_detail.toilet_details.location_type') }}: {{ $t('location_detail.toilet_details.public_toilet') }}</li>
+            <li>{{ $t('location_detail.toilet_details.location_type') }}: {{ amenities.store_usage ? $t('location_detail.toilet_details.store_facility') : $t('location_detail.toilet_details.public_toilet') }}</li>
             <li>{{ $t('location_detail.toilet_details.gender_separation') }}: {{ amenities.gender_type ? $t(`add_location.gender.${amenities.gender_type}`) : $t('add_location.gender.mixed') }}</li>
         </ul>
       </div>
@@ -174,9 +164,13 @@
 </template>
 
 <script>
+import { computed } from 'vue';
 import ReviewModal from './ReviewModal.vue';
 import { useLocationDetailPanel } from '../composables/useLocationDetailPanel';
-import '../assets/styles/LocationDetailPanel.css'; // Import styles
+import '../assets/styles/LocationDetailPanel.css';
+
+// Dynamic Amenity Icons (Module Scope)
+const iconFiles = import.meta.glob('@/assets/amenities_icon/*.png', { eager: true });
 
 export default {
   name: 'LocationDetailPanel',
@@ -214,16 +208,44 @@ export default {
         ICONS
     } = useLocationDetailPanel(props);
 
+    const visibleAmenities = computed(() => {
+        return Object.keys(amenities.value).filter(key => {
+             if (key === 'gender_type') return false; 
+             if (key === 'baby_changing' && amenities.value.diaper_changing) return false;
+             return amenities.value[key] === true;
+        });
+    });
+
+    const getAmenityIcon = (key) => {
+        let filename = key;
+        if (key === 'baby_changing') filename = 'diaper_changing';
+
+        for (const path in iconFiles) {
+            if (path.includes(`/${filename}.png`)) {
+                return iconFiles[path].default;
+            }
+        }
+        return ''; 
+    };
+
+    const handleIconError = (e) => {
+        e.target.style.display = 'none';
+        e.target.parentElement.style.display = 'none';
+    };
+
     return {
         amenities,
+        visibleAmenities,
+        getAmenityIcon,
+        handleIconError,
         galleryImages,
         isVerified,
         isPending,
         cleanlinessScore,
         reviews,
         openingHoursText,
-        closedDaysText, // New
-        notesText, // New
+        closedDaysText, 
+        notesText, 
         formatDate,
         galleryRef,
         showLeftArrow,
