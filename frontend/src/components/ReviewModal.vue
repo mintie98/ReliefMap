@@ -51,6 +51,62 @@
           </div>
         </div>
 
+        <!-- Floor Verification / Addition -->
+        <div class="form-group">
+             <label>{{ $t('review_modal.floors_verify_label') || 'Which floor did you use?' }}</label>
+             <div class="floor-selector-slim">
+                 <!-- 1. Existing Floors to Verify -->
+                 <div class="verify-floors-list" v-if="location.floors && location.floors.length > 0">
+                     <p class="sub-label">{{ $t('review_modal.verify_existing') || 'Confirm existing:' }}</p>
+                     <div class="floor-grid mini">
+                         <button 
+                             type="button" 
+                             v-for="fl in location.floors"
+                             :key="fl"
+                             class="floor-btn"
+                             :class="{ active: form.verified_floors.includes(fl) }"
+                             @click="toggleReviewFloor(fl)"
+                         >
+                            {{ fl }} {{ form.verified_floors.includes(fl) ? '✓' : '' }}
+                         </button>
+                     </div>
+                 </div>
+
+                 <!-- 2. Add New Floors -->
+                 <p class="sub-label">{{ $t('review_modal.add_new_floor') || 'Add missing floor:' }}</p>
+                 <div class="floor-grid mini">
+                      <button 
+                          type="button" 
+                          v-for="fl in ['B1','1F','2F','3F','4F','5F'].filter(f => !location.floors?.includes(f))"
+                          :key="fl"
+                          class="floor-btn"
+                          :class="{ active: form.verified_floors.includes(fl) }"
+                          @click="toggleReviewFloor(fl)"
+                      >{{ fl }}</button>
+                 </div>
+                 
+                 <!-- Custom Input -->
+                 <div class="custom-floor-input mt-2">
+                      <input 
+                          type="text" 
+                          v-model="customReviewFloor" 
+                          placeholder="Other (e.g. 6F)..." 
+                          class="form-input small"
+                          @keydown.enter.prevent="addCustomReviewFloor"
+                      />
+                      <button type="button" class="btn-sm btn-secondary" @click="addCustomReviewFloor">Add</button>
+                 </div>
+
+                 <!-- Selected Tags -->
+                 <div class="selected-floors-tags" v-if="form.verified_floors.length > 0">
+                      <span v-for="fl in form.verified_floors" :key="fl" class="floor-tag">
+                          {{ fl }} 
+                          <span class="remove-floor" @click="toggleReviewFloor(fl)">×</span>
+                      </span>
+                 </div>
+             </div>
+        </div>
+
         <!-- Waiting Time -->
         <div class="form-group">
           <label>{{ $t('review_modal.wait_time') }}</label>
@@ -142,14 +198,22 @@
 </template>
 
 <script>
-import { reactive, ref } from 'vue';
+import { reactive, ref, onMounted } from 'vue';
 import { ICONS } from '../assets/icons';
 
 export default {
   name: 'ReviewModal',
+  props: {
+    location: {
+      type: Object,
+      default: () => ({})
+    }
+  },
   emits: ['close', 'submit'],
   setup(props, { emit }) {
     const isSubmitting = ref(false);
+    const customReviewFloor = ref('');
+
     const form = reactive({
       cleanliness_score: 0,
       amenities: {
@@ -162,10 +226,29 @@ export default {
       is_location_accurate: false,
       wait_time: '',
       review_text: '',
-      images: [] // Stores File objects
+      images: [], // Stores File objects
+      verified_floors: [] // New: Selected floors
     });
 
     const previewImages = ref([]); // Stores { url: string, file: File }
+
+    // Logic for Floors
+    const toggleReviewFloor = (floor) => {
+        const index = form.verified_floors.indexOf(floor);
+        if (index > -1) {
+            form.verified_floors.splice(index, 1);
+        } else {
+            form.verified_floors.push(floor);
+        }
+    };
+
+    const addCustomReviewFloor = () => {
+        const fl = customReviewFloor.value.trim();
+        if (fl && !form.verified_floors.includes(fl)) {
+            form.verified_floors.push(fl);
+        }
+        customReviewFloor.value = '';
+    };
 
     const getRatingText = (score) => {
       const texts = ['Very Dirty', 'Dirty', 'Average', 'Clean', 'Very Clean/Sparkling'];
@@ -179,7 +262,7 @@ export default {
     };
 
     const handleCameraUpload = (event) => {
-      const files = Array.from(event.target.files); // Camera usually returns 1 file
+      const files = Array.from(event.target.files); 
       processFiles(files);
       event.target.value = '';
     };
@@ -212,10 +295,8 @@ export default {
       }
       isSubmitting.value = true;
       
-      // Emit the raw data, parent will handle API call (FormData construction)
       emit('submit', { ...form });
       
-      // Simulate delay for UI feel
       setTimeout(() => {
          isSubmitting.value = false;
       }, 1000);
@@ -225,6 +306,9 @@ export default {
       form,
       isSubmitting,
       previewImages,
+      customReviewFloor, // New
+      toggleReviewFloor, // New
+      addCustomReviewFloor, // New
       getRatingText,
       handleFileUpload,
       handleCameraUpload,
@@ -537,5 +621,80 @@ export default {
 .checkbox-label input {
     width: 18px;
     height: 18px;
+}
+
+/* Floor Selector Slim (Review Modal) */
+.floor-selector-slim {
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+.sub-label {
+    font-size: 0.85rem;
+    color: #555;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+.floor-grid.mini {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 8px;
+}
+.floor-btn {
+    padding: 4px 10px;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 4px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 36px;
+    text-align: center;
+}
+.floor-btn:hover {
+    background: #f0f0f0;
+}
+.floor-btn.active {
+    background: #4285F4;
+    color: white;
+    border-color: #3367d6;
+    font-weight: bold;
+}
+.verify-floors-list {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px dashed #ddd;
+}
+.custom-floor-input.mt-2 {
+    margin-top: 8px;
+    display: flex;
+    gap: 6px;
+}
+.form-input.small {
+    padding: 6px;
+    font-size: 0.85rem;
+}
+.selected-floors-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 8px;
+}
+.floor-tag {
+    background: #e8f0fe;
+    color: #1a73e8;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 0.8rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.remove-floor {
+    cursor: pointer;
+    font-weight: bold;
+    color: #1967d2;
 }
 </style>

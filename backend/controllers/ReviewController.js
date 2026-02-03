@@ -32,11 +32,19 @@ class ReviewController {
         }
       }
 
-      if (!reviewData.location_id || !reviewData.review_text) {
+      if (reviewData.floors && typeof reviewData.floors === 'string') {
+        try {
+          reviewData.floors = JSON.parse(reviewData.floors);
+        } catch (e) {
+          reviewData.floors = [];
+        }
+      }
+
+      if (!reviewData.location_id) {
         return res.status(400).json({
           success: false,
           code: 'MISSING_FIELDS',
-          message: 'Missing required fields: location_id, review_text'
+          message: 'Missing required fields: location_id'
         });
       }
 

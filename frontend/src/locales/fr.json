@@ -75,7 +75,8 @@
         },
         "no_reviews": "Aucun avis pour l'instant. Soyez le premier !",
         "start_navigation": "Démarrer la navigation",
-        "no_images": "Pas d'images"
+        "no_images": "Pas d'images",
+        "floors_label": "Étages avec toilettes"
     },
     "review_modal": {
         "title": "Écrire un avis",
@@ -96,7 +97,10 @@
             "short": "Courte (< 5 min)",
             "medium": "Moyenne (5-15 min)",
             "long": "Longue (> 15 min)"
-        }
+        },
+        "floors_verify_label": "Quel étage avez-vous utilisé ?",
+        "verify_existing": "Confirmer l'existant :",
+        "add_new_floor": "Ajouter un étage manquant :"
     },
     "refine_filter": {
         "title": "Affiner",
@@ -166,7 +170,11 @@
             "unisex": "Unisexe",
             "male": "Hommes",
             "female": "Femmes"
-        }
+        },
+        "details_label": "Détails",
+        "floors_label": "Étages (Sélection multiple)",
+        "images_label": "Images",
+        "uploading": "Téléchargement..."
     },
     "location_picker": {
         "title": "Sélectionner un lieu",

@@ -85,7 +85,8 @@
         "closed_days_placeholder": "e.g. Sat, Sun",
         "notes_placeholder": "Additional notes...",
         "closed_label": "Closed:",
-        "notes_label": "Notes"
+        "notes_label": "Notes",
+        "floors_label": "Floors with WC"
     },
     "review_modal": {
         "title": "Write a Review",
@@ -107,7 +108,10 @@
             "short": "Short (< 5 min)",
             "medium": "Medium (5-15 min)",
             "long": "Long (> 15 min)"
-        }
+        },
+        "floors_verify_label": "Which floor did you use?",
+        "verify_existing": "Confirm existing:",
+        "add_new_floor": "Add missing floor:"
     },
     "refine_filter": {
         "title": "Refine Results",
@@ -180,6 +184,7 @@
             "female": "Female Only"
         },
         "details_label": "Details",
+        "floors_label": "Floors (Select multiple)",
         "images_label": "Images",
         "uploading": "Uploading..."
     },

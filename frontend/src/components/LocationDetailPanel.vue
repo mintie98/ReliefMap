@@ -108,6 +108,14 @@
         </div>
       </div>
 
+      <!-- Floors / Facility Info (New) -->
+      <div class="floors-section" v-if="location.floors && location.floors.length > 0">
+          <h3>{{ $t('location_detail.floors_label') || 'Floors with WC' }}</h3>
+          <div class="floors-list">
+              <span v-for="fl in location.floors" :key="fl" class="floor-badge">{{ fl }}</span>
+          </div>
+      </div>
+
       <!-- Info Details -->
       <div class="details-section">
         <h3>{{ $t('location_detail.toilet_info') }}</h3>
@@ -156,6 +164,7 @@
     <teleport to="body">
        <ReviewModal 
           v-if="showReviewModal" 
+          :location="location"
           @close="showReviewModal = false"
           @submit="handleReviewSubmit"
        />

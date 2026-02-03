@@ -1,240 +1,280 @@
+-- Database Initialization Script for ReliefMap
+-- ------------------------------------------------------
+CREATE DATABASE IF NOT EXISTS `reliefmap`;
+USE `reliefmap`;
+
+-- Disable foreign key checks for bulk creation
+SET FOREIGN_KEY_CHECKS = 0;
+
+-- ------------------------------------------------------
+-- Table: users
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `users`;
+CREATE TABLE `users` (
+  `user_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'User ID',
+  `user_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Username',
+  `email` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Email',
+  `password_hash` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Password Hash',
+  `preferred_language` varchar(10) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Language Code',
+  `trust_score` int NOT NULL DEFAULT '5' COMMENT 'Trust Score',
+  `contribution_count` int NOT NULL DEFAULT '0' COMMENT 'Total Contributions',
+  `verified_contributions` int NOT NULL DEFAULT '0' COMMENT 'Verified Contributions',
+  `user_role` enum('general','admin') COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'User Role',
+  `ads_disabled_until` datetime DEFAULT NULL COMMENT 'Ads Disabled Until',
+  `auth_provider` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Auth Provider',
+  `provider_id` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Provider User ID',
+  `created_at` datetime NOT NULL COMMENT 'Creation Timestamp',
+  PRIMARY KEY (`user_id`),
+  UNIQUE KEY `email` (`email`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Users Table';
+
+-- ------------------------------------------------------
+-- Table: locations_base
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `locations_base`;
+CREATE TABLE `locations_base` (
+  `base_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'API Source ID',
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Facility Name',
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Address',
+  `latitude` decimal(10,7) NOT NULL COMMENT 'Latitude',
+  `longitude` decimal(10,7) NOT NULL COMMENT 'Longitude',
+  `source_name` varchar(100) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Source Name',
+  `source_id` varchar(100) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Source External ID',
+  `is_official` tinyint(1) NOT NULL COMMENT 'Is Official Data',
+  `place_types` json DEFAULT NULL COMMENT 'Place Types (JSON)',
+  `opening_hours` json DEFAULT NULL COMMENT 'Opening Hours (JSON)',
+  `photo_reference` text COLLATE utf8mb4_unicode_ci,
+  `google_rating` decimal(3,2) DEFAULT NULL COMMENT 'Google Rating',
+  `google_ratings_total` int DEFAULT NULL COMMENT 'Total Ratings',
+  `last_updated` datetime NOT NULL COMMENT 'Last Updated',
+  PRIMARY KEY (`base_id`),
+  KEY `idx_lat_lon` (`latitude`,`longitude`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Base Location Data';
+
+-- ------------------------------------------------------
+-- Table: locations_ugc
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `locations_ugc`;
+CREATE TABLE `locations_ugc` (
+  `ugc_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'UGC ID',
+  `user_id` bigint unsigned NOT NULL COMMENT 'Submitter ID',
+  `name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Facility Name',
+  `address_input` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Address Input',
+  `latitude` decimal(10,7) NOT NULL COMMENT 'Latitude',
+  `longitude` decimal(10,7) NOT NULL COMMENT 'Longitude',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Soft Delete',
+  `created_at` datetime NOT NULL COMMENT 'Creation Time',
+  `opening_hours` text COLLATE utf8mb4_unicode_ci,
+  `closed_days` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `images` json DEFAULT NULL,
+  `floors` json DEFAULT NULL COMMENT 'Floor info (JSON array)',
+  PRIMARY KEY (`ugc_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `locations_ugc_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='User Generated Locations';
+
+-- ------------------------------------------------------
+-- Table: locations_merged
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `locations_merged`;
+CREATE TABLE `locations_merged` (
+  `location_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'Location ID',
+  `base_id` bigint unsigned DEFAULT NULL COMMENT 'Ref to Base',
+  `ugc_id` bigint unsigned DEFAULT NULL COMMENT 'Ref to UGC',
+  `display_name` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Display Name',
+  `address` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Address',
+  `latitude` decimal(10,7) NOT NULL COMMENT 'Latitude',
+  `longitude` decimal(10,7) NOT NULL COMMENT 'Longitude',
+  `geolocation` point NOT NULL COMMENT 'Spatial Point',
+  `source_type` enum('api','admin','user') COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Source Type',
+  `verification_status` enum('red','yellow','green','verified','pending','unverified') COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Verification Status',
+  `verification_score` float NOT NULL COMMENT 'Verification Score',
+  `auto_verified` tinyint(1) NOT NULL COMMENT 'Auto Verified',
+  `admin_verified` tinyint(1) NOT NULL COMMENT 'Admin Verified',
+  `creator_user_id` bigint unsigned DEFAULT NULL COMMENT 'Creator User ID',
+  `creator_trust_score` int DEFAULT NULL COMMENT 'Creator Trust Score',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Soft Delete',
+  `created_at` datetime NOT NULL COMMENT 'Creation Time',
+  `opening_hours` text COLLATE utf8mb4_unicode_ci,
+  `closed_days` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL,
+  `notes` text COLLATE utf8mb4_unicode_ci,
+  `images` json DEFAULT NULL,
+  `floors` json DEFAULT NULL COMMENT 'Floor info (JSON array)',
+  PRIMARY KEY (`location_id`),
+  KEY `base_id` (`base_id`),
+  KEY `ugc_id` (`ugc_id`),
+  KEY `idx_lat_lon` (`latitude`,`longitude`),
+  SPATIAL KEY `geolocation` (`geolocation`),
+  CONSTRAINT `locations_merged_ibfk_1` FOREIGN KEY (`base_id`) REFERENCES `locations_base` (`base_id`) ON DELETE SET NULL,
+  CONSTRAINT `locations_merged_ibfk_2` FOREIGN KEY (`ugc_id`) REFERENCES `locations_ugc` (`ugc_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Merged Locations Table';
+
+-- ------------------------------------------------------
+-- Table: amenities
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `amenities`;
+CREATE TABLE `amenities` (
+  `location_id` bigint unsigned NOT NULL COMMENT 'Location ID',
+  `western_style` tinyint(1) NOT NULL COMMENT 'Western Style',
+  `japanese_style` tinyint(1) NOT NULL COMMENT 'Japanese Style',
+  `accessible` tinyint(1) NOT NULL COMMENT 'Wheelchair Accessible',
+  `child_seat` tinyint(1) DEFAULT '0',
+  `warm_seat` tinyint(1) NOT NULL COMMENT 'Warm Seat',
+  `gender_type` varchar(20) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Gender Type',
+  `public_toilet` tinyint(1) DEFAULT '0',
+  `gender_separated` tinyint(1) DEFAULT '0',
+  `powder_room` tinyint(1) DEFAULT '0',
+  `diaper_changing` tinyint(1) DEFAULT '0',
+  `barrier_free` tinyint(1) DEFAULT '0',
+  `ostomate` tinyint(1) DEFAULT '0',
+  `large_bed` tinyint(1) DEFAULT '0',
+  `parking` tinyint(1) DEFAULT '0',
+  `store_usage` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`location_id`),
+  CONSTRAINT `amenities_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations_merged` (`location_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Amenities Table';
+
+-- ------------------------------------------------------
+-- Table: reviews
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `reviews`;
+CREATE TABLE `reviews` (
+  `review_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'Review ID',
+  `location_id` bigint unsigned NOT NULL COMMENT 'Location ID',
+  `user_id` bigint unsigned NOT NULL COMMENT 'User ID',
+  `review_text` text COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Review Text',
+  `cleanliness_score` int NOT NULL COMMENT 'Cleanliness Score',
+  `wait_time_score` int NOT NULL COMMENT 'Wait Time Score',
+  `user_trust_score` int NOT NULL COMMENT 'User Trust Score',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Soft Delete',
+  `created_at` datetime NOT NULL COMMENT 'Creation Time',
+  `is_location_accurate` tinyint(1) DEFAULT '0',
+  PRIMARY KEY (`review_id`),
+  KEY `location_id` (`location_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `reviews_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations_merged` (`location_id`) ON DELETE CASCADE,
+  CONSTRAINT `reviews_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Reviews Table';
+
+-- ------------------------------------------------------
+-- Table: review_images
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `review_images`;
+CREATE TABLE `review_images` (
+  `image_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'Image ID',
+  `review_id` bigint unsigned NOT NULL COMMENT 'Review ID',
+  `image_url` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Image URL',
+  `is_deleted` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Soft Delete',
+  `uploaded_at` datetime NOT NULL COMMENT 'Upload Time',
+  PRIMARY KEY (`image_id`),
+  KEY `review_id` (`review_id`),
+  CONSTRAINT `review_images_ibfk_1` FOREIGN KEY (`review_id`) REFERENCES `reviews` (`review_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Review Images Table';
+
+-- ------------------------------------------------------
+-- Table: locations_tags
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `locations_tags`;
+CREATE TABLE `locations_tags` (
+  `tag_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'Tag ID',
+  `location_id` bigint unsigned NOT NULL COMMENT 'Location ID',
+  `tag_name` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Tag Name',
+  PRIMARY KEY (`tag_id`),
+  UNIQUE KEY `uk_location_tag` (`location_id`,`tag_name`),
+  CONSTRAINT `locations_tags_ibfk_1` FOREIGN KEY (`location_id`) REFERENCES `locations_merged` (`location_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Location Tags';
+
+-- ------------------------------------------------------
+-- Table: ads
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `ads`;
+CREATE TABLE `ads` (
+  `ad_id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Ad ID',
+  `ad_source` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Ad Source',
+  `title` varchar(255) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Title',
+  `description` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Description',
+  `image_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Image URL',
+  `target_url` varchar(255) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Target URL',
+  `start_date` datetime NOT NULL COMMENT 'Start Date',
+  `end_date` datetime NOT NULL COMMENT 'End Date',
+  `status` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Status',
+  `budget` decimal(10,2) DEFAULT NULL COMMENT 'Budget',
+  `max_impressions` int DEFAULT NULL COMMENT 'Max Impressions',
+  `max_clicks` int DEFAULT NULL COMMENT 'Max Clicks',
+  `created_by` bigint unsigned NOT NULL COMMENT 'Creator ID',
+  `created_at` datetime NOT NULL COMMENT 'Created At',
+  PRIMARY KEY (`ad_id`),
+  KEY `created_by` (`created_by`),
+  CONSTRAINT `ads_ibfk_1` FOREIGN KEY (`created_by`) REFERENCES `users` (`user_id`) ON DELETE RESTRICT
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ads Table';
+
+-- ------------------------------------------------------
+-- Table: ads_log
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `ads_log`;
+CREATE TABLE `ads_log` (
+  `log_id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Log ID',
+  `ad_id` int unsigned NOT NULL COMMENT 'Ad ID',
+  `user_id` bigint unsigned DEFAULT NULL COMMENT 'User ID',
+  `shown_at` datetime NOT NULL COMMENT 'Shown At',
+  `clicked` tinyint(1) NOT NULL DEFAULT '0' COMMENT 'Clicked',
+  PRIMARY KEY (`log_id`),
+  KEY `ad_id` (`ad_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `ads_log_ibfk_1` FOREIGN KEY (`ad_id`) REFERENCES `ads` (`ad_id`) ON DELETE CASCADE,
+  CONSTRAINT `ads_log_ibfk_2` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE SET NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ads Log';
+
+-- ------------------------------------------------------
+-- Table: ads_targeting
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `ads_targeting`;
+CREATE TABLE `ads_targeting` (
+  `target_id` int unsigned NOT NULL AUTO_INCREMENT COMMENT 'Target ID',
+  `ad_id` int unsigned NOT NULL COMMENT 'Ad ID',
+  `language` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Language',
+  `location_type` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'Location Type',
+  `user_role` varchar(50) COLLATE utf8mb4_unicode_ci DEFAULT NULL COMMENT 'User Role',
+  `extra_criteria` json DEFAULT NULL COMMENT 'Extra Criteria',
+  PRIMARY KEY (`target_id`),
+  KEY `ad_id` (`ad_id`),
+  CONSTRAINT `ads_targeting_ibfk_1` FOREIGN KEY (`ad_id`) REFERENCES `ads` (`ad_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Ads Targeting';
+
+-- ------------------------------------------------------
+-- Table: contributions_log
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `contributions_log`;
+CREATE TABLE `contributions_log` (
+  `log_id` bigint unsigned NOT NULL AUTO_INCREMENT COMMENT 'Log ID',
+  `user_id` bigint unsigned NOT NULL COMMENT 'User ID',
+  `location_id` bigint unsigned DEFAULT NULL COMMENT 'Location ID',
+  `action_type` varchar(50) COLLATE utf8mb4_unicode_ci NOT NULL COMMENT 'Action Type',
+  `created_at` datetime NOT NULL COMMENT 'Created At',
+  PRIMARY KEY (`log_id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `contributions_log_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`) ON DELETE CASCADE
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci COMMENT='Contributions Log';
+
+-- ------------------------------------------------------
+-- Table: wc_verifications
+-- ------------------------------------------------------
+DROP TABLE IF EXISTS `wc_verifications`;
+CREATE TABLE `wc_verifications` (
+  `id` int NOT NULL AUTO_INCREMENT,
+  `user_id` bigint unsigned NOT NULL,
+  `location_data` json DEFAULT NULL,
+  `status` enum('unverified','pending','approved','rejected') COLLATE utf8mb4_unicode_ci DEFAULT 'unverified',
+  `verification_score` int DEFAULT '0',
+  `created_at` datetime DEFAULT CURRENT_TIMESTAMP,
+  `updated_at` datetime DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `user_id` (`user_id`),
+  CONSTRAINT `wc_verifications_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`user_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
+-- Re-enable foreign key checks
 SET FOREIGN_KEY_CHECKS = 1;
 
--- -----------------------------------------------------
--- 1. USERS（利用者）
--- -----------------------------------------------------
-CREATE TABLE USERS (
-    user_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '利用者ID',
-    user_name VARCHAR(100) NOT NULL COMMENT 'ユーザー名',
-    email VARCHAR(255) NOT NULL UNIQUE COMMENT 'メールアドレス',
-    password_hash VARCHAR(255) NULL COMMENT 'パスワードハッシュ',
-    preferred_language VARCHAR(10) NOT NULL COMMENT '優先言語',
-    trust_score INT NOT NULL DEFAULT 5 COMMENT '信頼度スコア',
-    contribution_count INT NOT NULL DEFAULT 0 COMMENT '投稿数',
-    verified_contributions INT NOT NULL DEFAULT 0 COMMENT '承認済投稿数',
-    user_role ENUM('general', 'admin') NOT NULL COMMENT 'ユーザーロール',
-    ads_disabled_until DATETIME NULL COMMENT '広告非表示期限',
-    auth_provider VARCHAR(50) NOT NULL COMMENT '認証プロバイダー',
-    provider_id VARCHAR(255) NULL COMMENT 'プロバイダーID',
-    created_at DATETIME NOT NULL COMMENT '作成日時',
-    PRIMARY KEY (user_id)
-) COMMENT='利用者テーブル';
-
--- -----------------------------------------------------
--- 2. LOCATIONS_BASE（API / GEOJSON）
--- -----------------------------------------------------
-CREATE TABLE LOCATIONS_BASE (
-    base_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'API由来ID',
-    name VARCHAR(255) NOT NULL COMMENT '施設名',
-    address VARCHAR(255) NULL COMMENT '住所',
-    latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
-    longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
-    source_name VARCHAR(100) NOT NULL COMMENT 'データソース',
-    source_id VARCHAR(100) NULL COMMENT 'ソースID',
-    is_official BOOLEAN NOT NULL COMMENT '公式データ',
-    place_types JSON NULL COMMENT '施設タイプ',
-    opening_hours JSON NULL COMMENT '営業時間',
-    google_rating DECIMAL(3, 2) NULL COMMENT 'Google評価',
-    google_ratings_total INT NULL COMMENT '評価数',
-    photo_reference TEXT NULL COMMENT '写真参照',
-    last_updated DATETIME NOT NULL COMMENT '更新日時',
-    PRIMARY KEY (base_id),
-    INDEX idx_lat_lon (latitude, longitude)
-) COMMENT='公式位置情報テーブル';
-
--- -----------------------------------------------------
--- 3. LOCATIONS_UGC（ユーザー投稿）
--- -----------------------------------------------------
-CREATE TABLE LOCATIONS_UGC (
-    ugc_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'UGC ID',
-    user_id BIGINT UNSIGNED NOT NULL COMMENT '投稿者ID',
-    name VARCHAR(255) NOT NULL COMMENT '施設名',
-    address_input VARCHAR(255) NOT NULL COMMENT '住所入力',
-    latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
-    longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
-    opening_hours TEXT NULL COMMENT '営業時間(詳細)',
-    closed_days VARCHAR(255) NULL COMMENT '定休日',
-    notes TEXT NULL COMMENT 'メモ',
-    images JSON NULL COMMENT '画像URLリスト',
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE COMMENT '論理削除フラグ',
-    created_at DATETIME NOT NULL COMMENT '作成日時',
-    PRIMARY KEY (ugc_id),
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
-) COMMENT='ユーザー投稿位置情報テーブル';
-
--- -----------------------------------------------------
--- 4. LOCATIONS_MERGED（MAP表示用）
--- -----------------------------------------------------
-CREATE TABLE LOCATIONS_MERGED (
-    location_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'WC ID',
-    base_id BIGINT UNSIGNED NULL COMMENT 'API元ID',
-    ugc_id BIGINT UNSIGNED NULL COMMENT 'UGC元ID',
-    display_name VARCHAR(255) NOT NULL COMMENT '表示名',
-    address VARCHAR(255) NULL COMMENT '住所',
-    latitude DECIMAL(10, 7) NOT NULL COMMENT '緯度',
-    longitude DECIMAL(10, 7) NOT NULL COMMENT '経度',
-    opening_hours TEXT NULL COMMENT '営業時間(詳細)',
-    closed_days VARCHAR(255) NULL COMMENT '定休日',
-    notes TEXT NULL COMMENT 'メモ',
-    images JSON NULL COMMENT '画像URLリスト',
-    geolocation POINT NOT NULL, -- Spatial Index
-    source_type ENUM('api', 'admin', 'user') NOT NULL COMMENT 'データ種別',
-    verification_status ENUM('red', 'yellow', 'green') NOT NULL COMMENT '検証状態',
-    verification_score FLOAT NOT NULL COMMENT '検証スコア',
-    auto_verified BOOLEAN NOT NULL COMMENT '自動検証',
-    admin_verified BOOLEAN NOT NULL COMMENT '管理者検証',
-    creator_user_id BIGINT UNSIGNED NULL COMMENT '作成者ID',
-    creator_trust_score INT NULL COMMENT '作成者信頼度',
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE COMMENT '論理削除フラグ',
-    created_at DATETIME NOT NULL COMMENT '作成日時',
-    PRIMARY KEY (location_id),
-    FOREIGN KEY (base_id) REFERENCES LOCATIONS_BASE(base_id) ON DELETE SET NULL,
-    FOREIGN KEY (ugc_id) REFERENCES LOCATIONS_UGC(ugc_id) ON DELETE SET NULL,
-    INDEX idx_lat_lon (latitude, longitude),
-    SPATIAL INDEX(geolocation)
-) COMMENT='統合位置情報テーブル';
-
--- -----------------------------------------------------
--- 5. REVIEWS（レビュー）
--- -----------------------------------------------------
-CREATE TABLE REVIEWS (
-    review_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'レビューID',
-    location_id BIGINT UNSIGNED NOT NULL COMMENT 'WC ID',
-    user_id BIGINT UNSIGNED NOT NULL COMMENT '投稿者ID',
-    review_text TEXT NOT NULL COMMENT '本文',
-    cleanliness_score INT NOT NULL COMMENT '清潔度',
-    wait_time_score INT NOT NULL COMMENT '混雑度',
-    user_trust_score INT NOT NULL COMMENT '投稿時信頼度',
-    is_location_accurate BOOLEAN DEFAULT FALSE COMMENT '位置情報正確性確認',
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE COMMENT '論理削除フラグ',
-    created_at DATETIME NOT NULL COMMENT '作成日時',
-    PRIMARY KEY (review_id),
-    FOREIGN KEY (location_id) REFERENCES LOCATIONS_MERGED(location_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
-) COMMENT='レビューテーブル';
-
--- -----------------------------------------------------
--- 6. REVIEW_IMAGES
--- -----------------------------------------------------
-CREATE TABLE REVIEW_IMAGES (
-    image_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '画像ID',
-    review_id BIGINT UNSIGNED NOT NULL COMMENT 'レビューID',
-    image_url VARCHAR(255) NOT NULL COMMENT '画像URL',
-    is_deleted BOOLEAN NOT NULL DEFAULT FALSE COMMENT '論理削除フラグ',
-    uploaded_at DATETIME NOT NULL COMMENT '投稿日時',
-    PRIMARY KEY (image_id),
-    FOREIGN KEY (review_id) REFERENCES REVIEWS(review_id) ON DELETE CASCADE
-) COMMENT='レビュー画像テーブル';
-
--- -----------------------------------------------------
--- 7. WC_VERIFICATIONS（検証）
--- -----------------------------------------------------
-CREATE TABLE WC_VERIFICATIONS (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id BIGINT UNSIGNED NOT NULL,
-    location_data JSON COMMENT '位置情報の修正提案等',
-    status ENUM('unverified', 'pending', 'approved', 'rejected') DEFAULT 'unverified',
-    verification_score INT DEFAULT 0,
-    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id)
-) COMMENT='検証テーブル';
-
--- -----------------------------------------------------
--- 8. AMENITIES（設備）
--- -----------------------------------------------------
-CREATE TABLE AMENITIES (
-    location_id BIGINT UNSIGNED NOT NULL COMMENT 'WC ID',
-    western_style BOOLEAN NOT NULL DEFAULT FALSE COMMENT '洋式',
-    japanese_style BOOLEAN NOT NULL DEFAULT FALSE COMMENT '和式',
-    `accessible` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '車椅子',
-    public_toilet BOOLEAN DEFAULT FALSE,
-    gender_separated BOOLEAN DEFAULT FALSE,
-    powder_room BOOLEAN DEFAULT FALSE,
-    diaper_changing BOOLEAN DEFAULT FALSE COMMENT 'おむつ交換台',
-    barrier_free BOOLEAN DEFAULT FALSE,
-    ostomate BOOLEAN DEFAULT FALSE,
-    large_bed BOOLEAN DEFAULT FALSE,
-    parking BOOLEAN DEFAULT FALSE,
-    store_usage BOOLEAN DEFAULT FALSE,
-    baby_changing BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'Legacy column',
-    warm_seat BOOLEAN NOT NULL DEFAULT FALSE COMMENT '温水',
-    gender_type VARCHAR(20) NOT NULL COMMENT '性別',
-    PRIMARY KEY (location_id),
-    FOREIGN KEY (location_id) REFERENCES LOCATIONS_MERGED(location_id) ON DELETE CASCADE
-) COMMENT='設備テーブル';
-
--- -----------------------------------------------------
--- 9. CONTRIBUTIONS_LOG
--- -----------------------------------------------------
-CREATE TABLE CONTRIBUTIONS_LOG (
-    log_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ログID',
-    user_id BIGINT UNSIGNED NOT NULL COMMENT '利用者ID',
-    location_id BIGINT UNSIGNED NULL COMMENT 'WC ID',
-    action_type VARCHAR(50) NOT NULL COMMENT '操作',
-    created_at DATETIME NOT NULL COMMENT '実行日時',
-    PRIMARY KEY (log_id),
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE CASCADE
-) COMMENT='投稿履歴テーブル';
-
--- -----------------------------------------------------
--- 10. LOCATIONS_TAGS
--- -----------------------------------------------------
-CREATE TABLE LOCATIONS_TAGS (
-    tag_id BIGINT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'タグID',
-    location_id BIGINT UNSIGNED NOT NULL COMMENT 'WC ID',
-    tag_name VARCHAR(50) NOT NULL COMMENT 'タグ名',
-    PRIMARY KEY (tag_id),
-    FOREIGN KEY (location_id) REFERENCES LOCATIONS_MERGED(location_id) ON DELETE CASCADE,
-    UNIQUE KEY uk_location_tag (location_id, tag_name)
-) COMMENT='タグテーブル';
-
--- -----------------------------------------------------
--- 11. ADS（広告）
--- -----------------------------------------------------
-CREATE TABLE ADS (
-    ad_id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT '広告ID',
-    ad_source VARCHAR(255) NOT NULL COMMENT '広告ソース',
-    title VARCHAR(255) NOT NULL COMMENT 'タイトル',
-    description VARCHAR(255) NULL COMMENT '説明',
-    image_url VARCHAR(255) NULL COMMENT '画像URL',
-    target_url VARCHAR(255) NULL COMMENT 'リンクURL',
-    start_date DATETIME NOT NULL COMMENT '開始日',
-    end_date DATETIME NOT NULL COMMENT '終了日',
-    status VARCHAR(50) NOT NULL COMMENT 'ステータス',
-    budget DECIMAL(10, 2) NULL COMMENT '予算',
-    max_impressions INT NULL COMMENT '最大表示回数',
-    max_clicks INT NULL COMMENT '最大クリック数',
-    created_by BIGINT UNSIGNED NOT NULL COMMENT '作成者ID',
-    created_at DATETIME NOT NULL COMMENT '作成日時',
-    PRIMARY KEY (ad_id),
-    FOREIGN KEY (created_by) REFERENCES USERS(user_id) ON DELETE RESTRICT
-) COMMENT='広告テーブル';
-
--- -----------------------------------------------------
--- 12. ADS_LOG
--- -----------------------------------------------------
-CREATE TABLE ADS_LOG (
-    log_id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ログID',
-    ad_id INT UNSIGNED NOT NULL COMMENT '広告ID',
-    user_id BIGINT UNSIGNED NULL COMMENT '利用者ID',
-    shown_at DATETIME NOT NULL COMMENT '表示日時',
-    clicked BOOLEAN NOT NULL DEFAULT FALSE COMMENT 'クリックされたか',
-    PRIMARY KEY (log_id),
-    FOREIGN KEY (ad_id) REFERENCES ADS(ad_id) ON DELETE CASCADE,
-    FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL
-) COMMENT='広告履歴テーブル';
-
--- -----------------------------------------------------
--- 13. ADS_TARGETING
--- -----------------------------------------------------
-CREATE TABLE ADS_TARGETING (
-    target_id INT UNSIGNED NOT NULL AUTO_INCREMENT COMMENT 'ターゲットID',
-    ad_id INT UNSIGNED NOT NULL COMMENT '広告ID',
-    language VARCHAR(50) NULL COMMENT '言語',
-    location_type VARCHAR(50) NULL COMMENT '施設タイプ',
-    user_role VARCHAR(50) NULL COMMENT 'ユーザー種別',
-    extra_criteria JSON NULL COMMENT '追加条件(JSON)',
-    PRIMARY KEY (target_id),
-    FOREIGN KEY (ad_id) REFERENCES ADS(ad_id) ON DELETE CASCADE
-) COMMENT='広告ターゲティングテーブル';
+-- End of script

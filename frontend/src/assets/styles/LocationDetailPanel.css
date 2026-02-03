@@ -402,3 +402,24 @@
   color: #333;
   white-space: pre-wrap;
 }
+/* Floors Section */
+/* Floors Section */
+.floors-section {
+    margin-bottom: 1.5rem;
+}
+.floors-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 10px;
+}
+.floor-badge {
+    background: #e8f0fe;
+    color: #1a73e8;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-weight: 600;
+    font-size: 0.9rem;
+    border: 1px solid #d2e3fc;
+}
+

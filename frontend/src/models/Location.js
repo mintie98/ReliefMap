@@ -30,6 +30,7 @@ export class Location {
     this.closed_days = data.closed_days || '';
     this.user_opening_hours = data.user_opening_hours;
     this.reviews = data.reviews || [];
+    this.floors = data.floors || [];
 
     // Helper to get amenity value (flat or nested)
     const getAm = (key) => Boolean(data[key] || (data.amenities && data.amenities[key]));
@@ -93,6 +94,10 @@ export class Location {
    */
   isVerified() {
     return this.verification_status === 'green' || this.admin_verified;
+  }
+
+  hasFloors() {
+    return this.floors && this.floors.length > 0;
   }
 
   /**

@@ -143,10 +143,14 @@ export function useLocationDetailPanel(props) {
     });
 
     const reviews = computed(() => {
+        let allReviews = [];
         if (viewModelReviews.value.length > 0 && viewModelReviews.value[0].location_id === props.location.location_id) {
-            return viewModelReviews.value;
+            allReviews = viewModelReviews.value;
+        } else {
+            allReviews = props.location.reviews || [];
         }
-        return props.location.reviews || [];
+        // Filter out reviews with empty text (User request: only save for verification, don't show)
+        return allReviews.filter(r => r.review_text && r.review_text.trim().length > 0);
     });
 
     watch(() => props.location.location_id, (newId) => {
@@ -230,7 +234,14 @@ export function useLocationDetailPanel(props) {
         const waitMap = { 'none': 5, 'short': 4, 'medium': 3, 'long': 1 };
         formData.append('wait_time_score', waitMap[reviewData.wait_time] || 0);
 
+
+
         formData.append('amenities', JSON.stringify(reviewData.amenities));
+
+        // Pass verified/new floors
+        if (reviewData.verified_floors && reviewData.verified_floors.length > 0) {
+            formData.append('floors', JSON.stringify(reviewData.verified_floors));
+        }
 
         if (reviewData.images && reviewData.images.length > 0) {
             reviewData.images.forEach(file => {

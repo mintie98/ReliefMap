@@ -76,7 +76,8 @@
         },
         "no_reviews": "レビューはまだありません。一番乗りしましょう！",
         "start_navigation": "ナビ開始",
-        "no_images": "画像なし"
+        "no_images": "画像なし",
+        "floors_label": "トイレのある階"
     },
     "review_modal": {
         "title": "レビューを書く",
@@ -89,6 +90,9 @@
             "medium": "普通 (5-15分)",
             "long": "長い (> 15分)"
         },
+        "floors_verify_label": "利用した階は？",
+        "verify_existing": "既存の階を確認:",
+        "add_new_floor": "階を追加:",
         "select_optional": "選択 (任意)",
         "comment": "コメント",
         "comment_placeholder": "体験を共有してください...",
@@ -169,7 +173,10 @@
             "unisex": "誰でもトイレ",
             "male": "男性用",
             "female": "女性用"
-        }
+        },
+        "details_label": "詳細",
+        "floors_label": "階数 (複数選択可)",
+        "images_label": "画像"
     },
     "location_picker": {
         "title": "レビューする場所を選択",

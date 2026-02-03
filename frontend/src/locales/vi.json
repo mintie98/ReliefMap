@@ -83,7 +83,8 @@
         "closed_days_placeholder": "Ví dụ: T7, CN",
         "notes_placeholder": "Ghi chú thêm...",
         "closed_label": "Đóng cửa:",
-        "notes_label": "Ghi chú"
+        "notes_label": "Ghi chú",
+        "floors_label": "Tầng có WC"
     },
     "review_modal": {
         "title": "Viết nhận xét",
@@ -104,7 +105,10 @@
             "short": "Dưới 5 phút",
             "medium": "5-15 phút",
             "long": "Trên 15 phút"
-        }
+        },
+        "floors_verify_label": "Bạn sử dụng WC tầng nào?",
+        "verify_existing": "Xác nhận tầng có sẵn:",
+        "add_new_floor": "Thêm tầng còn thiếu:"
     },
     "refine_filter": {
         "title": "Lọc kết quả",
@@ -177,6 +181,7 @@
             "female": "Nữ"
         },
         "details_label": "Thông tin chi tiết",
+        "floors_label": "Tầng (Chọn nhiều)",
         "images_label": "Hình ảnh",
         "uploading": "Đang tải lên..."
     },

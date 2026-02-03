@@ -78,7 +78,8 @@
         },
         "no_reviews": "리뷰가 없습니다. 첫 리뷰를 작성해보세요!",
         "start_navigation": "길안내 시작",
-        "no_images": "이미지 없음"
+        "no_images": "이미지 없음",
+        "floors_label": "화장실이 있는 층"
     },
     "review_modal": {
         "title": "리뷰 작성",
@@ -99,7 +100,10 @@
             "short": "짧음 (< 5분)",
             "medium": "보통 (5-15분)",
             "long": "길음 (> 15분)"
-        }
+        },
+        "floors_verify_label": "어떤 층을 이용하셨나요?",
+        "verify_existing": "기존 층 확인:",
+        "add_new_floor": "누락된 층 추가:"
     },
     "refine_filter": {
         "title": "검색 필터",
@@ -169,7 +173,11 @@
             "unisex": "성별 무관",
             "male": "남성용",
             "female": "여성용"
-        }
+        },
+        "details_label": "상세 정보",
+        "floors_label": "층수 (다중 선택)",
+        "images_label": "이미지",
+        "uploading": "업로드 중..."
     },
     "location_picker": {
         "title": "리뷰할 장소 선택",

@@ -401,3 +401,73 @@ textarea:focus {
         /* 2 columns on mobile */
     }
 }
+/* Floor Selector */
+.floor-selector {
+    margin-top: 10px;
+    background: #f8f9fa;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #e0e0e0;
+}
+.floor-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.floor-btn {
+    padding: 6px 12px;
+    border: 1px solid #ccc;
+    background: white;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 40px;
+    text-align: center;
+}
+.floor-btn:hover {
+    background: #f0f0f0;
+}
+.floor-btn.active {
+    background: #4285F4;
+    color: white;
+    border-color: #3367d6;
+    font-weight: bold;
+}
+.custom-floor-input {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+.custom-floor-input input {
+    flex: 1;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 0.9rem;
+}
+.selected-floors-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+.floor-tag {
+    background: #e8f0fe;
+    color: #1a73e8;
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+.remove-floor {
+    cursor: pointer;
+    font-weight: bold;
+    color: #1967d2;
+}
+.remove-floor:hover {
+    color: #d93025;
+}
+

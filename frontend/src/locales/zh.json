@@ -78,7 +78,8 @@
         },
         "no_reviews": "暂无评论。成为第一个评论的人吧！",
         "start_navigation": "开始导航",
-        "no_images": "暂无图片"
+        "no_images": "暂无图片",
+        "floors_label": "有厕所的楼层"
     },
     "review_modal": {
         "title": "写评论",
@@ -99,7 +100,10 @@
             "short": "极短（< 5分钟）",
             "medium": "一般（5-15分钟）",
             "long": "较长（> 15分钟）"
-        }
+        },
+        "floors_verify_label": "您使用了哪一层？",
+        "verify_existing": "确认现有楼层：",
+        "add_new_floor": "添加缺失楼层："
     },
     "refine_filter": {
         "title": "筛选结果",
@@ -170,7 +174,11 @@
             "unisex": "无性别",
             "male": "男用",
             "female": "女用"
-        }
+        },
+        "details_label": "详细信息",
+        "floors_label": "楼层 (可多选)",
+        "images_label": "图片",
+        "uploading": "上传中..."
     },
     "location_picker": {
         "title": "选择地点进行评价",

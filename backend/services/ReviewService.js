@@ -80,10 +80,34 @@ class ReviewService {
       }
 
       // Update Amenities & Verification Logic
+      // Link Repository Lazily to avoid circular dependency
+      const locationRepository = require('../repositories/LocationRepository');
+
+      // Update Floors (Merge Logic)
+      if (reviewData.floors && Array.isArray(reviewData.floors) && reviewData.floors.length > 0) {
+        try {
+          const currentLoc = await locationRepository.findById(targetId);
+          if (currentLoc) {
+            let existingFloors = currentLoc.floors || [];
+            // Parse if string
+            if (typeof existingFloors === 'string') {
+              try { existingFloors = JSON.parse(existingFloors); } catch (e) { existingFloors = []; }
+            }
+
+            // Merge: Union of existing + new
+            const mergedFloors = [...new Set([...existingFloors, ...reviewData.floors])].sort();
+
+            await locationRepository.update(targetId, {
+              floors: JSON.stringify(mergedFloors)
+            });
+          }
+        } catch (err) {
+          console.error('Error updating floors from review:', err);
+        }
+      }
+
       // Check if location is confirmed accurate
       if (reviewData.is_location_accurate) {
-        // Import location Repo
-        const locationRepository = require('../repositories/LocationRepository');
 
         // Standard Location: Update Verified Location Score
         const scoreDelta = user.trust_score || 5;

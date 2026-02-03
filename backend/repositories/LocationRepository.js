@@ -48,7 +48,9 @@ class LocationRepository {
         a.ostomate,
         a.large_bed,
         a.parking,
-        a.store_usage
+        a.parking,
+        a.store_usage,
+        lm.floors
       FROM LOCATIONS_MERGED lm
       LEFT JOIN LOCATIONS_UGC lu ON lm.ugc_id = lu.ugc_id
       LEFT JOIN LOCATIONS_BASE lb ON lm.base_id = lb.base_id
@@ -144,6 +146,9 @@ class LocationRepository {
             }
           }
         }
+        if (row.floors && typeof row.floors === 'string') {
+          try { row.floors = JSON.parse(row.floors); } catch (e) { }
+        }
         return row;
       });
 
@@ -181,6 +186,9 @@ class LocationRepository {
         a.large_bed,
         a.parking,
         a.store_usage,
+        a.parking,
+        a.store_usage,
+        lm.floors,
         lb.google_rating,
         lb.google_ratings_total,
         lb.opening_hours as google_opening_hours,
@@ -220,6 +228,11 @@ class LocationRepository {
     const reviews = await reviewRepository.findByLocationId(locationId);
 
     // Attach reviews to location
+    // Parse floors
+    if (location.floors && typeof location.floors === 'string') {
+      try { location.floors = JSON.parse(location.floors); } catch (e) { }
+    }
+
     location.reviews = reviews;
 
     return location;
@@ -356,9 +369,9 @@ class LocationRepository {
       const query = `
         INSERT INTO LOCATIONS_UGC (
           user_id, name, address_input, latitude, longitude, 
-          opening_hours, closed_days, notes, images, created_at
+          opening_hours, closed_days, notes, images, floors, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())
       `;
       const [result] = await connection.execute(query, [
         data.user_id,
@@ -369,7 +382,8 @@ class LocationRepository {
         data.opening_hours || null,
         data.closed_days || null,
         data.notes || null,
-        data.images ? JSON.stringify(data.images) : null
+        data.images ? JSON.stringify(data.images) : null,
+        data.floors ? JSON.stringify(data.floors) : null
       ]);
 
       const ugcId = result.insertId;
@@ -378,11 +392,11 @@ class LocationRepository {
         INSERT INTO LOCATIONS_MERGED (
            ugc_id, source_type, display_name, address, latitude, longitude,
            geolocation,
-           opening_hours, closed_days, notes, images,
+           opening_hours, closed_days, notes, images, floors,
            verification_status, verification_score, creator_user_id,
            auto_verified, admin_verified, created_at
         )
-        VALUES (?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, ?, ?, ?, ?, FALSE, FALSE, NOW())
+        VALUES (?, ?, ?, ?, ?, ?, POINT(?, ?), ?, ?, ?, ?, ?, ?, ?, ?, FALSE, FALSE, NOW())
       `;
 
       const [mergedResult] = await connection.execute(mergedQuery, [
@@ -392,6 +406,7 @@ class LocationRepository {
         data.closed_days || null,
         data.notes || null,
         data.images ? JSON.stringify(data.images) : null,
+        data.floors ? JSON.stringify(data.floors) : null,
         'red', 0.3, data.user_id
       ]);
 

@@ -22,6 +22,7 @@ export function useAddLocationModal(emit) {
         closed_days: '', // New
         notes: '', // New
         images: [], // New (array of strings)
+        floors: [], // Multi-story support
         amenities: {
             western_style: true,
             japanese_style: false,
@@ -133,6 +134,25 @@ export function useAddLocationModal(emit) {
         form.images.splice(index, 1);
     };
 
+    const toggleFloor = (floor) => {
+        const index = form.floors.indexOf(floor);
+        if (index > -1) {
+            form.floors.splice(index, 1);
+        } else {
+            form.floors.push(floor);
+            // Optional: Sort floors?
+            // Custom sort: B3, B2, B1, 1F, 2F...
+            // For now, insertion order is fine or sort later.
+        }
+    };
+
+    const addCustomFloor = (floor) => {
+        if (!floor) return;
+        if (!form.floors.includes(floor)) {
+            form.floors.push(floor);
+        }
+    };
+
     const handleSubmit = async () => {
         loading.value = true;
         error.value = null;
@@ -155,7 +175,8 @@ export function useAddLocationModal(emit) {
             opening_hours: form.opening_hours,
             closed_days: form.closed_days,
             notes: form.notes,
-            images: form.images
+            images: form.images,
+            floors: form.floors
         };
 
         try {
@@ -187,7 +208,11 @@ export function useAddLocationModal(emit) {
         geocodeAddress,
         handleImageUpload,
         removeImage,
+        handleImageUpload,
+        removeImage,
         handleSubmit,
+        toggleFloor, // New
+        addCustomFloor, // New
         ICONS
     };
 }

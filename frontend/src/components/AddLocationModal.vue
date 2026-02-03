@@ -138,6 +138,42 @@
             </div>
           </div>
 
+
+
+          <!-- Store/Facility Details (Floors) -->
+          <div class="form-group" v-if="form.amenities.store_usage">
+              <label>{{ $t('add_location.floors_label') || 'Select Floors with WC' }}</label>
+              <div class="floor-selector">
+                  <div class="floor-grid">
+                      <button 
+                          type="button" 
+                          v-for="fl in ['B3','B2','B1','1F','2F','3F','4F','5F','6F','7F','8F','9F','10F']"
+                          :key="fl"
+                          class="floor-btn"
+                          :class="{ active: form.floors.includes(fl) }"
+                          @click="toggleFloor(fl)"
+                      >{{ fl }}</button>
+                  </div>
+                  
+                  <div class="custom-floor-input">
+                      <input 
+                          type="text" 
+                          v-model="customFloor" 
+                          placeholder="Other floor (e.g. 22F, Rooftop)" 
+                          @keydown.enter.prevent="handleAddCustomFloor"
+                      />
+                      <button type="button" class="btn-sm btn-secondary" @click="handleAddCustomFloor">Add</button>
+                  </div>
+                  
+                  <div class="selected-floors-tags" v-if="form.floors.length > 0">
+                      <span v-for="fl in form.floors" :key="fl" class="floor-tag">
+                          {{ fl }} 
+                          <span class="remove-floor" @click="toggleFloor(fl)">×</span>
+                      </span>
+                  </div>
+              </div>
+          </div>
+
           <!-- Gender Type -->
           <div class="form-group">
             <label for="gender">{{ $t('add_location.gender_type') }} *</label>
@@ -164,27 +200,42 @@
 
 <script>
 import { useAddLocationModal } from '../composables/useAddLocationModal';
+import { ref } from 'vue'; // Import ref
 import '../assets/styles/AddLocationModal.css';
 
 export default {
   name: 'AddLocationModal',
   emits: ['close', 'added'],
   setup(props, { emit }) {
+    const customFloor = ref('');
+
     const {
       form,
       loading,
-      uploading, // New
+      uploading,
       error,
       getCurrentLocation,
       geocodeAddress,
-      handleImageUpload, // New
-      removeImage, // New
+      handleImageUpload,
+      removeImage,
       handleSubmit,
+      toggleFloor, // New
+      addCustomFloor, // New
       ICONS
     } = useAddLocationModal(emit);
 
+    const handleAddCustomFloor = () => {
+        if (customFloor.value.trim()) {
+            addCustomFloor(customFloor.value.trim());
+            customFloor.value = '';
+        }
+    };
+
     return {
       form,
+      customFloor, // New
+      handleAddCustomFloor, // New
+      toggleFloor, // New
       loading,
       uploading,
       error,
