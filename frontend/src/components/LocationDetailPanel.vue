@@ -221,7 +221,7 @@ export default {
         return Object.keys(amenities.value).filter(key => {
              if (key === 'gender_type') return false; 
              if (key === 'baby_changing' && amenities.value.diaper_changing) return false;
-             return amenities.value[key] === true;
+             return !!amenities.value[key];
         });
     });
 

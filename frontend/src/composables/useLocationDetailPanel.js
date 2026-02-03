@@ -222,7 +222,9 @@ export function useLocationDetailPanel(props) {
     const getReviewImageUrl = (img) => {
         if (!img) return '';
         if (img.startsWith('http')) return img;
-        return `http://localhost:3000${img}`;
+        // Use relative path so Vite proxy (dev) or relative link (prod) works
+        // This fixes access from other devices on network
+        return img.startsWith('/') ? img : `/${img}`;
     };
 
     const handleReviewSubmit = async (reviewData) => {

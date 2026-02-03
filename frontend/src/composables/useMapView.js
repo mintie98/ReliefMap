@@ -78,8 +78,8 @@ export function useMapView() {
                 title: loc.display_name,
                 icon: {
                     url: getPinIcon(loc),
-                    scaledSize: new window.google.maps.Size(45, 60),
-                    anchor: new window.google.maps.Point(22.5, 60)
+                    scaledSize: new window.google.maps.Size(25, 40),
+                    anchor: new window.google.maps.Point(12.5, 40)
                 }
             });
             marker.addListener('click', () => focusLocation(loc));
@@ -102,8 +102,8 @@ export function useMapView() {
                 zIndex: 999, // On top of other markers
                 icon: {
                     url: userIcon,
-                    scaledSize: new window.google.maps.Size(40, 40),
-                    anchor: new window.google.maps.Point(20, 20)
+                    scaledSize: new window.google.maps.Size(35, 35),
+                    anchor: new window.google.maps.Point(17.5, 17.5)
                 }
             });
         } else {

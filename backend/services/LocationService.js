@@ -282,6 +282,23 @@ class LocationService {
         success: true,
         data: {
           ...location,
+          amenities: {
+            western_style: location.western_style,
+            japanese_style: location.japanese_style,
+            accessible: location.accessible,
+            child_seat: location.child_seat,
+            diaper_changing: location.diaper_changing,
+            warm_seat: location.warm_seat,
+            gender_type: location.gender_type,
+            public_toilet: location.public_toilet,
+            gender_separated: location.gender_separated,
+            powder_room: location.powder_room,
+            barrier_free: location.barrier_free,
+            ostomate: location.ostomate,
+            large_bed: location.large_bed,
+            parking: location.parking,
+            store_usage: location.store_usage
+          },
           reviews: reviews || [],
           images: images
         }

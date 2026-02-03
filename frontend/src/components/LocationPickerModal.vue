@@ -3,10 +3,10 @@
     <div class="picker-modal">
       <div class="picker-header">
         <h3>{{ $t('location_picker.title') }}</h3>
-        <button class="close-btn" @click="$emit('close')">✕</button>
+        <button class="picker-close-btn" @click="$emit('close')">✕</button>
       </div>
 
-      <div class="modal-body scroller">
+      <div class="picker-modal-body scroller">
         <div class="picker-search">
           <span class="search-icon">{{ ICONS.SEARCH }}</span>
           <input 
@@ -24,14 +24,14 @@
             class="picker-item"
             @click="$emit('select', loc)"
           >
-            <div class="item-icon">
+            <div class="picker-item-icon">
               <img :src="getPinIcon(loc)" alt="pin" />
             </div>
-            <div class="item-info">
-              <div class="item-name">{{ loc.display_name }}</div>
-              <div class="item-address">{{ loc.address }}</div>
+            <div class="picker-item-info">
+              <div class="picker-item-name">{{ loc.display_name }}</div>
+              <div class="picker-item-address">{{ loc.address }}</div>
             </div>
-            <div class="item-action">
+            <div class="picker-item-action">
               <span class="action-arrow">›</span>
             </div>
           </div>
