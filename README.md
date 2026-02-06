@@ -21,13 +21,13 @@ A web application to find WC (toilet) locations from Google API data and user-ge
 
 ## Features
 
-- 🔍 Search WC locations from Google Places API
-- 📍 Display locations on interactive map
-- ⭐ User reviews and ratings
-- ➕ User-generated content (UGC) contributions
-- ✅ Verification system with trust scores
-- 🎯 Filter by verification status and source type
-- 📱 Responsive design
+-  Search WC locations from Google Places API
+-  Display locations on interactive map
+-  User reviews and ratings
+-  User-generated content (UGC) contributions
+-  Verification system with trust scores
+-  Filter by verification status and source type
+-  Responsive design
 
 ## Prerequisites
 
@@ -46,7 +46,7 @@ CREATE DATABASE reliefmap;
 USE reliefmap;
 
 # Import schema
-mysql -u root -p reliefmap < reliefmap.sql
+mysql -u root -p reliefmap < db/reliefmap.sql
 ```
 
 ### 2. Backend Setup
@@ -135,48 +135,63 @@ ReliefMap/
 │   ├── config/
 │   │   └── database.js
 │   ├── controllers/
+│   │   ├── AmenityController.js
+│   │   ├── AuthController.js
 │   │   ├── LocationController.js
 │   │   ├── ReviewController.js
-│   │   └── AmenityController.js
+│   │   └── UserController.js
+│   ├── middleware/
+│   │   ├── auth.js
+│   │   └── upload.js
 │   ├── repositories/
+│   │   ├── AmenityRepository.js
 │   │   ├── LocationRepository.js
-│   │   ├── UserRepository.js
 │   │   ├── ReviewRepository.js
-│   │   └── AmenityRepository.js
-│   ├── services/
-│   │   ├── LocationService.js
-│   │   ├── ReviewService.js
-│   │   └── AmenityService.js
+│   │   └── UserRepository.js
 │   ├── routes/
+│   │   ├── amenities.js
+│   │   ├── authRoutes.js
 │   │   ├── locations.js
 │   │   ├── reviews.js
-│   │   ├── amenities.js
+│   │   ├── upload.js
 │   │   └── users.js
+│   ├── services/
+│   │   ├── AmenityService.js
+│   │   ├── AuthService.js
+│   │   ├── LocationService.js
+│   │   ├── ReviewService.js
+│   │   └── UserService.js
 │   ├── server.js
 │   └── package.json
+├── db/
+│   └── reliefmap.sql
 ├── frontend/
 │   ├── src/
+│   │   ├── assets/
+│   │   ├── components/
+│   │   ├── composables/
+│   │   ├── locales/
 │   │   ├── models/
 │   │   │   ├── Location.js
 │   │   │   └── Review.js
+│   │   ├── services/
+│   │   │   ├── api.js
+│   │   │   ├── LocationService.js
+│   │   │   └── ReviewService.js
 │   │   ├── viewmodels/
 │   │   │   ├── LocationViewModel.js
 │   │   │   └── ReviewViewModel.js
 │   │   ├── views/
 │   │   │   ├── HomeView.vue
 │   │   │   └── MapView.vue
-│   │   ├── services/
-│   │   │   ├── api.js
-│   │   │   ├── LocationService.js
-│   │   │   └── ReviewService.js
 │   │   ├── router/
 │   │   │   └── index.js
 │   │   ├── App.vue
-│   │   └── main.js
+│   │   ├── main.js
+│   │   └── i18n.js
 │   ├── index.html
 │   ├── vite.config.js
 │   └── package.json
-├── reliefmap.sql
 └── README.md
 ```
 
